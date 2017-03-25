@@ -75,19 +75,11 @@ bot.on("disconnected", function () {
 function checkMessageForCommand(msg, isEdit) {
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(Config.commandPrefix))){
-        console.log("treating " + msg.content + " from " + msg.author + " as command");
+    console.log("treating " + msg.content + " from " + msg.author + " as command");
 		var cmdTxt = msg.content.split(" ")[0].substring(Config.commandPrefix.length);
-        var suffix = msg.content.substring(cmdTxt.length+Config.commandPrefix.length+1);// add
-                                                                                        // one
-                                                                                        // for
-                                                                                        // the
-                                                                                        // !
-                                                                                        // and
-                                                                                        // one
-                                                                                        // for
-                                                                                        // the
-                                                                                        // space
-        if(msg.isMentioned(bot.user)){
+		// add one for the ! and one for the space
+    var suffix = msg.content.substring(cmdTxt.length+Config.commandPrefix.length+1);
+    if(msg.isMentioned(bot.user)){
 			try {
 				cmdTxt = msg.content.split(" ")[1];
 				suffix = msg.content.substring(bot.user.mention().length+cmdTxt.length+Config.commandPrefix.length+1);
@@ -95,7 +87,7 @@ function checkMessageForCommand(msg, isEdit) {
 				msg.channel.sendMessage("Yes?");
 				return;
 			}
-        }
+    }
 		var cmd = commands[cmdTxt];
         if(cmdTxt === "help"){
             // help is special since it iterates over the other commands
