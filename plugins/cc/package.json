@@ -1,6 +1,6 @@
 {
-  "main": "clashcaller.js",
+  "main": "cc.js",
   "dependencies": {
-    
+    "request": "2.x"
   }
 }
