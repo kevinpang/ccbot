@@ -1,7 +1,7 @@
 var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-exports.commands = [ "cc", "startwar", "attacked"]
+exports.commands = [ "cc", "startwar", "call", "attacked"]
 
 var CC_API = "http://clashcaller.com/api.php";
 
@@ -14,7 +14,7 @@ try {
 }
 
 exports.cc = {
-  description : "Get CC link",
+  description : "Get Clash Caller link to current war",
   process : function(bot, msg) {
     var channel = Channels[msg.channel.id];
     if (channel) {
@@ -74,6 +74,35 @@ exports.startwar = {
   }
 }
 
+exports.call = {
+  usage: "<enemy base #>",
+  description: "Call a base",
+  process: function(bot, msg, suffix) {
+    var channel = Channels[msg.channel.id];
+    if (!channel || !channel.cc_id) {
+      msg.channel.sendMessage("No current war. Use !startwar to start a war.");
+      return;
+    }
+    
+    var enemyBaseNumber = parseInt(suffix);
+    
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "APPEND_CALL",
+        "warcode": channel.cc_id,
+        "posy": enemyBaseNumber - 1,
+        "value": msg.author.username
+      }
+    }, function(error, response, body) {
+      if (error) {
+        msg.channel.sendMessage("Unable to call base " + error);
+      } else {
+        msg.channel.sendMessage("Called base " + enemyBaseNumber + " for " + msg.author.username);
+      }
+    })  
+  }
+}
+
 exports.attacked = {
   usage: "<enemy base #> for <# of stars> stars",
   description: "Log an attack",
@@ -81,10 +110,11 @@ exports.attacked = {
     var channel = Channels[msg.channel.id];
     if (!channel || !channel.cc_id) {
       msg.channel.sendMessage("No current war. Use !startwar to start a war.");
+      return;
     }
     
     var args = suffix.split(' ');
-    var enemyBaseNumber = args[0];
+    var enemyBaseNumber = parseInt(args[0]);
     var stars = parseInt(args[2]);
     
     getUpdate_(channel.cc_id, function(warStatus) {

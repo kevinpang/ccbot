@@ -53,16 +53,6 @@ var commands = {
     process: function(bot, msg, suffix){
       msg.channel.sendMessage(suffix);
     }
-  },
-  "test": {
-    process: function(bot,msg) {
-      console.log(msg);
-    }
-  },
-  "guilds": {
-    process: function(bot) {
-      console.log(bot.guilds);
-    }
   }
 };
 
