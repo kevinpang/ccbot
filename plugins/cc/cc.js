@@ -1,7 +1,7 @@
 var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-exports.commands = [ "cc", "startwar", ]
+exports.commands = [ "cc", "startwar", "attacked"]
 
 var CC_API = "http://clashcaller.com/api.php";
 
@@ -13,6 +13,20 @@ try {
   process.exit();
 }
 
+exports.cc = {
+  description : "Get CC link",
+  process : function(bot, msg) {
+    var channel = Channels[msg.channel.id];
+    if (channel) {
+      msg.channel
+          .sendMessage("http://www.clashcaller.com/war/" + channel.cc_id);
+    } else {
+      msg.channel
+          .sendMessage("No current war declared. Use !startwar to start a new war.");
+    }
+  }
+}
+
 exports.startwar = {
   usage : "<war size> <enemy clan name>",
   description : "Starts a war on Clash Caller",
@@ -22,15 +36,15 @@ exports.startwar = {
     var enemyClanName = args.join(' ');
 
     // TODO: Validate input (war size is a number, enemy clan name is provided)
-
+    
     request.post(CC_API, {
       form : {
         "REQUEST" : "CREATE_WAR",
         "cname" : "Reddit Havoc", // TODO: stop hardcoding this
         "ename" : enemyClanName,
         "size" : parseInt(warSize),
-        "timer" : "3",
-        "searchable" : 1,
+        "timer" : "3", // TODO: stop hardcoding this
+        "searchable" : 1, // TODO: stop hardcoding this
         "clanid" : "#JY9GU99" // TODO: stop hardcoding this
       }
     }, function(error, response, body) {
@@ -60,16 +74,65 @@ exports.startwar = {
   }
 }
 
-exports.cc = {
-  description : "Get CC link",
-  process : function(bot, msg) {
+exports.attacked = {
+  usage: "<enemy base #> for <# of stars> stars",
+  description: "Log an attack",
+  process: function(bot, msg, suffix) {
     var channel = Channels[msg.channel.id];
-    if (channel) {
-      msg.channel
-          .sendMessage("http://www.clashcaller.com/war/" + channel.cc_id);
-    } else {
-      msg.channel
-          .sendMessage("No current war declared. Use !startwar to start a new war.");
+    if (!channel || !channel.cc_id) {
+      msg.channel.sendMessage("No current war. Use !startwar to start a war.");
     }
+    
+    var args = suffix.split(' ');
+    var enemyBaseNumber = args[0];
+    var stars = parseInt(args[2]);
+    
+    getUpdate_(channel.cc_id, function(warStatus) {
+      var posx = null;
+      for (var i = 0; i < warStatus.calls.length; i++) {
+        var call = warStatus.calls[i];
+        if (call.posy == enemyBaseNumber - 1 && call.playername == msg.author.username) {
+          posx = call.posx;
+          break;
+        }
+      }
+      
+      if (posx) {
+        request.post(CC_API, {
+          form: {
+            "REQUEST": "UPDATE_STARS",
+            "warcode": channel.cc_id,
+            "posx": posx,
+            "posy": enemyBaseNumber - 1,
+            "value": stars + 2
+          }
+        }, function(error, response, body) {
+          if (error) {
+            msg.channel.sendMessage("Unable to record stars " + error);
+          } else {
+            msg.channel.sendMessage("Recorded " + stars + " star(s) for "
+                + msg.author.username + " on base " + enemyBaseNumber);
+          }
+        })  
+      } else {
+        msg.channel.sendMessage("Unable to find call on base "
+            + enemyBaseNumber + " for " + msg.author.username);
+      }
+    });
   }
 }
+
+var getUpdate_ = function(ccId, callback) {
+  request.post(CC_API, {
+    form : {
+      "REQUEST" : "GET_UPDATE",
+      "warcode" : ccId
+    }
+  }, function(error, response, body) {
+    if (error) {
+      msg.channel.sendMessage("Error retrieving data from Clash Caller: " + error);
+    } else {
+      callback(JSON.parse(body));
+    }
+  });
+};

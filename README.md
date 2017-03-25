@@ -1,6 +1,6 @@
 # ccbot
-A Clash Caller bot for Discord. Based off of <a href="https://github.com/butttons/cc-bot/blob/master/cc.php">cc-bot</a>
-and <a href="https://github.com/hydrabolt/discord.js/">discord.js</a>.  
+A Clash Caller bot for Discord. Based off of <a href="https://github.com/butttons/cc-bot">cc-bot</a>
+and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.  
 
 # Features:
 - !help => returns full list of available commands

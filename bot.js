@@ -41,7 +41,7 @@ var commands = {
   "ping": {
     description: "responds pong, useful for checking if bot is alive",
     process: function(bot, msg, suffix) {
-      msg.channel.sendMessage( msg.author+" pong!");
+      msg.channel.sendMessage(msg.author + " pong!");
       if(suffix){
           msg.channel.sendMessage( "note that !ping takes no arguments!");
       }
@@ -54,6 +54,16 @@ var commands = {
       msg.channel.sendMessage(suffix);
     }
   },
+  "test": {
+    process: function(bot,msg) {
+      console.log(msg);
+    }
+  },
+  "guilds": {
+    process: function(bot) {
+      console.log(bot.guilds);
+    }
+  }
 };
 
 var bot = new Discord.Client();
@@ -144,18 +154,14 @@ function checkMessageForCommand(msg, isEdit) {
 					}
         }
 		else if(cmd) {
-			if(Permissions.checkPermission(msg.author,cmdTxt)){
-				try{
-					cmd.process(bot,msg,suffix,isEdit);
-				} catch(e){
-					var msgTxt = "command " + cmdTxt + " failed :(";
-					if(Config.debug){
-						 msgTxt += "\n" + e.stack;
-					}
-					msg.channel.sendMessage(msgTxt);
+			try{
+				cmd.process(bot, msg, suffix, isEdit);
+			} catch(e){
+				var msgTxt = "command " + cmdTxt + " failed :(";
+				if(Config.debug){
+					 msgTxt += "\n" + e.stack;
 				}
-			} else {
-				msg.channel.sendMessage("You are not allowed to run " + cmdTxt + "!");
+				msg.channel.sendMessage(msgTxt);
 			}
 		} else {
 			msg.channel.sendMessage(cmdTxt + " not recognized as a command!").then((message => message.delete(5000)))
