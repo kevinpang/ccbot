@@ -1,0 +1,16 @@
+{
+  "name": "ccbot",
+  "version": "1.0.0",
+  "description": "Clash Caller bot",
+  "readme": "README.md",
+  "maintainers": [],
+  "author": "kpanghmc@gmail.com",
+  "dependencies": {
+    "discord.js": "11.0.x",
+    "npm": ""
+  },
+  "main": "discord_bot.js",
+  "scripts": {
+    "start": "node discord_bot.js"
+  }
+}
