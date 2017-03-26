@@ -53,6 +53,13 @@ var commands = {
     process: function(bot, msg, suffix){
       msg.channel.sendMessage(suffix);
     }
+  },
+  "about": {
+    description: "About the bot",
+    process: function(bot, msg) {
+      msg.channel.sendMessage("Developed by Jericho from Reddit Havoc. Source code " +
+          "can be found here: https://github.com/kevinpang/ccbot");
+    }
   }
 };
 
@@ -144,7 +151,8 @@ function checkMessageForCommand(msg, isEdit) {
 			try{
 				cmd.process(bot, msg, suffix, isEdit);
 			} catch(e){
-				var msgTxt = "command " + cmdTxt + " failed :(";
+			  console.log("command " + cmdTxt + " failed: " + e);
+			  var msgTxt = "command " + cmdTxt + " failed :(";
 				if(Config.debug){
 					 msgTxt += "\n" + e.stack;
 				}

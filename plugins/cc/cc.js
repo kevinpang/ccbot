@@ -2,8 +2,8 @@ var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 exports.commands = ["attacked", "cc", "call", "calls", "delete",
-    "setcalltimer", "setcc", "setclanname", "setclantag", "warstart",
-    "warend", "start"];
+    "setcalltimer", "setcc", "setclanname", "setclantag", "start",
+    "warstarttime", "warendtime"];
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -31,9 +31,23 @@ exports.start = {
   usage: "<war size> <enemy clan name>",
   description: "Starts a war on Clash Caller",
   process: function(bot, msg, suffix) {
-    var args = suffix.split(' ');
-    var warSize = args.shift();
-    var enemyClanName = args.join(' ');
+    var regex = /(\d+)\s(.*)$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format, please try again");
+      return;
+    }
+
+    var arr = regex.exec(suffix);
+    var warSize = parseInt(arr[1]);
+    var enemyClanName = arr[2];
+    
+    var validWarSizes = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+    if (!validWarSizes.includes(warSize)) {
+      msg.channel
+        .sendMessage("War size must be set to one of the following values: " +
+            validWarSizes.join(", "));
+      return;
+    }
 
     // TODO: Validate input (war size is a number, enemy clan name is provided)
 
@@ -41,11 +55,11 @@ exports.start = {
     request.post(CC_API, {
       form: {
         "REQUEST": "CREATE_WAR",
-        "cname": channel && channel.clanname ? channel.clanname : "",
+        "cname": channel && channel.clanname ? channel.clanname : "Unknown",
         "ename": enemyClanName,
-        "size": parseInt(warSize),
+        "size": warSize,
         "timer": channel && channel.call_timer ? parseInt(channel.call_timer) : 0,
-        "searchable": 1, // TODO: stop hardcoding this
+        "searchable": 1,
         "clanid": channel && channel.clanid ? channel.clanid : ""
       }
     }, function(error, response, body) {
@@ -186,7 +200,7 @@ exports.setclantag = {
   }
 };
 
-exports.warstart = {
+exports.warstarttime = {
   usage: "<##h##m>",
   description: "Updates the current war's start time",
   process: function(bot, msg, suffix) {
@@ -223,7 +237,7 @@ exports.warstart = {
   }
 };
 
-exports.warend = {
+exports.warendtime = {
   usage: "<##h##m>",
   description: "Updates the current war's end time",
   process: function(bot, msg, suffix) {
