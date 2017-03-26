@@ -12,7 +12,7 @@ try {
 }
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
-    "setcalltimer", "setcc", "setclanname", "setclantag", "start",
+    "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag", "start",
     "warstarttime", "warendtime"];
 
 exports.cc = {
@@ -51,12 +51,12 @@ exports.start = {
     request.post(CC_API, {
       form: {
         "REQUEST": "CREATE_WAR",
-        "cname": config && config.clanname ? config.clanname : "Unknown",
+        "cname": config.clanname ? config.clanname : "Unknown",
         "ename": enemyClanName,
         "size": warSize,
-        "timer": config && config.call_timer ? parseInt(config.call_timer) : 0,
-        "searchable": 1,
-        "clanid": config && config.clanid ? config.clanid : ""
+        "timer": config.call_timer ? parseInt(config.call_timer) : 0,
+        "searchable": config.disableArchive ? 0 : 1,
+        "clanid": config.clanid ? config.clanid : ""
       }
     }, function(error, response, body) {
       if (error) {
@@ -142,24 +142,40 @@ exports.attacked = {
   }
 };
 
-exports.setcalltimer = {
-    usage: "<# hours>",
-    description: "Sets the call timer for new wars",
-    process: function(bot, msg, suffix) {
-      var validTimers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 24];
-      if (!validTimers.includes(parseInt(suffix))) {
-        msg.channel
-          .sendMessage("Call timer must be set to one of the following values: "
-              + validTimers.join(", "));
-        return;
-      }
-      
-      var config = getConfig_(msg);
-      config.call_timer = suffix;
-      saveConfig_(msg.channel.id, config);
-      msg.channel.sendMessage("Call timer set to " + suffix);  
+exports.setarchive = {
+  usage: "<on|off>",
+  description: "Sets archive on/off for new wars",
+  process: function(bot, msg, suffix) {
+    if (suffix != 'on' && suffix != 'off') {
+      msg.channel.sendMessage("Please specify whether archiving should be on or off");
+      return;
     }
-  };
+    
+    var config = getConfig_(msg);
+    config.disableArchive = suffix == 'off';
+    saveConfig_(msg.channel.id, config);
+    msg.channel.sendMessage("Archiving set to " + suffix);
+  }
+}
+
+exports.setcalltimer = {
+  usage: "<# hours>",
+  description: "Sets the call timer for new wars",
+  process: function(bot, msg, suffix) {
+    var validTimers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 24];
+    if (!validTimers.includes(parseInt(suffix))) {
+      msg.channel
+        .sendMessage("Call timer must be set to one of the following values: "
+            + validTimers.join(", "));
+      return;
+    }
+    
+    var config = getConfig_(msg);
+    config.call_timer = suffix;
+    saveConfig_(msg.channel.id, config);
+    msg.channel.sendMessage("Call timer set to " + suffix);  
+  }
+};
 
 exports.setcc = {
   usage: "<war ID>",
@@ -346,7 +362,8 @@ exports.config = {
     var message = "Current war ID: " + config.cc_id + "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
-        "Clan tag: " + config.clantag;
+        "Clan tag: " + config.clantag + "\n" +
+        "Archive: " + (config.disableArchive ? "off" : "on");
     msg.channel.sendMessage(message);
   }
 };
