@@ -24,7 +24,8 @@ var commands = {
       msg.channel.sendMessage("Written by Jericho from Reddit Havoc. Based off of the GM bot written by Kannabis from Reddit Mu.\n" +
           "To add the bot to another server, visit https://discordapp.com/oauth2/authorize?&client_id=" +
           Auth.clientId + "&scope=bot&permissions=0\n" +
-          "Source code can be found at https://github.com/kevinpang/ccbot");
+          "Source code can be found at https://github.com/kevinpang/ccbot\n" +
+          "For discussions about the bot, please join our Discord server: https://discordapp.com/invite/jwpU9J6");
     }
   }
 };
