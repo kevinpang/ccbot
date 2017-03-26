@@ -366,10 +366,16 @@ exports.calls = {
   }
 };
 
-export.config = {
+exports.config = {
   description: "Returns bot configuration for current channel",
   process: function(bot, msg) {
-    
+    ensureChannel_(msg, function(channel) {
+      var message = "Current war ID: " + channel.cc_id + "\n" +
+          "Clan name: " + channel.clanname + "\n" +
+          "Call timer: " + channel.call_timer + "\n" +
+          "Clan tag: " + channel.clan_tag;
+      msg.channel.sendMessage(message);
+    });
   }
 };
 
@@ -417,7 +423,7 @@ var getChannel_ = function(msg, callback) {
     }
     
     if (reply == null) {
-      msg.channel.sendMessage("Channel not defined");
+      callback(null);
     } else {
       callback(JSON.parse(reply));  
     }
