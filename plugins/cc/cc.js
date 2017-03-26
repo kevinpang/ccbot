@@ -2,7 +2,8 @@ var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 exports.commands = ["attacked", "cc", "call", "calls", "delete",
-    "setcalltimer", "setcc", "setclanname", "setclantag", "start"];
+    "setcalltimer", "setcc", "setclanname", "setclantag", "warstart",
+    "warend", "start"];
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -182,6 +183,80 @@ exports.setclantag = {
     channel.clantag = suffix;
     saveChannel_(msg.channel.id, channel);
     msg.channel.sendMessage("Clan tag set to " + suffix);
+  }
+};
+
+exports.warstart = {
+  usage: "<##h##m>",
+  description: "Updates the current war's start time",
+  process: function(bot, msg, suffix) {
+    if (!hasCurrentWar_(msg)) {
+      return;
+    }
+    
+    var regex = /^([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Please specify a start time in ##h##m format");
+      return;
+    }
+    
+    var arr = regex.exec(suffix);
+    var hours = parseInt(arr[1]);
+    var minutes = parseInt(arr[2]);
+    var totalMinutes = hours * 60 + minutes;
+    
+    var channel = getChannel_(msg.channel.id);
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "UPDATE_WAR_TIME",
+        "warcode": channel.cc_id,
+        "start": "s",
+        "minutes": totalMinutes
+      }
+    }, function(error, response, body) {
+      if (error) {
+        msg.channel.sendMessage("Unable to update war start time " + error);
+      } else {
+        msg.channel.sendMessage("War start time updated to " + suffix);
+      }
+    })
+  }
+};
+
+exports.warend = {
+  usage: "<##h##m>",
+  description: "Updates the current war's end time",
+  process: function(bot, msg, suffix) {
+    if (!hasCurrentWar_(msg)) {
+      return;
+    }
+    
+    var regex = /^([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Please specify a start time in ##h##m format");
+      return;
+    }
+    
+    var arr = regex.exec(suffix);
+    var hours = parseInt(arr[1]);
+    var minutes = parseInt(arr[2]);
+    var totalMinutes = hours * 60 + minutes;
+    
+    var channel = getChannel_(msg.channel.id);
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "UPDATE_WAR_TIME",
+        "warcode": channel.cc_id,
+        "start": "e",
+        "minutes": totalMinutes
+      }
+    }, function(error, response, body) {
+      if (error) {
+        msg.channel.sendMessage("Unable to update war end time " + error);
+      } else {
+        msg.channel.sendMessage("War end time updated to " + suffix);
+      }
+    })
   }
 };
 
