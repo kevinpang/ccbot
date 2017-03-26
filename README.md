@@ -16,7 +16,7 @@ steps and you'll eventually be redirected to a page that contains your bot's cli
 
 To add your bot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=<ENTER_CLIENT_ID_HERE>&scope=bot&permissions=0 and add it to one of the servers you are logged into.
 
-#Setting up Heroku
+# Setting up Heroku
 Create an app on Heroku: https://devcenter.heroku.com/articles/getting-started-with-nodejs#introduction
 
 Install Heroku Redis on your app: https://elements.heroku.com/addons/heroku-redis 
@@ -30,7 +30,7 @@ Check your Heroku app's config vars by running `heroku config`. Copy the REDIS_U
 
 Run `heroku local web` to start the bot up locally.
 
-#Running on Heroku
+# Running on Heroku
 Set up your Heroku config vars, either by calling `heroku config:set <ENTER_CONFIG_VAR>=<ENTER VALUE>` or via the Heroku app's settings tab. This likely should be a different bot's credentials to avoid having your local and prod
 bots handling the same traffic.
 
