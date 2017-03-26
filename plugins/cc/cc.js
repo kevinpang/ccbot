@@ -1,5 +1,4 @@
 var request = require('request');
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 exports.commands = ["attacked", "cc", "call", "calls", "delete",
     "setcalltimer", "setcc", "setclanname", "setclantag", "start",
