@@ -28,9 +28,7 @@ node_modules
 
 # Config files
 auth.json
-config.json
-channels.json
-.env
+configs.json
 
 # Miscellaneous files
 .gitattributes
@@ -39,3 +37,5 @@ channels.json
 .settings*
 .sublime-project
 .tern-project
+*.pem
+*.ppk

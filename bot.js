@@ -1,3 +1,5 @@
+var COMMAND_PREFIX = '/';
+
 try {
 	var Discord = require("discord.js");
 } catch (e){
@@ -8,14 +10,20 @@ try {
 }
 console.log("Starting DiscordBot\nNode version: " + process.version + "\nDiscord.js version: " + Discord.version);
 
-var COMMAND_PREFIX = COMMAND_PREFIX || '/';
+try {
+  var Auth = require("./auth.json");
+} catch (e) {
+  console.log("Please create an auth.json file like auth.json.example " + e);
+  process.exit();
+}
 
 var commands = {	
   "about": {
     description: "About the bot",
     process: function(bot, msg) {
       msg.channel.sendMessage("Developed by Jericho from Reddit Havoc.\n" +
-          "To add the bot to another server, visit https://discordapp.com/oauth2/authorize?&client_id=295229962045358083&scope=bot&permissions=0\n" +
+          "To add the bot to another server, visit https://discordapp.com/oauth2/authorize?&client_id=" +
+          Auth.clientId + "&scope=bot&permissions=0\n" +
           "Source code can be found at https://github.com/kevinpang/ccbot");
     }
   }
@@ -140,14 +148,14 @@ exports.addCommand = function(commandName, commandObject){
   } catch(err){
     console.log(err);
   }
-}
+};
 
 exports.commandCount = function(){
   return Object.keys(commands).length;
-}
+};
 
-if (process.env.BOT_TOKEN) {
-  bot.login(process.env.BOT_TOKEN);
+if (Auth.botToken) {
+  bot.login(Auth.botToken);
 } else {
   console.log("No bot token specified");
   process.exit();
