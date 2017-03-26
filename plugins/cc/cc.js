@@ -45,8 +45,6 @@ exports.start = {
       return;
     }
 
-    // TODO: Validate input (war size is a number, enemy clan name is provided)
-
     ensureChannel_(msg, function(channel) {
       request.post(CC_API, {
         form: {
