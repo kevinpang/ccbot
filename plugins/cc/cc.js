@@ -331,7 +331,7 @@ exports.calls = {
         var message = "Active calls:\n";
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + " " + activeCall.playername;
+          message += "#" + activeCall.baseNumber + " " + activeCall.playername + "\n";
         }
         msg.channel.sendMessage(message);
       }
