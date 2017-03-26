@@ -57,8 +57,9 @@ var commands = {
   "about": {
     description: "About the bot",
     process: function(bot, msg) {
-      msg.channel.sendMessage("Developed by Jericho from Reddit Havoc. Source code " +
-          "can be found here: https://github.com/kevinpang/ccbot");
+      msg.channel.sendMessage("Developed by Jericho from Reddit Havoc.\n" +
+          "To add the bot to another server, visit https://discordapp.com/oauth2/authorize?&client_id=295229962045358083&scope=bot&permissions=0\n" +
+          "Source code can be found at https://github.com/kevinpang/ccbot");
     }
   }
 };

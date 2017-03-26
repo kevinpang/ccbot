@@ -3,13 +3,22 @@ A Clash Caller bot for Discord. Based off of <a href="https://github.com/buttton
 and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.  
 
 # Features:
-- !help => returns full list of available commands
-- !say text => echos text
-- !ping => bot says "pong"
+- /help => returns full list of available commands
+- /say text => echos text
+- /ping => bot says "pong"
+
 
 # Running
-Before first run you will need to create an `auth.json` file. A bot token or the email and password for a discord account are required. The other credentials are not required for the bot to run, but highly recommended as commands that depend on them will malfunction. See `auth.json.example`.
+Create a Discord bot by visiting https://discordapp.com/developers/applications/me and click on "New App". Follow the
+steps and you'll eventually be redirected to a page that contains your bot's client ID and token.
 
-To start the bot just run
+Create an `auth.json` file (see `auth.json.example` for an example of what this should look like) and plug in your
+bot's token.
+
+Then, to add your bot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=<ENTER_CLIENT_ID_HERE>&scope=bot&permissions=0 and add it to one of the servers you are logged into.
+
+Lastly, to run the bot just run the following two commands:
 `$ npm install`
 `$ npm start`
+
+Once that's done your bot should be up and running and hooked into your Discord server.
