@@ -24,22 +24,6 @@ console.log("Starting DiscordBot\nNode version: " + process.version + "\nDiscord
 var COMMAND_PREFIX = COMMAND_PREFIX || '/';
 
 var commands = {	
-  "ping": {
-    description: "responds pong, useful for checking if bot is alive",
-    process: function(bot, msg, suffix) {
-      msg.channel.sendMessage(msg.author + " pong!");
-      if(suffix){
-          msg.channel.sendMessage( "note that !ping takes no arguments!");
-      }
-    }
-  },
-  "say": {
-    usage: "<message>",
-    description: "bot says message",
-    process: function(bot, msg, suffix){
-      msg.channel.sendMessage(suffix);
-    }
-  },
   "about": {
     description: "About the bot",
     process: function(bot, msg) {
