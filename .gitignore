@@ -30,6 +30,7 @@ node_modules
 auth.json
 config.json
 channels.json
+.env
 
 # Miscellaneous files
 .gitattributes

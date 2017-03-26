@@ -10,32 +10,7 @@ try {
 }
 console.log("Starting DiscordBot\nNode version: " + process.version + "\nDiscord.js version: " + Discord.version);
 
-// Get authentication data
-try {
-	var AuthDetails = require("./auth.json");
-} catch (e){
-	console.log("Please create an auth.json like auth.json.example with a bot token or an email and password.\n"+e.stack);
-	process.exit();
-}
-
-// load config data
-var Config = {};
-try{
-	Config = require("./config.json");
-} catch(e){ // no config file, use defaults
-	Config.debug = false;
-	Config.commandPrefix = '!';
-	try{
-		if(fs.lstatSync("./config.json").isFile()){
-			console.log("WARNING: config.json found but we couldn't read it!\n" + e.stack);
-		}
-	} catch(e2){
-		fs.writeFile("./config.json",JSON.stringify(Config,null,2));
-	}
-}
-if(!Config.hasOwnProperty("commandPrefix")){
-	Config.commandPrefix = '!';
-}
+var COMMAND_PREFIX = COMMAND_PREFIX || '/';
 
 var commands = {	
   "ping": {
@@ -69,8 +44,8 @@ var bot = new Discord.Client();
 bot.on("ready", function () {
 	console.log("Logged in! Serving in " + bot.guilds.array().length + " servers");
 	require("./plugins.js").init();
-	console.log("type "+Config.commandPrefix+"help in Discord for a commands list.");
-	bot.user.setGame(Config.commandPrefix+"help | " + bot.guilds.array().length +" Servers"); 
+	console.log("type "+COMMAND_PREFIX+"help in Discord for a commands list.");
+	bot.user.setGame(COMMAND_PREFIX+"help | " + bot.guilds.array().length +" Servers"); 
 });
 
 bot.on("disconnected", function () {
@@ -80,15 +55,15 @@ bot.on("disconnected", function () {
 
 function checkMessageForCommand(msg, isEdit) {
 	// check if message is a command
-	if(msg.author.id != bot.user.id && (msg.content.startsWith(Config.commandPrefix))){
+	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
     console.log("treating " + msg.content + " from " + msg.author + " as command");
-		var cmdTxt = msg.content.split(" ")[0].substring(Config.commandPrefix.length);
+		var cmdTxt = msg.content.split(" ")[0].substring(COMMAND_PREFIX.length);
 		// add one for the ! and one for the space
-    var suffix = msg.content.substring(cmdTxt.length+Config.commandPrefix.length+1);
+    var suffix = msg.content.substring(cmdTxt.length+COMMAND_PREFIX.length+1);
     if(msg.isMentioned(bot.user)){
 			try {
 				cmdTxt = msg.content.split(" ")[1];
-				suffix = msg.content.substring(bot.user.mention().length+cmdTxt.length+Config.commandPrefix.length+1);
+				suffix = msg.content.substring(bot.user.mention().length+cmdTxt.length+COMMAND_PREFIX.length+1);
 			} catch(e){ // no command
 				msg.channel.sendMessage("Yes?");
 				return;
@@ -102,7 +77,7 @@ function checkMessageForCommand(msg, isEdit) {
 					var info = "";
 					for(var i=0;i<cmds.length;i++) {
 						var cmd = cmds[i];
-						info += "**"+Config.commandPrefix + cmd+"**";
+						info += "**"+COMMAND_PREFIX + cmd+"**";
 						var usage = commands[cmd].usage;
 						if(usage){
 							info += " " + usage;
@@ -123,7 +98,7 @@ function checkMessageForCommand(msg, isEdit) {
 						var sortedCommands = Object.keys(commands).sort();
 						for(var i in sortedCommands) {
 							var cmd = sortedCommands[i];
-							var info = "**"+Config.commandPrefix + cmd+"**";
+							var info = "**"+COMMAND_PREFIX + cmd+"**";
 							var usage = commands[cmd].usage;
 							if(usage){
 								info += " " + usage;
@@ -154,9 +129,6 @@ function checkMessageForCommand(msg, isEdit) {
 			} catch(e){
 			  console.log("command " + cmdTxt + " failed: " + e);
 			  var msgTxt = "command " + cmdTxt + " failed :(";
-				if(Config.debug){
-					 msgTxt += "\n" + e.stack;
-				}
 				msg.channel.sendMessage(msgTxt);
 			}
 		} else {
@@ -192,9 +164,9 @@ exports.commandCount = function(){
   return Object.keys(commands).length;
 }
 
-if(AuthDetails.bot_token){
-	console.log("Logging in with token");
-	bot.login(AuthDetails.bot_token);
+if (process.env.BOT_TOKEN) {
+  bot.login(process.env.BOT_TOKEN);
 } else {
-	console.log("No bot token specified");
+  console.log("No bot token specified");
+  process.exit();
 }
