@@ -354,7 +354,7 @@ exports.config = {
       var message = "Current war ID: " + channel.cc_id + "\n" +
           "Clan name: " + channel.clanname + "\n" +
           "Call timer: " + channel.call_timer + "\n" +
-          "Clan tag: " + channel.clan_tag;
+          "Clan tag: " + channel.clantag;
       msg.channel.sendMessage(message);
     });
   }
