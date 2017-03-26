@@ -26,4 +26,5 @@ steps and you'll eventually be redirected to a page that contains your bot's cli
 To add your bot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=ENTER_YOUR_CLIENT_ID_HERE&scope=bot&permissions=0 and add it to one of the servers you are logged into.
 
 # Running locally
-Run `npm start`
+Create an auth.json and configs.json file (see auth.json.example and configs.json.example for what these should look
+like) then run `npm start`.
