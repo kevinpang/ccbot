@@ -1,7 +1,7 @@
 var request = require('request');
 var client = require('redis').createClient(process.env.REDIS_URL);
 
-exports.commands = ["attacked", "cc", "call", "calls", "delete",
+exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
     "setcalltimer", "setcc", "setclanname", "setclantag", "start",
     "warstarttime", "warendtime"];
 
@@ -47,7 +47,7 @@ exports.start = {
 
     // TODO: Validate input (war size is a number, enemy clan name is provided)
 
-    getChannel_(msg, function(channel) {
+    ensureChannel_(msg, function(channel) {
       request.post(CC_API, {
         form: {
           "REQUEST": "CREATE_WAR",
@@ -64,11 +64,9 @@ exports.start = {
         } else {
           // Remove the "war/" from the start.
           var ccId = body.substring(4);
-          ensureChannel_(msg, function(channel) {
-            channel.cc_id = ccId;
-            saveChannel_(msg.channel.id, channel);
-            msg.channel.sendMessage(getCcUrl_(ccId));  
-          });
+          channel.cc_id = ccId;
+          saveChannel_(msg.channel.id, channel);
+          msg.channel.sendMessage(getCcUrl_(ccId));  
         }
       });
     });
@@ -368,6 +366,13 @@ exports.calls = {
   }
 };
 
+export.config = {
+  description: "Returns bot configuration for current channel",
+  process: function(bot, msg) {
+    
+  }
+};
+
 var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
@@ -411,7 +416,11 @@ var getChannel_ = function(msg, callback) {
       return;
     }
     
-    callback(JSON.parse(reply));
+    if (reply == null) {
+      msg.channel.sendMessage("Channel not defined");
+    } else {
+      callback(JSON.parse(reply));  
+    }
   });
 };
 
