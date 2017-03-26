@@ -41,16 +41,16 @@ exports.start = {
       return;
     }
 
-    ensureChannel_(msg, function(channel) {
+    ensureConfig_(msg, function(config) {
       request.post(CC_API, {
         form: {
           "REQUEST": "CREATE_WAR",
-          "cname": channel && channel.clanname ? channel.clanname : "Unknown",
+          "cname": config && config.clanname ? config.clanname : "Unknown",
           "ename": enemyClanName,
           "size": warSize,
-          "timer": channel && channel.call_timer ? parseInt(channel.call_timer) : 0,
+          "timer": config && config.call_timer ? parseInt(config.call_timer) : 0,
           "searchable": 1,
-          "clanid": channel && channel.clanid ? channel.clanid : ""
+          "clanid": config && config.clanid ? config.clanid : ""
         }
       }, function(error, response, body) {
         if (error) {
@@ -58,8 +58,8 @@ exports.start = {
         } else {
           // Remove the "war/" from the start.
           var ccId = body.substring(4);
-          channel.cc_id = ccId;
-          saveChannel_(msg.channel.id, channel);
+          config.cc_id = ccId;
+          saveConfig_(msg.channel.id, config);
           msg.channel.sendMessage(getCcUrl_(ccId));  
         }
       });
@@ -151,9 +151,9 @@ exports.setcalltimer = {
         return;
       }
       
-      ensureChannel_(msg, function(channel) {
-        channel.call_timer = suffix;
-        saveChannel_(msg.channel.id, channel);
+      ensureConfig_(msg, function(config) {
+        config.call_timer = suffix;
+        saveConfig_(msg.channel.id, config);
         msg.channel.sendMessage("Call timer set to " + suffix);  
       });
     }
@@ -163,9 +163,9 @@ exports.setcc = {
   usage: "<war ID>",
   description: "Sets the current war ID",
   process: function(bot, msg, suffix) {
-    ensureChannel_(msg, function(channel) {
-      channel.cc_id = suffix;
-      saveChannel_(msg.channel.id, channel);
+    ensureConfig_(msg, function(config) {
+      config.cc_id = suffix;
+      saveConfig_(msg.channel.id, config);
       msg.channel.sendMessage("Current war ID set to " + suffix);  
     });
   }
@@ -175,9 +175,9 @@ exports.setclanname = {
   usage: "<clan name>",
   description: "Sets the clan name for new wars",
   process: function(bot, msg, suffix) {
-    ensureChannel_(msg, function(channel) {
-      channel.clanname = suffix;
-      saveChannel_(msg.channel.id, channel);
+    ensureConfig_(msg, function(config) {
+      config.clanname = suffix;
+      saveConfig_(msg.channel.id, config);
       msg.channel.sendMessage("Clan name set to " + suffix);  
     });
   }
@@ -187,9 +187,9 @@ exports.setclantag = {
   usage: "<clan tag>",
   description: "Sets the clan tag for new wars",
   process: function(bot, msg, suffix) {
-    ensureChannel_(msg, function(channel) {
-      channel.clantag = suffix;
-      saveChannel_(msg.channel.id, channel);
+    ensureConfig_(msg, function(config) {
+      config.clantag = suffix;
+      saveConfig_(msg.channel.id, config);
       msg.channel.sendMessage("Clan tag set to " + suffix);  
     });
   }
@@ -299,9 +299,6 @@ exports["delete"] = {
                   + " for " + msg.author.username);
             }
           })
-        } else {
-          msg.channel.sendMessage("Unable to find call on " + enemyBaseNumber +
-              " for " + msg.author.username);
         }
       });
     });
@@ -350,11 +347,11 @@ exports.calls = {
 exports.config = {
   description: "Returns bot configuration for current channel",
   process: function(bot, msg) {
-    ensureChannel_(msg, function(channel) {
-      var message = "Current war ID: " + channel.cc_id + "\n" +
-          "Clan name: " + channel.clanname + "\n" +
-          "Call timer: " + channel.call_timer + "\n" +
-          "Clan tag: " + channel.clantag;
+    ensureConfig_(msg, function(config) {
+      var message = "Current war ID: " + config.cc_id + "\n" +
+          "Clan name: " + config.clanname + "\n" +
+          "Call timer: " + config.call_timer + "\n" +
+          "Clan tag: " + config.clantag;
       msg.channel.sendMessage(message);
     });
   }
@@ -375,12 +372,12 @@ var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
 };
 
 var getCcId_ = function(msg, callback) {
-  getChannel_(msg, function(channel) {
-    if (!channel || !channel.cc_id) {
+  getConfig_(msg, function(config) {
+    if (!config || !config.cc_id) {
       msg.channel.sendMessage("No current war.");
       return callback(null);
     }
-    return callback(channel.cc_id);
+    return callback(config.cc_id);
   });
 };
 
@@ -388,7 +385,7 @@ var getCcUrl_ = function(ccId) {
   return CC_WAR_URL + ccId;
 };
 
-var buildChannelFromMsg_ = function(msg) {
+var buildConfig_ = function(msg) {
   return {
     "channel_name": msg.channel.name,
     "guild_id": msg.member ? msg.member.guild.id : "",
@@ -396,10 +393,10 @@ var buildChannelFromMsg_ = function(msg) {
   };
 };
 
-var getChannel_ = function(msg, callback) {
+var getConfig_ = function(msg, callback) {
   client.get(msg.channel.id, function(err, reply) {
     if (err) {
-      msg.channel.sendMessage("Error getting channel " + err);
+      msg.channel.sendMessage("Error getting config " + err);
       return;
     }
     
@@ -411,17 +408,17 @@ var getChannel_ = function(msg, callback) {
   });
 };
 
-var ensureChannel_ = function(msg, callback) {
-  getChannel_(msg, function(channel) {
-    if (!channel) {
-      channel = buildChannelFromMsg_(msg);
+var ensureConfig_ = function(msg, callback) {
+  getConfig_(msg, function(config) {
+    if (!config) {
+      config = buildConfig_(msg);
     }
-    callback(channel);
+    callback(config);
   });
 };
 
-var saveChannel_ = function(id, channel) {
-  client.set(id, JSON.stringify(channel));
+var saveConfig_ = function(id, config) {
+  client.set(id, JSON.stringify(config));
 };
 
 var getUpdate_ = function(ccId, callback) {
