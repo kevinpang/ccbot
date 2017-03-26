@@ -1,12 +1,12 @@
 var request = require('request');
 var client = require('redis').createClient(process.env.REDIS_URL);
 
+var CC_API = "http://clashcaller.com/api.php";
+var CC_WAR_URL = "http://www.clashcaller.com/war/";
+
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
     "setcalltimer", "setcc", "setclanname", "setclantag", "start",
     "warstarttime", "warendtime"];
-
-var CC_API = "http://clashcaller.com/api.php";
-var CC_WAR_URL = "http://www.clashcaller.com/war/";
 
 exports.cc = {
   description: "Get Clash Caller link to current war",
