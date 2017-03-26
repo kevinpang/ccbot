@@ -35,3 +35,5 @@ Set up your Heroku config vars, either by calling `heroku config:set <ENTER_CONF
 bots handling the same traffic.
 
 To view production logs, run `heroku logs --tail`
+
+To update Heroku run `git push heroku master`
