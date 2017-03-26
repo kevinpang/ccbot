@@ -32,3 +32,6 @@ Set up a Heroku application: https://devcenter.heroku.com/articles/getting-start
 Then run `heroku open`
 
 To view logs, run `heroku logs --tail`
+
+#Update bot
+Commit changes to git, then run `git push heroku master`
