@@ -13,7 +13,7 @@ exports.cc = {
   process: function(bot, msg) {
     getCcId_(msg, function(ccId) {
       if (ccId) {
-        msg.channel.sendMessage(ccId);
+        msg.channel.sendMessage(getCcUrl_(ccId));
       }
     });
   }

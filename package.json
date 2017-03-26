@@ -7,7 +7,6 @@
   "author": "kpanghmc@gmail.com",
   "dependencies": {
     "discord.js": "11.0.x",
-    "express": "4.13.3",
     "npm": "",
     "redis": "2.x"
   },
