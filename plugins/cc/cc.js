@@ -1,8 +1,8 @@
 var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-exports.commands = ["attacked", "cc", "call", "calls", "delete", "setcc",
-    "setclanname", "setclantag", "start"];
+exports.commands = ["attacked", "cc", "call", "calls", "delete",
+    "setcalltimer", "setcc", "setclanname", "setclantag", "start"];
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -43,7 +43,7 @@ exports.start = {
         "cname": channel && channel.clanname ? channel.clanname : "",
         "ename": enemyClanName,
         "size": parseInt(warSize),
-        "timer": "3", // TODO: stop hardcoding this
+        "timer": channel && channel.call_timer ? parseInt(channel.call_timer) : 0,
         "searchable": 1, // TODO: stop hardcoding this
         "clanid": channel && channel.clanid ? channel.clanid : ""
       }
@@ -133,6 +133,25 @@ exports.attacked = {
   }
 };
 
+exports.setcalltimer = {
+    usage: "<# hours>",
+    description: "Sets the call timer for new wars",
+    process: function(bot, msg, suffix) {
+      var validTimers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 24];
+      if (!validTimers.includes(parseInt(suffix))) {
+        msg.channel
+          .sendMessage("Call timer must be set to one of the following values: "
+              + validTimers.join(", "));
+        return;
+      }
+      
+      var channel = ensureChannel_(msg);
+      channel.call_timer = suffix;
+      saveChannel_(msg.channel.id, channel);
+      msg.channel.sendMessage("Call timer set to " + suffix);
+    }
+  };
+
 exports.setcc = {
   usage: "<war ID>",
   description: "Sets the current war ID",
@@ -146,7 +165,7 @@ exports.setcc = {
 
 exports.setclanname = {
   usage: "<clan name>",
-  description: "Sets your clan name",
+  description: "Sets the clan name for new wars",
   process: function(bot, msg, suffix) {
     var channel = ensureChannel_(msg);
     channel.clanname = suffix;
@@ -157,7 +176,7 @@ exports.setclanname = {
 
 exports.setclantag = {
   usage: "<clan tag>",
-  description: "Sets your clan tag",
+  description: "Sets the clan tag for new wars",
   process: function(bot, msg, suffix) {
     var channel = ensureChannel_(msg);
     channel.clantag = suffix;
