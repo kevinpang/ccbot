@@ -1,7 +1,15 @@
 var request = require('request');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-exports.commands = [ "cc", "startwar", "call", "attacked", "set", "delete" ]
+exports.commands = [
+  "attacked",
+  "cc",
+  "call",
+  "calls",
+  "delete",
+  "set",
+  "start",
+];
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -25,7 +33,7 @@ exports.cc = {
   }
 }
 
-exports.startwar = {
+exports.start = {
   usage : "<war size> <enemy clan name>",
   description : "Starts a war on Clash Caller",
   process : function(bot, msg, suffix) {
@@ -88,7 +96,7 @@ exports.call = {
 }
 
 exports.attacked = {
-  usage : "<enemy base #> for <# of stars> stars",
+  usage : "<enemy base #> for <# of stars>",
   description : "Log an attack",
   process : function(bot, msg, suffix) {
     if (!hasCurrentWar_(msg)) {
@@ -125,10 +133,10 @@ exports.attacked = {
 }
 
 exports.set = {
-  usage : "cc <war ID>",
+  usage : "<war ID>",
   description : "Sets the current war ID",
   process : function(bot, msg, suffix) {
-    var ccId = suffix.substring(3);
+    var ccId = suffix;
     upsertChannel_(msg, ccId);
     var enemyBaseNumber = parseInt(suffix);
 
@@ -143,7 +151,7 @@ exports.set = {
       if (error) {
         msg.channel.sendMessage("Unable to set war ID " + error);
       } else {
-        msg.channel.sendMessage("Set war ID to " + ccId
+        msg.channel.sendMessage("Current war ID set to " + ccId
             + ". Clash Caller link: " + getCcUrl_(ccId));
       }
     })
@@ -151,8 +159,8 @@ exports.set = {
 }
 
 exports["delete"] = {
-  usage : "call <enemy base #>",
-  description: "Deletes your call",
+  usage : "<enemy base #>",
+  description: "Deletes your call on the specified base",
   process: function(bot, msg, suffix) {
     if (!hasCurrentWar_(msg)) {
       return;
@@ -180,7 +188,45 @@ exports["delete"] = {
       }
     });
   }
-}
+};
+
+exports.calls = {
+  description : "Gets all active calls",
+  process: function(bot, msg, suffix) {
+    if (!hasCurrentWar_(msg)) {
+      return;
+    }
+    
+    var channel = Channels[msg.channel.id];
+    getUpdate_(channel.cc_id, function(warStatus) {
+      var activeCalls = [];
+      for (var i = 0; i < warStatus.calls.length; i++) {
+        var call = warStatus.calls[i];
+        if (call.stars == 1) {
+          activeCalls.push({
+            "baseNumber": parseInt(call.posy) + 1,
+            "playername": call.playername
+          });
+        }
+      }
+      
+      activeCalls.sort(function(a, b) {
+        return a.baseNumber - b.baseNumber;
+      });
+      
+      if (activeCalls.length == 0) {
+        msg.channel.sendMessage("No active calls");
+      } else {
+        var message = "Active calls:\n";
+        for (var i = 0; i < activeCalls.length; i++) {
+          var activeCall = activeCalls[i];
+          message += "#" + activeCall.baseNumber + " " + activeCall.playername;
+        }
+        msg.channel.sendMessage(message);
+      }
+    });
+  }
+};
 
 var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {

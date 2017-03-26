@@ -96,7 +96,7 @@ function checkMessageForCommand(msg, isEdit) {
 					var info = "";
 					for(var i=0;i<cmds.length;i++) {
 						var cmd = cmds[i];
-						info += ""+Config.commandPrefix + cmd+"";
+						info += "**"+Config.commandPrefix + cmd+"**";
 						var usage = commands[cmd].usage;
 						if(usage){
 							info += " " + usage;
@@ -112,12 +112,12 @@ function checkMessageForCommand(msg, isEdit) {
 					}
 					msg.channel.sendMessage(info);
 				} else {
-					msg.author.sendMessage("**Available Commands:**").then(function(){
+					msg.channel.sendMessage("**Available Commands:**").then(function(){
 						var batch = "";
 						var sortedCommands = Object.keys(commands).sort();
 						for(var i in sortedCommands) {
 							var cmd = sortedCommands[i];
-							var info = ""+Config.commandPrefix + cmd+"";
+							var info = "**"+Config.commandPrefix + cmd+"**";
 							var usage = commands[cmd].usage;
 							if(usage){
 								info += " " + usage;
@@ -131,14 +131,14 @@ function checkMessageForCommand(msg, isEdit) {
 							}
 							var newBatch = batch + "\n" + info;
 							if(newBatch.length > (1024 - 8)){ // limit message length
-								msg.author.sendMessage(batch);
+								msg.channel.sendMessage(batch);
 								batch = info;
 							} else {
 								batch = newBatch
 							}
 						}
 						if(batch.length > 0){
-							msg.author.sendMessage(batch);
+							msg.channel.sendMessage(batch);
 						}
 				});
 			}
