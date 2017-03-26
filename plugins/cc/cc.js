@@ -11,14 +11,10 @@ var CC_WAR_URL = "http://www.clashcaller.com/war/";
 exports.cc = {
   description: "Get Clash Caller link to current war",
   process: function(bot, msg) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
-        return;
+    getCcId_(msg, function(ccId) {
+      if (ccId) {
+        msg.channel.sendMessage(ccId);
       }
-
-      getChannel_(msg, function(channel) {
-        msg.channel.sendMessage(getCcUrl_(channel.cc_id));
-      });      
     });
   }
 };
@@ -75,30 +71,27 @@ exports.call = {
   usage: "<enemy base #>",
   description: "Call a base",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
 
-      getChannel_(msg, function(channel) {
-        var enemyBaseNumber = parseInt(suffix);
-  
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "APPEND_CALL",
-            "warcode": channel.cc_id,
-            "posy": enemyBaseNumber - 1,
-            "value": msg.author.username
-          }
-        }, function(error, response, body) {
-          if (error) {
-            msg.channel.sendMessage("Unable to call base " + error);
-          } else {
-            msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
-                + msg.author.username);
-          }
-        });      
-      });
+      var enemyBaseNumber = parseInt(suffix);
+      request.post(CC_API, {
+        form: {
+          "REQUEST": "APPEND_CALL",
+          "warcode": ccId,
+          "posy": enemyBaseNumber - 1,
+          "value": msg.author.username
+        }
+      }, function(error, response, body) {
+        if (error) {
+          msg.channel.sendMessage("Unable to call base " + error);
+        } else {
+          msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
+              + msg.author.username);
+        }
+      });      
     });
   }
 };
@@ -107,42 +100,40 @@ exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
   description: "Log an attack",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
     
-      getChannel_(msg, function(channel) {
-        var args = suffix.split(' ');
-        var enemyBaseNumber = parseInt(args[0]);
-        var stars = parseInt(args[2]);
-        
-        if (stars < 0 || stars > 3) {
-          msg.channel.sendMessage("Number of stars must be between 0-3");
-          return;
+      var args = suffix.split(' ');
+      var enemyBaseNumber = parseInt(args[0]);
+      var stars = parseInt(args[2]);
+      
+      if (stars < 0 || stars > 3) {
+        msg.channel.sendMessage("Number of stars must be between 0-3");
+        return;
+      }
+
+      getUpdate_(ccId, function(warStatus) {
+        var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
+        if (posx) {
+          request.post(CC_API, {
+            form: {
+              "REQUEST": "UPDATE_STARS",
+              "warcode": ccId,
+              "posx": posx,
+              "posy": enemyBaseNumber - 1,
+              "value": stars + 2
+            }
+          }, function(error, response, body) {
+            if (error) {
+              msg.channel.sendMessage("Unable to record stars " + error);
+            } else {
+              msg.channel.sendMessage("Recorded " + stars + " star(s) for "
+                  + msg.author.username + " on base " + enemyBaseNumber);
+            }
+          });
         }
-  
-        getUpdate_(channel.cc_id, function(warStatus) {
-          var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
-          if (posx) {
-            request.post(CC_API, {
-              form: {
-                "REQUEST": "UPDATE_STARS",
-                "warcode": channel.cc_id,
-                "posx": posx,
-                "posy": enemyBaseNumber - 1,
-                "value": stars + 2
-              }
-            }, function(error, response, body) {
-              if (error) {
-                msg.channel.sendMessage("Unable to record stars " + error);
-              } else {
-                msg.channel.sendMessage("Recorded " + stars + " star(s) for "
-                    + msg.author.username + " on base " + enemyBaseNumber);
-              }
-            });
-          }
-        });
       });
     });
   }
@@ -208,8 +199,8 @@ exports.warstarttime = {
   usage: "<##h##m>",
   description: "Updates the current war's start time",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
     
@@ -224,21 +215,19 @@ exports.warstarttime = {
       var minutes = parseInt(arr[2]);
       var totalMinutes = hours * 60 + minutes;
       
-      getChannel_(msg, function(channel) {
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "UPDATE_WAR_TIME",
-            "warcode": channel.cc_id,
-            "start": "s",
-            "minutes": totalMinutes
-          }
-        }, function(error, response, body) {
-          if (error) {
-            msg.channel.sendMessage("Unable to update war start time " + error);
-          } else {
-            msg.channel.sendMessage("War start time updated to " + suffix);
-          }
-        });
+      request.post(CC_API, {
+        form: {
+          "REQUEST": "UPDATE_WAR_TIME",
+          "warcode": ccId,
+          "start": "s",
+          "minutes": totalMinutes
+        }
+      }, function(error, response, body) {
+        if (error) {
+          msg.channel.sendMessage("Unable to update war start time " + error);
+        } else {
+          msg.channel.sendMessage("War start time updated to " + suffix);
+        }
       });
     });
   }
@@ -248,8 +237,8 @@ exports.warendtime = {
   usage: "<##h##m>",
   description: "Updates the current war's end time",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
     
@@ -264,22 +253,20 @@ exports.warendtime = {
       var minutes = parseInt(arr[2]);
       var totalMinutes = hours * 60 + minutes;
       
-      getChannel_(msg, function(channel) {
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "UPDATE_WAR_TIME",
-            "warcode": channel.cc_id,
-            "start": "e",
-            "minutes": totalMinutes
-          }
-        }, function(error, response, body) {
-          if (error) {
-            msg.channel.sendMessage("Unable to update war end time " + error);
-          } else {
-            msg.channel.sendMessage("War end time updated to " + suffix);
-          }
-        })  
-      });
+      request.post(CC_API, {
+        form: {
+          "REQUEST": "UPDATE_WAR_TIME",
+          "warcode": ccId,
+          "start": "e",
+          "minutes": totalMinutes
+        }
+      }, function(error, response, body) {
+        if (error) {
+          msg.channel.sendMessage("Unable to update war end time " + error);
+        } else {
+          msg.channel.sendMessage("War end time updated to " + suffix);
+        }
+      })  
     });
   }
 };
@@ -288,36 +275,34 @@ exports["delete"] = {
   usage: "<enemy base #>",
   description: "Deletes your call on the specified base",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
     
-      getChannel_(msg, function(channel) {
-        var enemyBaseNumber = parseInt(suffix);
-        getUpdate_(channel.cc_id, function(warStatus) {
-          var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
-          if (posx) {
-            request.post(CC_API, {
-              form: {
-                "REQUEST": "DELETE_CALL",
-                "warcode": channel.cc_id,
-                "posx": posx,
-                "posy": enemyBaseNumber - 1
-              }
-            }, function(error, response, body) {
-              if (error) {
-                msg.channel.sendMessage("Unable to delete call " + error);
-              } else {
-                msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
-                    + " for " + msg.author.username);
-              }
-            })
-          } else {
-            msg.channel.sendMessage("Unable to find call on " + enemyBaseNumber +
-                " for " + msg.author.username);
-          }
-        });
+      var enemyBaseNumber = parseInt(suffix);
+      getUpdate_(ccId, function(warStatus) {
+        var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
+        if (posx) {
+          request.post(CC_API, {
+            form: {
+              "REQUEST": "DELETE_CALL",
+              "warcode": ccId,
+              "posx": posx,
+              "posy": enemyBaseNumber - 1
+            }
+          }, function(error, response, body) {
+            if (error) {
+              msg.channel.sendMessage("Unable to delete call " + error);
+            } else {
+              msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
+                  + " for " + msg.author.username);
+            }
+          })
+        } else {
+          msg.channel.sendMessage("Unable to find call on " + enemyBaseNumber +
+              " for " + msg.author.username);
+        }
       });
     });
   }
@@ -326,39 +311,37 @@ exports["delete"] = {
 exports.calls = {
   description: "Gets all active calls",
   process: function(bot, msg, suffix) {
-    hasCurrentWar_(msg, function(hasCurrentWar) {
-      if (!hasCurrentWar) {
+    getCcId_(msg, function(ccId) {
+      if (!ccId) {
         return;
       }
     
-      getChannel_(msg, function(channel) {
-        getUpdate_(channel.cc_id, function(warStatus) {
-          var activeCalls = [];
-          for (var i = 0; i < warStatus.calls.length; i++) {
-            var call = warStatus.calls[i];
-            if (call.stars == 1) {
-              activeCalls.push({
-                "baseNumber": parseInt(call.posy) + 1,
-                "playername": call.playername
-              });
-            }
+      getUpdate_(ccId, function(warStatus) {
+        var activeCalls = [];
+        for (var i = 0; i < warStatus.calls.length; i++) {
+          var call = warStatus.calls[i];
+          if (call.stars == 1) {
+            activeCalls.push({
+              "baseNumber": parseInt(call.posy) + 1,
+              "playername": call.playername
+            });
           }
-  
-          activeCalls.sort(function(a, b) {
-            return a.baseNumber - b.baseNumber;
-          });
-  
-          if (activeCalls.length == 0) {
-            msg.channel.sendMessage("No active calls");
-          } else {
-            var message = "Active calls:\n";
-            for (var i = 0; i < activeCalls.length; i++) {
-              var activeCall = activeCalls[i];
-              message += "#" + activeCall.baseNumber + " " + activeCall.playername;
-            }
-            msg.channel.sendMessage(message);
-          }
+        }
+
+        activeCalls.sort(function(a, b) {
+          return a.baseNumber - b.baseNumber;
         });
+
+        if (activeCalls.length == 0) {
+          msg.channel.sendMessage("No active calls");
+        } else {
+          var message = "Active calls:\n";
+          for (var i = 0; i < activeCalls.length; i++) {
+            var activeCall = activeCalls[i];
+            message += "#" + activeCall.baseNumber + " " + activeCall.playername;
+          }
+          msg.channel.sendMessage(message);
+        }
       });
     });
   }
@@ -391,13 +374,13 @@ var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
   return null;
 };
 
-var hasCurrentWar_ = function(msg, callback) {
+var getCcId_ = function(msg, callback) {
   getChannel_(msg, function(channel) {
     if (!channel || !channel.cc_id) {
       msg.channel.sendMessage("No current war.");
-      return callback(false);
+      return callback(null);
     }
-    return callback(true);
+    return callback(channel.cc_id);
   });
 };
 
