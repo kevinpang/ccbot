@@ -357,6 +357,9 @@ exports.config = {
   }
 };
 
+/**
+ * Returns the X position of a user's call or null if call is not found.
+ */
 var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
@@ -371,6 +374,9 @@ var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
   return null;
 };
 
+/**
+ * Gets the current war's war ID or null if not found.
+ */
 var getCcId_ = function(msg, callback) {
   getConfig_(msg, function(config) {
     if (!config.cc_id) {
@@ -381,10 +387,16 @@ var getCcId_ = function(msg, callback) {
   });
 };
 
+/**
+ * Returns the Clash Caller url for the specified war ID.
+ */
 var getCcUrl_ = function(ccId) {
   return CC_WAR_URL + ccId;
 };
 
+/**
+ * Returns a config from Redis or a default config if not found.
+ */
 var getConfig_ = function(msg, callback) {
   client.get(msg.channel.id, function(err, reply) {
     if (err) {
@@ -405,10 +417,16 @@ var getConfig_ = function(msg, callback) {
   });
 };
 
+/**
+ * Saves a config to Redis.
+ */
 var saveConfig_ = function(id, config) {
   client.set(id, JSON.stringify(config));
 };
 
+/**
+ * Gets the full war details for the specified war ID.
+ */
 var getUpdate_ = function(ccId, callback) {
   request.post(CC_API, {
     form: {
