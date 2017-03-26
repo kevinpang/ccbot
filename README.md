@@ -44,3 +44,5 @@ bots handling the same traffic.
 To view production logs, run `heroku logs --tail`
 
 To update Heroku run `git push heroku master`
+
+If you're using the free dynos, you can view the amount of free dyno hours remaining by running `heroku ps -a <app name>`
