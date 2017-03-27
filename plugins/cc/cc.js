@@ -25,9 +25,9 @@ exports.attacked = {
     }
   
     var args = suffix.split(' ');
-    var enemyBaseNumber = parseInt(args[0]);
+    var baseNumber = parseInt(args[0]);
     var stars = parseInt(args[2]);
-    logAttack_(msg, ccId, getAuthorName_(msg), enemyBaseNumber, stars);
+    logAttack_(msg, ccId, getAuthorName_(msg), baseNumber, stars);
   }
 };
 
@@ -59,7 +59,7 @@ exports.call = {
     }
     
     var arr = regex.exec(suffix);
-    var enemyBaseNumber = parseInt(arr[1]);
+    var baseNumber = parseInt(arr[1]);
     var playerName = getAuthorName_(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
@@ -67,7 +67,7 @@ exports.call = {
     
     getWarStatus_(ccId, msg, function(warStatus) {
       var size = parseInt(warStatus.general.size);
-      if (enemyBaseNumber > size) {
+      if (baseNumber > size) {
         msg.channel.sendMessage("Invalid base number. War size is " + size + ".");
         return;
       }
@@ -81,7 +81,7 @@ exports.call = {
       var message = "";
       
       // Print out existing note on this base
-      var note = getNote_(enemyBaseNumber, warStatus);
+      var note = getNote_(baseNumber, warStatus);
       if (note) {
         message += "Note: " + note + "\n";
       }
@@ -92,7 +92,7 @@ exports.call = {
       if (activeCalls.length > 0) {
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
-          if (activeCall.baseNumber == enemyBaseNumber) {
+          if (activeCall.baseNumber == baseNumber) {
             activeCallsOnBase.push(activeCall);
           }
         }
@@ -111,7 +111,7 @@ exports.call = {
         form: {
           "REQUEST": "APPEND_CALL",
           "warcode": ccId,
-          "posy": enemyBaseNumber - 1,
+          "posy": baseNumber - 1,
           "value": playerName
         }
       }, function(error, response, body) {
@@ -119,7 +119,7 @@ exports.call = {
           console.log("Unable to call base " + error);
           message += "Unable to call base " + error;
         } else {
-          message += "Called base " + enemyBaseNumber + " for " + playerName;
+          message += "Called base " + baseNumber + " for " + playerName;
         }
         
         msg.channel.sendMessage(message);
@@ -195,28 +195,28 @@ exports["delete"] = {
     }
     
     var arr = regex.exec(suffix);
-    var enemyBaseNumber = parseInt(arr[1]);
+    var baseNumber = parseInt(arr[1]);
     var playerName = getAuthorName_(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
     }
   
     getWarStatus_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, playerName, enemyBaseNumber);
+      var posx = findCallPosX_(warStatus, msg, playerName, baseNumber);
       if (posx) {
         request.post(CC_API, {
           form: {
             "REQUEST": "DELETE_CALL",
             "warcode": ccId,
             "posx": posx,
-            "posy": enemyBaseNumber - 1
+            "posy": baseNumber - 1
           }
         }, function(error, response, body) {
           if (error) {
             console.log("Unable to delete call " + error);
             msg.channel.sendMessage("Unable to delete call " + error);
           } else {
-            msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
+            msg.channel.sendMessage("Deleted call on " + baseNumber
                 + " for " + playerName);
           }
         })
@@ -242,9 +242,9 @@ exports.log = {
     
     var arr = regex.exec(suffix);
     var stars = parseInt(arr[1]);
-    var enemyBaseNumber = parseInt(arr[2]);
+    var baseNumber = parseInt(arr[2]);
     var playerName = getPlayerName_(msg, arr[3]);
-    logAttack_(msg, ccId, playerName, enemyBaseNumber, stars);
+    logAttack_(msg, ccId, playerName, baseNumber, stars);
   }
 };
 
@@ -264,14 +264,14 @@ exports.note = {
     }
     
     var arr = regex.exec(suffix);
-    var enemyBaseNumber = parseInt(arr[1]);
+    var baseNumber = parseInt(arr[1]);
     var note = arr[2];
     
     request.post(CC_API, {
       form: {
         "REQUEST": "UPDATE_TARGET_NOTE",
         "warcode": ccId,
-        "posy": enemyBaseNumber - 1,
+        "posy": baseNumber - 1,
         "value": note
       }
     }, function(error, response, body) {
@@ -279,7 +279,7 @@ exports.note = {
         console.log("Error updating note " + error);
         msg.channel.sendMessage("Error updating note " + error);
       } else {
-        msg.channel.sendMessage("Updated note on base #" + enemyBaseNumber);  
+        msg.channel.sendMessage("Updated note on base #" + baseNumber);  
       }
     });
   }
@@ -630,16 +630,16 @@ exports.wartimer = {
 /**
  * Returns the X position of a user's call or null if call is not found.
  */
-var findCallPosX_ = function(warStatus, msg, playerName, enemyBaseNumber) {
+var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
-    if (call.posy == enemyBaseNumber - 1
+    if (call.posy == baseNumber - 1
         && call.playername == playerName) {
       return call.posx;
       break;
     }
   }
-  msg.channel.sendMessage("Unable to find call on base " + enemyBaseNumber
+  msg.channel.sendMessage("Unable to find call on base " + baseNumber
       + " for " + playerName);
   return null;
 };
@@ -960,21 +960,21 @@ var getOpenBases_ = function(warStatus) {
 /**
  * Logs an attack.
  */
-var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
+var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
   if (stars < 0 || stars > 3) {
     msg.channel.sendMessage("Number of stars must be between 0-3");
     return;
   }
 
   getWarStatus_(ccId, msg, function(warStatus) {
-    var posx = findCallPosX_(warStatus, msg, playerName, enemyBaseNumber);
+    var posx = findCallPosX_(warStatus, msg, playerName, baseNumber);
     if (posx) {
       request.post(CC_API, {
         form: {
           "REQUEST": "UPDATE_STARS",
           "warcode": ccId,
           "posx": posx,
-          "posy": enemyBaseNumber - 1,
+          "posy": baseNumber - 1,
           "value": stars + 2
         }
       }, function(error, response, body) {
@@ -984,7 +984,7 @@ var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
         } else {
           var message = "Recorded " + stars + " star" + 
               (stars == 1 ? "" : "s") + " for " + playerName + 
-              " on base " + enemyBaseNumber;
+              " on base " + baseNumber;
           var config = getConfig_(msg);
           if (stars == 3 && config.congrats) {
             message += "\n" + config.congrats;
