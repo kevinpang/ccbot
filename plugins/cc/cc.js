@@ -170,16 +170,30 @@ exports.config = {
 
 exports["delete"] = {
   usage: "<enemy base #>",
-  description: "Deletes your call on the specified base",
+  description: "Deletes your call on the specified base\n" +
+      "**/delete** <enemy base #> for <playername>\n" +
+      "\tDelete a base for another player.",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
+    
+    var regex = /^(\d+)(\sfor\s(.*))?$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format for /delete");
+      return;
+    }
+    
+    var arr = regex.exec(suffix);
+    var enemyBaseNumber = parseInt(arr[1]);
+    var playerName = msg.author.username;
+    if (arr[3]) {
+      playerName = getPlayerName_(msg, arr[3]);
+    }
   
-    var enemyBaseNumber = parseInt(suffix);
     getWarStatus_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, msg.author.username, enemyBaseNumber);
+      var posx = findCallPosX_(warStatus, msg, playerName, enemyBaseNumber);
       if (posx) {
         request.post(CC_API, {
           form: {
@@ -193,7 +207,7 @@ exports["delete"] = {
             msg.channel.sendMessage("Unable to delete call " + error);
           } else {
             msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
-                + " for " + msg.author.username);
+                + " for " + playerName);
           }
         })
       }
