@@ -500,7 +500,7 @@ var getWarStatus_ = function(ccId, msg, callback) {
       try {
         callback(JSON.parse(body));  
       } catch (e) {
-        console.log("Error in getUpdate_ callback. " + e + ". War status: " + body);
+        console.log("Error in getWarStatus_ callback. " + e + ". War status: " + body);
         msg.channel.sendMessage("Error getting war status for war ID: " + ccId);
       }
     }
@@ -706,7 +706,7 @@ var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
     return;
   }
 
-  getUpdate_(ccId, msg, function(warStatus) {
+  getWarStatus_(ccId, msg, function(warStatus) {
     var posx = findCallPosX_(warStatus, msg, playerName, enemyBaseNumber);
     if (posx) {
       request.post(CC_API, {
