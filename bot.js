@@ -61,7 +61,7 @@ function checkMessageForCommand(msg, isEdit) {
   
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
-    console.log("treating " + msg.content + " from " + msg.author.username + 
+    console.log("treating " + msg.content + " from " + msg.member.nickname + 
         " in " + (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
         msg.channel.name + " as command");
 		var cmdTxt = msg.content.split(" ")[0].substring(COMMAND_PREFIX.length);
