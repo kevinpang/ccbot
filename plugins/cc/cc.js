@@ -171,7 +171,8 @@ exports.config = {
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
-        "Archive: " + (config.disableArchive ? "off" : "on");
+        "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
+        "Congrats message: " + config.congrats;
     msg.channel.sendMessage(message);
   }
 };
