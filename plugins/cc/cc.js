@@ -13,7 +13,7 @@ try {
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
     "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
-    "start", "wartimer"];
+    "start", "status", "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -246,11 +246,13 @@ exports.open = {
         message += "Open bases:\n";
         for (var i = 0; i < openBases.length; i++) {
           if (openBases[i].open) {
-            message += (i + 1);
-            if (openBases[i].stars > 0) {
-              message += " (";
+            message += "#" + (i + 1) + " ";
+            if (openBases[i].stars == 0) {
+              message += "not attacked";
+            } else {
+              message += "(";
               for (var j = 0; j < openBases[i].stars; j++) {
-                message += "\*";
+                message += "\\*";
               }
               message += ")";
             }
@@ -376,6 +378,40 @@ exports.start = {
         saveConfig_(msg.channel.id, config);
         msg.channel.sendMessage(getCcUrl_(ccId));  
       }
+    });
+  }
+};
+
+exports.status = {
+  description: "Returns the current war status",
+  process: function(bot, msg) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+    
+    getWarStatus_(ccId, msg, function(warStatus) {
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n";
+      
+      var enemyBases = getEnemyBases_(warStatus);
+      for (var i = 0; i < enemyBases.length; i++) {
+        message += "#" + (i + 1) + " ";
+        
+        var enemyBase = enemyBases[i];
+        if (enemyBase.numAttacks == 0) {
+          message += "not attacked\n";
+        } else {
+          message += "(" + enemyBase.numThreeStars + "/" + enemyBase.numAttacks + ") " +
+          		enemyBase.bestAttack.playerName + " (";
+          for (var j = 0; j < enemyBase.bestAttack.stars; j++) {
+            message += "\\*";
+          }
+          message += ")\n";
+        }
+      }
+      
+      msg.channel.sendMessage(message);
     });
   }
 };
@@ -623,6 +659,41 @@ var formatTimeRemaining_ = function(timeRemaining) {
   }
   var hours = Math.floor(timeRemaining);
   return (hours > 0 ? hours + "h" : "") + minutes + "m";
+};
+
+/**
+ * Returns an array of enemy base statuses for the given war.
+ */
+var getEnemyBases_ = function(warStatus) {
+  var enemyBases = [];
+  for (var i = 0; i < parseInt(warStatus.general.size); i++) {
+    enemyBases[i] = {
+      "numAttacks": 0,
+      "bestAttack": null,
+      "numThreeStars": 0
+    };
+  }
+  
+  for (var i = 0; i < warStatus.calls.length; i++) {
+    var call = warStatus.calls[i];
+    var stars = parseInt(call.stars);
+    
+    if (stars != 1) {
+      enemyBases[call.posy].numAttacks += 1;
+    }
+    if (stars == 5) {
+      enemyBases[call.posy].numThreeStars += 1;
+    }
+    if (enemyBases[call.posy].bestAttack == null ||
+        enemyBases[call.posy].bestAttack.stars < stars) {
+      enemyBases[call.posy].bestAttack = {
+        "playerName": call.playername,
+        "stars": stars - 2
+      };
+    }
+  }
+  
+  return enemyBases;
 };
 
 /**
