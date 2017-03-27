@@ -54,7 +54,7 @@ exports.start = {
         "cname": config.clanname ? config.clanname : "Unknown",
         "ename": enemyClanName,
         "size": warSize,
-        "timer": config.call_timer ? parseInt(config.call_timer) : 0,
+        "timer": convertCallTimer_(config.call_timer),
         "searchable": config.disableArchive ? 0 : 1,
         "clanid": config.clanid ? config.clanid : ""
       }
@@ -160,10 +160,11 @@ exports.setarchive = {
 
 exports.setcalltimer = {
   usage: "<# hours>",
-  description: "Sets the call timer for new wars",
+  description: "Sets the call timer for new wars (use 1/2 or 1/4 for flex timers)",
   process: function(bot, msg, suffix) {
-    var validTimers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 24];
-    if (!validTimers.includes(parseInt(suffix))) {
+    var validTimers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+        "12", "24", "1/2", "1/4"];
+    if (!validTimers.includes(suffix)) {
       msg.channel
         .sendMessage("Call timer must be set to one of the following values: "
             + validTimers.join(", "));
@@ -173,7 +174,7 @@ exports.setcalltimer = {
     var config = getConfig_(msg);
     config.call_timer = suffix;
     saveConfig_(msg.channel.id, config);
-    msg.channel.sendMessage("Call timer set to " + suffix);  
+    msg.channel.sendMessage("Call timer set to " + suffix);
   }
 };
 
@@ -414,4 +415,22 @@ var getUpdate_ = function(ccId, callback) {
       callback(JSON.parse(body));
     }
   });
+};
+
+/**
+ * Converts the call_timer stored in the config to a format the Clash Caller
+ * API is expecting when starting a war.
+ */
+var convertCallTimer_ = function(callTimer) {
+  if (!callTimer) {
+    return 0;
+  }
+  
+  if (callTimer == "1/2") {
+    return -2;
+  } else if (callTimer == "1/4") {
+    return -4;
+  } else {
+    return parseInt(callTimer);
+  }
 };
