@@ -87,7 +87,7 @@ exports.calls = {
       return;
     }
   
-    getUpdate_(ccId, msg, function(warStatus) {
+    getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
       if (warTimeRemainingInfo.warOver) {
         msg.channel.sendMessage(warTimeRemainingInfo.message);
@@ -136,7 +136,7 @@ exports["delete"] = {
     }
   
     var enemyBaseNumber = parseInt(suffix);
-    getUpdate_(ccId, msg, function(warStatus) {
+    getWarStatus_(ccId, msg, function(warStatus) {
       var posx = findCallPosX_(warStatus, msg, msg.author.username, enemyBaseNumber);
       if (posx) {
         request.post(CC_API, {
@@ -190,7 +190,7 @@ exports.open = {
       return;
     }
   
-    getUpdate_(ccId, msg, function(warStatus) {
+    getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
       if (warTimeRemainingInfo.warOver) {
         msg.channel.sendMessage(warTimeRemainingInfo.message);
@@ -444,9 +444,9 @@ var saveConfig_ = function(id, config) {
 };
 
 /**
- * Gets the full war details for the specified war ID.
+ * Gets the war status from Clash Caller for the specified war.
  */
-var getUpdate_ = function(ccId, msg, callback) {
+var getWarStatus_ = function(ccId, msg, callback) {
   request.post(CC_API, {
     form: {
       "REQUEST": "GET_UPDATE",
