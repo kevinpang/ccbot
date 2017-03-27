@@ -124,7 +124,7 @@ exports.attacked = {
       return;
     }
 
-    getUpdate_(ccId, function(warStatus) {
+    getUpdate_(ccId, msg, function(warStatus) {
       var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
       if (posx) {
         request.post(CC_API, {
@@ -156,7 +156,7 @@ exports.open = {
       return;
     }
   
-    getUpdate_(ccId, function(warStatus) {
+    getUpdate_(ccId, msg, function(warStatus) {
       var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
       if (warTimeRemainingInfo.warOver) {
         msg.channel.sendMessage(warTimeRemainingInfo.message);
@@ -299,7 +299,7 @@ exports["delete"] = {
     }
   
     var enemyBaseNumber = parseInt(suffix);
-    getUpdate_(ccId, function(warStatus) {
+    getUpdate_(ccId, msg, function(warStatus) {
       var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
       if (posx) {
         request.post(CC_API, {
@@ -330,7 +330,7 @@ exports.calls = {
       return;
     }
   
-    getUpdate_(ccId, function(warStatus) {
+    getUpdate_(ccId, msg, function(warStatus) {
       var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
       if (warTimeRemainingInfo.warOver) {
         msg.channel.sendMessage(warTimeRemainingInfo.message);
@@ -437,7 +437,7 @@ var saveConfig_ = function(id, config) {
 /**
  * Gets the full war details for the specified war ID.
  */
-var getUpdate_ = function(ccId, callback) {
+var getUpdate_ = function(ccId, msg, callback) {
   request.post(CC_API, {
     form: {
       "REQUEST": "GET_UPDATE",
@@ -448,7 +448,12 @@ var getUpdate_ = function(ccId, callback) {
       msg.channel.sendMessage("Error retrieving data from Clash Caller: "
           + error);
     } else {
-      callback(JSON.parse(body));
+      try {
+        callback(JSON.parse(body));  
+      } catch (e) {
+        console.log("Error in getUpdate_ callback. War status: " + body);
+        msg.channel.sendMessage("Error processing command.");
+      }
     }
   });
 };
