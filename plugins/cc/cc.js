@@ -13,7 +13,7 @@ try {
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
     "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag", "start",
-    "warstarttime", "warendtime"];
+    "wartimer"];
 
 exports.cc = {
   description: "Get Clash Caller link to current war",
@@ -210,77 +210,41 @@ exports.setclantag = {
   }
 };
 
-exports.warstarttime = {
-  usage: "<##h##m>",
-  description: "Updates the current war's start time",
+exports.wartimer = {
+  usage: "<start|end> <##h##m>",
+  description: "Updates the current war's start or end time",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
   
-    var regex = /^([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
+    var regex = /^(start|end)\s([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
     if (!regex.test(suffix)) {
-      msg.channel.sendMessage("Please specify a start time in ##h##m format");
+      msg.channel.sendMessage("Invalid format for /wartimer");
       return;
     }
     
     var arr = regex.exec(suffix);
-    var hours = parseInt(arr[1]);
-    var minutes = parseInt(arr[2]);
+    var start = arr[1] == "start" ? "s" : "e";
+    var hours = parseInt(arr[2]);
+    var minutes = parseInt(arr[3]);
     var totalMinutes = hours * 60 + minutes;
     
     request.post(CC_API, {
       form: {
         "REQUEST": "UPDATE_WAR_TIME",
         "warcode": ccId,
-        "start": "s",
+        "start": start,
         "minutes": totalMinutes
       }
     }, function(error, response, body) {
       if (error) {
-        msg.channel.sendMessage("Unable to update war start time " + error);
+        msg.channel.sendMessage("Unable to update war " + arr[1] + " time " + error);
       } else {
-        msg.channel.sendMessage("War start time updated to " + suffix);
+        msg.channel.sendMessage("War " + arr[1] + " time updated to " + suffix);
       }
     });
-  }
-};
-
-exports.warendtime = {
-  usage: "<##h##m>",
-  description: "Updates the current war's end time",
-  process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
-    if (!ccId) {
-      return;
-    }
-  
-    var regex = /^([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
-    if (!regex.test(suffix)) {
-      msg.channel.sendMessage("Please specify a start time in ##h##m format");
-      return;
-    }
-    
-    var arr = regex.exec(suffix);
-    var hours = parseInt(arr[1]);
-    var minutes = parseInt(arr[2]);
-    var totalMinutes = hours * 60 + minutes;
-    
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "UPDATE_WAR_TIME",
-        "warcode": ccId,
-        "start": "e",
-        "minutes": totalMinutes
-      }
-    }, function(error, response, body) {
-      if (error) {
-        msg.channel.sendMessage("Unable to update war end time " + error);
-      } else {
-        msg.channel.sendMessage("War end time updated to " + suffix);
-      }
-    })  
   }
 };
 
