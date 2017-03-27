@@ -15,100 +15,9 @@ exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "open
     "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag", "start",
     "wartimer"];
 
-exports.cc = {
-  description: "Get Clash Caller link to current war",
-  process: function(bot, msg) {
-    var ccId = getCcId_(msg);
-    if (ccId) {
-      msg.channel.sendMessage(getCcUrl_(ccId));
-    }
-  }
-};
-
-exports.start = {
-  usage: "<war size> <enemy clan name>",
-  description: "Starts a war on Clash Caller",
-  process: function(bot, msg, suffix) {
-    var regex = /(\d+)\s(.*)$/;
-    if (!regex.test(suffix)) {
-      msg.channel.sendMessage("Invalid format, please try again");
-      return;
-    }
-
-    var arr = regex.exec(suffix);
-    var warSize = parseInt(arr[1]);
-    var enemyClanName = arr[2];
-    
-    var validWarSizes = [10, 15, 20, 25, 30, 35, 40, 45, 50];
-    if (!validWarSizes.includes(warSize)) {
-      msg.channel
-        .sendMessage("War size must be set to one of the following values: " +
-            validWarSizes.join(", "));
-      return;
-    }
-
-    var config = getConfig_(msg);
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "CREATE_WAR",
-        "cname": config.clanname ? config.clanname : "Unknown",
-        "ename": enemyClanName,
-        "size": warSize,
-        "timer": convertCallTimer_(config.call_timer),
-        "searchable": config.disableArchive ? 0 : 1,
-        "clanid": config.clanid ? config.clanid : ""
-      }
-    }, function(error, response, body) {
-      if (error) {
-        msg.channel.sendMessage("Error creating war: " + error);
-      } else {
-        // Remove the "war/" from the start.
-        var ccId = body.substring(4);
-        config.cc_id = ccId;
-        saveConfig_(msg.channel.id, config);
-        msg.channel.sendMessage(getCcUrl_(ccId));  
-      }
-    });
-  }
-};
-
-exports.call = {
-  usage: "<enemy base #>",
-  description: "Call a base",
-  process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
-    if (!ccId) {
-      return;
-    }
-    
-    var regex = /^\d+$/;
-    if (!regex.test(suffix)) {
-      msg.channel.sendMessage("Invalid format for /call");
-      return;
-    }
-
-    var enemyBaseNumber = parseInt(suffix);
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "APPEND_CALL",
-        "warcode": ccId,
-        "posy": enemyBaseNumber - 1,
-        "value": msg.author.username
-      }
-    }, function(error, response, body) {
-      if (error) {
-        msg.channel.sendMessage("Unable to call base " + error);
-      } else {
-        msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
-            + msg.author.username);
-      }
-    });      
-  }
-};
-
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
-  description: "Log an attack",
+  description: "Log your attack",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -143,6 +52,130 @@ exports.attacked = {
                 + msg.author.username + " on base " + enemyBaseNumber);
           }
         });
+      }
+    });
+  }
+};
+
+exports.cc = {
+  description: "Get Clash Caller link to current war",
+  process: function(bot, msg) {
+    var ccId = getCcId_(msg);
+    if (ccId) {
+      msg.channel.sendMessage(getCcUrl_(ccId));
+    }
+  }
+};
+
+exports.call = {
+  usage: "<enemy base #>",
+  description: "Call a base for yourself",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+    
+    var regex = /^\d+$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format for /call");
+      return;
+    }
+
+    var enemyBaseNumber = parseInt(suffix);
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "APPEND_CALL",
+        "warcode": ccId,
+        "posy": enemyBaseNumber - 1,
+        "value": msg.author.username
+      }
+    }, function(error, response, body) {
+      if (error) {
+        msg.channel.sendMessage("Unable to call base " + error);
+      } else {
+        msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
+            + msg.author.username);
+      }
+    });      
+  }
+};
+
+exports.calls = {
+  description: "Gets all active calls",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+  
+    getUpdate_(ccId, msg, function(warStatus) {
+      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
+      if (warTimeRemainingInfo.warOver) {
+        msg.channel.sendMessage(warTimeRemainingInfo.message);
+        return;
+      }
+      
+      var message = warTimeRemainingInfo.message + "\n";
+      
+      var activeCalls = getActiveCalls_(warStatus);
+      if (activeCalls.length == 0) {
+        message += "No active calls";
+      } else {
+        message += "Active calls:\n";
+        for (var i = 0; i < activeCalls.length; i++) {
+          var activeCall = activeCalls[i];
+          message += "#" + activeCall.baseNumber + " " + activeCall.playername
+              + " " + formatTimeRemaining_(activeCall.timeRemaining) + "\n";
+        }
+      }
+      
+      msg.channel.sendMessage(message);
+    });
+  }
+};
+
+exports.config = {
+  description: "Returns bot configuration for current channel",
+  process: function(bot, msg) {
+    var config = getConfig_(msg);
+    var message = "Current war ID: " + config.cc_id + "\n" +
+        "Clan name: " + config.clanname + "\n" +
+        "Call timer: " + config.call_timer + "\n" +
+        "Clan tag: " + config.clantag + "\n" +
+        "Archive: " + (config.disableArchive ? "off" : "on");
+    msg.channel.sendMessage(message);
+  }
+};
+
+exports["delete"] = {
+  usage: "<enemy base #>",
+  description: "Deletes your call on the specified base",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+  
+    var enemyBaseNumber = parseInt(suffix);
+    getUpdate_(ccId, msg, function(warStatus) {
+      var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
+      if (posx) {
+        request.post(CC_API, {
+          form: {
+            "REQUEST": "DELETE_CALL",
+            "warcode": ccId,
+            "posx": posx,
+            "posy": enemyBaseNumber - 1
+          }
+        }, function(error, response, body) {
+          if (error) {
+            msg.channel.sendMessage("Unable to delete call " + error);
+          } else {
+            msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
+                + " for " + msg.author.username);
+          }
+        })
       }
     });
   }
@@ -259,6 +292,53 @@ exports.setclantag = {
   }
 };
 
+exports.start = {
+  usage: "<war size> <enemy clan name>",
+  description: "Starts a war on Clash Caller",
+  process: function(bot, msg, suffix) {
+    var regex = /(\d+)\s(.*)$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format, please try again");
+      return;
+    }
+
+    var arr = regex.exec(suffix);
+    var warSize = parseInt(arr[1]);
+    var enemyClanName = arr[2];
+    
+    var validWarSizes = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+    if (!validWarSizes.includes(warSize)) {
+      msg.channel
+        .sendMessage("War size must be set to one of the following values: " +
+            validWarSizes.join(", "));
+      return;
+    }
+
+    var config = getConfig_(msg);
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "CREATE_WAR",
+        "cname": config.clanname ? config.clanname : "Unknown",
+        "ename": enemyClanName,
+        "size": warSize,
+        "timer": convertCallTimer_(config.call_timer),
+        "searchable": config.disableArchive ? 0 : 1,
+        "clanid": config.clanid ? config.clanid : ""
+      }
+    }, function(error, response, body) {
+      if (error) {
+        msg.channel.sendMessage("Error creating war: " + error);
+      } else {
+        // Remove the "war/" from the start.
+        var ccId = body.substring(4);
+        config.cc_id = ccId;
+        saveConfig_(msg.channel.id, config);
+        msg.channel.sendMessage(getCcUrl_(ccId));  
+      }
+    });
+  }
+};
+
 exports.wartimer = {
   usage: "<start|end> <##h##m>",
   description: "Updates the current war's start or end time",
@@ -294,86 +374,6 @@ exports.wartimer = {
         msg.channel.sendMessage("War " + arr[1] + " time updated to " + suffix);
       }
     });
-  }
-};
-
-exports["delete"] = {
-  usage: "<enemy base #>",
-  description: "Deletes your call on the specified base",
-  process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
-    if (!ccId) {
-      return;
-    }
-  
-    var enemyBaseNumber = parseInt(suffix);
-    getUpdate_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
-      if (posx) {
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "DELETE_CALL",
-            "warcode": ccId,
-            "posx": posx,
-            "posy": enemyBaseNumber - 1
-          }
-        }, function(error, response, body) {
-          if (error) {
-            msg.channel.sendMessage("Unable to delete call " + error);
-          } else {
-            msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
-                + " for " + msg.author.username);
-          }
-        })
-      }
-    });
-  }
-};
-
-exports.calls = {
-  description: "Gets all active calls",
-  process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
-    if (!ccId) {
-      return;
-    }
-  
-    getUpdate_(ccId, msg, function(warStatus) {
-      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
-      if (warTimeRemainingInfo.warOver) {
-        msg.channel.sendMessage(warTimeRemainingInfo.message);
-        return;
-      }
-      
-      var message = warTimeRemainingInfo.message + "\n";
-      
-      var activeCalls = getActiveCalls_(warStatus);
-      if (activeCalls.length == 0) {
-        message += "No active calls";
-      } else {
-        message += "Active calls:\n";
-        for (var i = 0; i < activeCalls.length; i++) {
-          var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + " " + activeCall.playername
-              + " " + formatTimeRemaining_(activeCall.timeRemaining) + "\n";
-        }
-      }
-      
-      msg.channel.sendMessage(message);
-    });
-  }
-};
-
-exports.config = {
-  description: "Returns bot configuration for current channel",
-  process: function(bot, msg) {
-    var config = getConfig_(msg);
-    var message = "Current war ID: " + config.cc_id + "\n" +
-        "Clan name: " + config.clanname + "\n" +
-        "Call timer: " + config.call_timer + "\n" +
-        "Clan tag: " + config.clantag + "\n" +
-        "Archive: " + (config.disableArchive ? "off" : "on");
-    msg.channel.sendMessage(message);
   }
 };
 
