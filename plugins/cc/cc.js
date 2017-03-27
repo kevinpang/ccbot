@@ -77,9 +77,16 @@ exports.call = {
         msg.channel.sendMessage(getWarTimeRemainingMessage_(ccId, warTimeRemaining));
         return;
       }
+
+      var message = "";
+      
+      // Print out existing note on this base
+      var note = getNote_(enemyBaseNumber, warStatus);
+      if (note) {
+        message += "Note: " + note + "\n";
+      }
       
       // Print out any existing calls on this base
-      var message = "";
       var activeCalls = getActiveCalls_(warStatus);
       var activeCallsOnBase = [];
       if (activeCalls.length > 0) {
@@ -92,7 +99,7 @@ exports.call = {
       }
       
       if (activeCallsOnBase.length > 0) {
-        message += "Existing active calls on base #" + enemyBaseNumber + ":\n";
+        message += "Active calls:\n";
         for (var i = 0; i < activeCallsOnBase.length; i++) {
           var activeCallOnBase = activeCallsOnBase[i];
           message += "\t" + activeCallOnBase.playername + " " +
@@ -313,6 +320,12 @@ exports.open = {
               message += ")";
             }
             message += "\n";
+            
+            // Print out existing note on this base
+            var note = getNote_(i + 1, warStatus);
+            if (note) {
+              message += "\tNote: " + note + "\n";
+            }
           }
         }
       }
@@ -465,6 +478,12 @@ exports.status = {
             message += "\\*";
           }
           message += ")\n";
+        }
+        
+        // Print out existing note on this base
+        var note = getNote_(i + 1, warStatus);
+        if (note) {
+          message += "\tNote: " + note + "\n";
         }
       }
       
@@ -753,6 +772,21 @@ var getEnemyBases_ = function(warStatus) {
   }
   
   return enemyBases;
+};
+
+/**
+ * Returns the note on the specified base number, or null if no note exists.
+ */
+var getNote_ = function(baseNumber, warStatus) {
+  for (var i = 0; i < warStatus.targets.length; i++) {
+    var target = warStatus.targets[i];
+    if (parseInt(target.position) == baseNumber - 1) {
+      if (target.note != null && target.note != "") {
+        return target.note;
+      }
+    }
+  }
+  return null;
 };
 
 /**
