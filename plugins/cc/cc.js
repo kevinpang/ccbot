@@ -165,32 +165,16 @@ exports.open = {
       
       var message = warTimeRemainingInfo.message + "\n";
       
-      var activeCalls = getActiveCalls_(warStatus);
-      var openBases = [];
-      for (var i = 0; i < parseInt(warStatus.general.size); i++) {
-        var called = false;
-        for (var j = 0; j < activeCalls.length; j++) {
-          var activeCall = activeCalls[j];
-          if (activeCall.baseNumber - 1 == i) {
-            called = true;
-            break;
-          } else if (activeCall.baseNumber - 1 > i) {
-            // Active calls are sorted so if we get past the base we're
-            // looking for then it's not called.
-            break;
-          }
-        }
-        if (!called) {
-          console.log('open bases adding base #' + (i + 1));
-          openBases.push(i + 1);
-        }
-      }
-      
+      var openBases = getOpenBases_(warStatus);
       if (openBases.length == 0) {
         message += "No open bases";
       } else {
         message += "Open bases:\n";
-        message += openBases.join("\n");
+        for (var i = 0; i < openBases.length; i++) {
+          if (openBases[i]) {
+            message += (i + 1) + "\n";
+          }
+        }
       }
       
       msg.channel.sendMessage(message);
@@ -609,7 +593,7 @@ var getActiveCalls_ = function(warStatus) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
     
-    if (call.stars == 1) {
+    if (call.stars == "1") {
       var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
@@ -627,6 +611,35 @@ var getActiveCalls_ = function(warStatus) {
   }); 
   
   return activeCalls;
+};
+
+/**
+ * Returns a 0-indexed array of open bases for the given war.
+ */
+var getOpenBases_ = function(warStatus) {
+  var openBases = [];
+  for (var i = 0; i < parseInt(warStatus.general.size); i++) {
+    openBases[i] = true;
+  }
+  
+  for (var i = 0; i < warStatus.calls.length; i++) {
+    var call = warStatus.calls[i];
+    var posy = call.posy;
+    
+    if (call.stars == "1") {
+      // Has an active call on it
+      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      
+      if (timeRemaining == null || timeRemaining > 0) {
+        openBases[posy] = false;
+      }
+    } else if (call.stars == "5") {
+      // Base already 3-starred
+      openBases[posy] = false;
+    }
+  }
+
+  return openBases;
 };
 
 /**
