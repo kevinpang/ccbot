@@ -541,6 +541,7 @@ var calculateWarTimeRemaining_ = function(warStatus) {
 /**
  * Returns the time remaining (in milliseconds) for a specific call, or null if
  * timers are not enabled for the war, war has not started yet, or war is over.
+ * Return value can be negative if call has expired.
  */
 var calculateCallTimeRemaining_ = function(call, warStatus) {
   try {
