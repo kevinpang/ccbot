@@ -45,6 +45,11 @@ bot.on("disconnected", function () {
 });
 
 function checkMessageForCommand(msg, isEdit) {
+  // No-op if we don't have write priveledges on the channel.
+  if (!msg.channel.permissionsFor(bot.user).hasPermission('SEND_MESSAGES')) {
+    return; 
+  }
+  
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
     console.log("treating " + msg.content + " from " + msg.author + " as command");
