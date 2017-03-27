@@ -78,7 +78,7 @@ exports.call = {
       return;
     }
     
-    var regex = /^(\d)+(\sfor\s(.*))?$/;
+    var regex = /^(\d+)(\sfor\s(.*))?$/;
     if (!regex.test(suffix)) {
       msg.channel.sendMessage("Invalid format for /call");
       return;
