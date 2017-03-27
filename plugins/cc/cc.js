@@ -23,10 +23,16 @@ exports.attacked = {
     if (!ccId) {
       return;
     }
-  
-    var args = suffix.split(' ');
-    var baseNumber = parseInt(args[0]);
-    var stars = parseInt(args[2]);
+    
+    var regex = /^(\d+)\sfor\s(\d+).*$/;
+    var arr = regex.exec(suffix);
+    if (!arr) {
+      msg.channel.sendMessage("Invalid format for /attacked");
+      return;
+    }
+
+    var baseNumber = parseInt(arr[1]);
+    var stars = parseInt(arr[2]);
     logAttack_(msg, ccId, getAuthorName_(msg), baseNumber, stars);
   }
 };
