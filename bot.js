@@ -1,3 +1,10 @@
+console.logCopy = console.log.bind(console);
+console.log = function(message)
+{
+  var currentDate = "[" + new Date().toUTCString() + "] ";
+  this.logCopy(currentDate + message);
+};
+
 var COMMAND_PREFIX = '/';
 
 try {
