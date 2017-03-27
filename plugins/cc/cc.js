@@ -11,7 +11,7 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
+exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
     "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
     "start", "wartimer"];
 
@@ -27,33 +27,7 @@ exports.attacked = {
     var args = suffix.split(' ');
     var enemyBaseNumber = parseInt(args[0]);
     var stars = parseInt(args[2]);
-    
-    if (stars < 0 || stars > 3) {
-      msg.channel.sendMessage("Number of stars must be between 0-3");
-      return;
-    }
-
-    getUpdate_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
-      if (posx) {
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "UPDATE_STARS",
-            "warcode": ccId,
-            "posx": posx,
-            "posy": enemyBaseNumber - 1,
-            "value": stars + 2
-          }
-        }, function(error, response, body) {
-          if (error) {
-            msg.channel.sendMessage("Unable to record stars " + error);
-          } else {
-            msg.channel.sendMessage("Recorded " + stars + " star(s) for "
-                + msg.author.username + " on base " + enemyBaseNumber);
-          }
-        });
-      }
-    });
+    logAttack_(msg, ccId, msg.author.username, enemyBaseNumber, stars);
   }
 };
 
@@ -163,7 +137,7 @@ exports["delete"] = {
   
     var enemyBaseNumber = parseInt(suffix);
     getUpdate_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, enemyBaseNumber);
+      var posx = findCallPosX_(warStatus, msg, msg.author.username, enemyBaseNumber);
       if (posx) {
         request.post(CC_API, {
           form: {
@@ -182,6 +156,29 @@ exports["delete"] = {
         })
       }
     });
+  }
+};
+
+exports.log = {
+  usage: "<# of stars> on <enemy base #> by <playername>",
+  description: "Logs an attack for another player",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+    
+    var regex = /^(\d+)\son\s(\d+)\sby\s(.*)$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format for /log");
+      return
+    }
+    
+    var arr = regex.exec(suffix);
+    var stars = parseInt(arr[1]);
+    var enemyBaseNumber = parseInt(arr[2]);
+    var playerName = arr[3];
+    logAttack_(msg, ccId, playerName, enemyBaseNumber, stars);
   }
 };
 
@@ -302,7 +299,7 @@ exports.start = {
   process: function(bot, msg, suffix) {
     var regex = /(\d+)\s(.*)$/;
     if (!regex.test(suffix)) {
-      msg.channel.sendMessage("Invalid format, please try again");
+      msg.channel.sendMessage("Invalid format for /start");
       return;
     }
 
@@ -384,17 +381,17 @@ exports.wartimer = {
 /**
  * Returns the X position of a user's call or null if call is not found.
  */
-var findCallPosX_ = function(warStatus, msg, enemyBaseNumber) {
+var findCallPosX_ = function(warStatus, msg, playerName, enemyBaseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
     if (call.posy == enemyBaseNumber - 1
-        && call.playername == msg.author.username) {
+        && call.playername == playerName) {
       return call.posx;
       break;
     }
   }
   msg.channel.sendMessage("Unable to find call on base " + enemyBaseNumber
-      + " for " + msg.author.username);
+      + " for " + playerName);
   return null;
 };
 
@@ -670,6 +667,39 @@ var getOpenBases_ = function(warStatus) {
   }
 
   return openBases;
+};
+
+/**
+ * Logs an attack.
+ */
+var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
+  if (stars < 0 || stars > 3) {
+    msg.channel.sendMessage("Number of stars must be between 0-3");
+    return;
+  }
+
+  getUpdate_(ccId, msg, function(warStatus) {
+    var posx = findCallPosX_(warStatus, msg, playerName, enemyBaseNumber);
+    if (posx) {
+      request.post(CC_API, {
+        form: {
+          "REQUEST": "UPDATE_STARS",
+          "warcode": ccId,
+          "posx": posx,
+          "posy": enemyBaseNumber - 1,
+          "value": stars + 2
+        }
+      }, function(error, response, body) {
+        if (error) {
+          msg.channel.sendMessage("Unable to record stars " + error);
+        } else {
+          msg.channel.sendMessage("Recorded " + stars + " star" + 
+              (stars == 1 ? "" : "s") + " for " + playerName + 
+              " on base " + enemyBaseNumber);
+        }
+      });
+    }
+  });
 };
 
 /**
