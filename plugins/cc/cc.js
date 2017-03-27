@@ -478,7 +478,7 @@ var getWarStatus_ = function(ccId, msg, callback) {
         callback(JSON.parse(body));  
       } catch (e) {
         console.log("Error in getUpdate_ callback. War status: " + body);
-        msg.channel.sendMessage("Error processing command.");
+        msg.channel.sendMessage("Error getting war status for war ID: " + ccId);
       }
     }
   });
