@@ -13,7 +13,7 @@ try {
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
     "note", "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
-    "start", "status", "wartimer"];
+    "start", "stats", "status", "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -44,7 +44,7 @@ exports.cc = {
 exports.call = {
   usage: "<enemy base #>",
   description: "Call a base for yourself.\n" +
-      "**/call** <enemy base #> for <playername>\n" +
+      "**/call** <enemy base #> for <player name>\n" +
       "\tCall a base for another player.",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
@@ -179,7 +179,7 @@ exports.config = {
 exports["delete"] = {
   usage: "<enemy base #>",
   description: "Deletes your call on the specified base\n" +
-      "**/delete** <enemy base #> for <playername>\n" +
+      "**/delete** <enemy base #> for <player name>\n" +
       "\tDelete a base for another player.",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
@@ -225,7 +225,7 @@ exports["delete"] = {
 };
 
 exports.log = {
-  usage: "<# of stars> on <enemy base #> by <playername>",
+  usage: "<# of stars> on <enemy base #> by <player name>",
   description: "Logs an attack for another player",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
@@ -452,6 +452,96 @@ exports.start = {
   }
 };
 
+exports.stats = {
+  description: "View your stats. This requires archiving to be enabled.\n" +
+      "**/stats for <player name>\n" +
+      "\tView stats for another player. This requires archiving to be enabled.",
+  process: function(bot, msg, suffix) {
+    var config = getConfig_(msg);
+    if (!config.clantag) {
+      msg.channel.sendMessage("Use /setclantag to specify a clan tag first");
+      return;
+    }
+    
+    var playerName = msg.author.username;
+    if (suffix) {
+      var regex = /^for\s(.*)?$/;
+      if (!regex.test(suffix)) {
+        msg.channel.sendMessage("Invalid format for /stats");
+        return;
+      }
+      
+      var arr = regex.exec(suffix);
+      playerName = getPlayerName_(msg, arr[1]);
+    }
+    
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "SEARCH_FOR_PLAYER",
+        "clan": config.clantag,
+        "name": playerName
+      }
+    }, function(error, response, body) {
+      if (error) {
+        console.log("Unable to find player: " + error);
+        msg.channel.sendMessage("Unable to find player: " + error);
+      } else {
+        body = JSON.parse(body);
+        
+        if (body.attacks && body.attacks.length > 0) {
+          var wars = {};
+          var numWars = 0;
+          var stars = 0;
+          var attacks = 0;
+          var threeStars = 0;
+          var twoStars = 0;
+          var oneStars = 0;
+          var zeroStars = 0;
+          
+          for (var i = 0; i < body.attacks.length; i++) {
+            var attack = body.attacks[i];
+            attacks++;
+            if (!wars[attack.ID]) {
+              wars[attack.ID] = true;
+              numWars++;
+            }
+            var numStars = parseInt(attack.STAR);
+            if (numStars > 1) {
+              numStars -= 2;
+              
+              stars += numStars;
+              if (numStars == 0) {
+                zeroStars++;
+              } else if (numStars == 1) {
+                oneStars++;
+              } else if (numStars == 2) {
+                twoStars++;
+              } else if (numStars == 3) {
+                threeStars++;
+              }
+            }
+          }
+          
+          var message = "Stats for " + playerName + "\n";
+          message += "Wars participated: " + numWars + "\n";
+          message += "Total stars: " + stars + "\n";
+          message += "Total attacks: " + attacks + "\n";
+          message += "Average stars: " + Number(stars / attacks).toFixed(2) + "\n\n";
+          message += "3 stars: " + threeStars + " (" + Number(threeStars / attacks * 100).toFixed(2) + "%)\n";
+          message += "2 stars: " + twoStars + " (" + Number(twoStars / attacks * 100).toFixed(2) + "%)\n";
+          message += "1 stars: " + oneStars + " (" + Number(oneStars / attacks * 100).toFixed(2) + "%)\n";
+          message += "0 stars: " + zeroStars + " (" + Number(zeroStars / attacks * 100).toFixed(2) + "%)\n";
+          
+          msg.channel.sendMessage(message);
+        } else {
+          msg.channel.sendMessage("No attacks found for player " + 
+              playerName + " in clan " + config.clantag);
+        }
+      }
+    });
+  }
+};
+
 exports.status = {
   description: "Returns the current war status",
   process: function(bot, msg) {
@@ -478,12 +568,6 @@ exports.status = {
             message += "\\*";
           }
           message += ")\n";
-        }
-        
-        // Print out existing note on this base
-        var note = getNote_(i + 1, warStatus);
-        if (note) {
-          message += "\tNote: " + note + "\n";
         }
       }
       
