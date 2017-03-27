@@ -27,7 +27,7 @@ exports.attacked = {
     var args = suffix.split(' ');
     var enemyBaseNumber = parseInt(args[0]);
     var stars = parseInt(args[2]);
-    logAttack_(msg, ccId, msg.author.username, enemyBaseNumber, stars);
+    logAttack_(msg, ccId, getAuthorName_(msg), enemyBaseNumber, stars);
   }
 };
 
@@ -60,7 +60,7 @@ exports.call = {
     
     var arr = regex.exec(suffix);
     var enemyBaseNumber = parseInt(arr[1]);
-    var playerName = msg.author.username;
+    var playerName = getAuthorName_(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
     }
@@ -195,7 +195,7 @@ exports["delete"] = {
     
     var arr = regex.exec(suffix);
     var enemyBaseNumber = parseInt(arr[1]);
-    var playerName = msg.author.username;
+    var playerName = getAuthorName_(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
     }
@@ -463,7 +463,7 @@ exports.stats = {
       return;
     }
     
-    var playerName = msg.author.username;
+    var playerName = getAuthorName_(msg);
     if (suffix) {
       var regex = /^for\s(.*)?$/;
       if (!regex.test(suffix)) {
@@ -998,6 +998,16 @@ var getPlayerName_ = function(msg, playerName) {
   } else {
     return "Unknown player name";
   }
+};
+
+/**
+ * Returns the author's nickname if available, or username if no nickname is provided.
+ */
+var getAuthorName_ = function(msg) {
+  if (msg.member.nickname) {
+    return msg.member.nickname;
+  }
+  return msg.author.username;
 };
 
 /**
