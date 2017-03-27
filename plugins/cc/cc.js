@@ -61,21 +61,36 @@ exports.call = {
     var arr = regex.exec(suffix);
     var enemyBaseNumber = parseInt(arr[1]);
     var playerName = arr[3] ? arr[3] : msg.author.username;
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "APPEND_CALL",
-        "warcode": ccId,
-        "posy": enemyBaseNumber - 1,
-        "value": playerName
+    
+    getWarStatus_(ccId, msg, function(warStatus) {
+      var size = parseInt(warStatus.general.size);
+      if (enemyBaseNumber > size) {
+        msg.channel.sendMessage("Invalid base number. War size is " + size + ".");
+        return;
       }
-    }, function(error, response, body) {
-      if (error) {
-        msg.channel.sendMessage("Unable to call base " + error);
-      } else {
-        msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
-            + playerName);
+      
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      if (warTimeRemaining < 0) {
+        msg.channel.sendMessage(getWarTimeRemainingMessage_(ccId, warTimeRemaining));
+        return;
       }
-    });      
+      
+      request.post(CC_API, {
+        form: {
+          "REQUEST": "APPEND_CALL",
+          "warcode": ccId,
+          "posy": enemyBaseNumber - 1,
+          "value": playerName
+        }
+      }, function(error, response, body) {
+        if (error) {
+          msg.channel.sendMessage("Unable to call base " + error);
+        } else {
+          msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
+              + playerName);
+        }
+      });
+    });
   }
 };
 
@@ -88,13 +103,14 @@ exports.calls = {
     }
   
     getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
-      if (warTimeRemainingInfo.warOver) {
-        msg.channel.sendMessage(warTimeRemainingInfo.message);
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
+      if (warTimeRemaining < 0) {
+        msg.channel.sendMessage(message);
         return;
       }
       
-      var message = warTimeRemainingInfo.message + "\n";
+      message += "\n";
       
       var activeCalls = getActiveCalls_(warStatus);
       if (activeCalls.length == 0) {
@@ -191,13 +207,14 @@ exports.open = {
     }
   
     getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
-      if (warTimeRemainingInfo.warOver) {
-        msg.channel.sendMessage(warTimeRemainingInfo.message);
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
+      if (warTimeRemaining < 0) {
+        msg.channel.sendMessage(message);
         return;
       }
       
-      var message = warTimeRemainingInfo.message + "\n";
+      message += "\n";
       
       var openBases = getOpenBases_(warStatus);
       if (openBases.length == 0) {
@@ -210,7 +227,7 @@ exports.open = {
             if (openBases[i].stars > 0) {
               message += " (";
               for (var j = 0; j < openBases[i].stars; j++) {
-                message += "*";
+                message += "\*";
               }
               message += ")";
             }
@@ -486,34 +503,18 @@ var convertCallTimer_ = function(callTimer) {
 };
 
 /**
- * Returns war time remaining information.
- * 
- * Message will be blank if war isn't using timers. This is used for display at the
- * beginning of commands that return the status of the war (e.g. /calls, /open).
+ * Returns war time remaining message.
  */
-var getWarTimeRemainingInfo_ = function(warStatus) {
-  var warOver = false;
-  var message = "";
-  var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-  if (warTimeRemaining != null) {
-    if (warTimeRemaining < 0) {
-      warOver = true;
-      message = "The war is over. See results here: "
-          + getCcUrl_(warStatus.general.warcode);
-    } else {
-      var oneDay = 24 * 60 * 60 * 1000;
-      if (warTimeRemaining > oneDay) {
-        message = "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
-      } else {
-        message = "War ends in " + formatTimeRemaining_(warTimeRemaining);
-      }  
-    }
-  }
-  
-  return {
-    "warOver": warOver,
-    "message": message,
-    "warTimeRemaining": warTimeRemaining
+var getWarTimeRemainingMessage_ = function(ccId, warTimeRemaining) {
+  var oneDay = 24 * 60 * 60 * 1000;
+  if (warTimeRemaining == null) {
+    return ""
+  } else if (warTimeRemaining < 0) {
+    return "The war is over. See results here: " + getCcUrl_(ccId);
+  } else if (warTimeRemaining > oneDay) {
+    return "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
+  } else {
+    return "War ends in " + formatTimeRemaining_(warTimeRemaining);
   }
 };
 
