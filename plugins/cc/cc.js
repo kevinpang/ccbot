@@ -11,9 +11,9 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "open",
-    "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag", "start",
-    "wartimer"];
+exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
+    "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
+    "start", "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -69,33 +69,37 @@ exports.cc = {
 
 exports.call = {
   usage: "<enemy base #>",
-  description: "Call a base for yourself",
+  description: "Call a base for yourself.\n" +
+      "**/call** <enemy base #> for <playername>\n" +
+      "\tCall a base for another player.",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
     
-    var regex = /^\d+$/;
+    var regex = /^(\d)+(\sfor\s(.*))?$/;
     if (!regex.test(suffix)) {
       msg.channel.sendMessage("Invalid format for /call");
       return;
     }
-
-    var enemyBaseNumber = parseInt(suffix);
+    
+    var arr = regex.exec(suffix);
+    var enemyBaseNumber = parseInt(arr[1]);
+    var playerName = arr[3] ? arr[3] : msg.author.username;
     request.post(CC_API, {
       form: {
         "REQUEST": "APPEND_CALL",
         "warcode": ccId,
         "posy": enemyBaseNumber - 1,
-        "value": msg.author.username
+        "value": playerName
       }
     }, function(error, response, body) {
       if (error) {
         msg.channel.sendMessage("Unable to call base " + error);
       } else {
         msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
-            + msg.author.username);
+            + playerName);
       }
     });      
   }
