@@ -1023,6 +1023,7 @@ var getPlayerName_ = function(msg, playerName) {
       return member.user.username;
     }
   } else {
+    console.log("Unable to figure out player name: " + playerName);
     return "Unknown player name";
   }
 };
