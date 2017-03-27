@@ -59,12 +59,12 @@ exports.call = {
     }
     
     var regex = /^(\d+)(\sfor\s(.*))?$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /call");
       return;
     }
     
-    var arr = regex.exec(suffix);
     var baseNumber = parseInt(arr[1]);
     var playerName = getAuthorName_(msg);
     if (arr[3]) {
@@ -195,12 +195,12 @@ exports["delete"] = {
     }
     
     var regex = /^(\d+)(\sfor\s(.*))?$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /delete");
       return;
     }
     
-    var arr = regex.exec(suffix);
     var baseNumber = parseInt(arr[1]);
     var playerName = getAuthorName_(msg);
     if (arr[3]) {
@@ -241,12 +241,12 @@ exports.log = {
     }
     
     var regex = /^(\d+)\son\s(\d+)\sby\s(.*)$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /log");
       return
     }
     
-    var arr = regex.exec(suffix);
     var stars = parseInt(arr[1]);
     var baseNumber = parseInt(arr[2]);
     var playerName = getPlayerName_(msg, arr[3]);
@@ -264,12 +264,12 @@ exports.note = {
     }
     
     var regex = /^(\d+)\s(.*)$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /note");
       return;
     }
     
-    var arr = regex.exec(suffix);
     var baseNumber = parseInt(arr[1]);
     var note = arr[2];
     
@@ -427,12 +427,12 @@ exports.start = {
   description: "Starts a war on Clash Caller",
   process: function(bot, msg, suffix) {
     var regex = /(\d+)\s(.*)$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /start");
       return;
     }
 
-    var arr = regex.exec(suffix);
     var warSize = parseInt(arr[1]);
     var enemyClanName = arr[2];
     
@@ -484,12 +484,12 @@ exports.stats = {
     var playerName = getAuthorName_(msg);
     if (suffix) {
       var regex = /^for\s(.*)?$/;
-      if (!regex.test(suffix)) {
+      var arr = regex.exec(suffix);
+      if (!arr) {
         msg.channel.sendMessage("Invalid format for /stats");
         return;
       }
       
-      var arr = regex.exec(suffix);
       playerName = getPlayerName_(msg, arr[1]);
     }
     
@@ -604,12 +604,12 @@ exports.wartimer = {
     }
   
     var regex = /^(start|end)\s([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
-    if (!regex.test(suffix)) {
+    var arr = regex.exec(suffix);
+    if (!arr) {
       msg.channel.sendMessage("Invalid format for /wartimer");
       return;
     }
     
-    var arr = regex.exec(suffix);
     var start = arr[1] == "start" ? "s" : "e";
     var hours = parseInt(arr[2]);
     var minutes = parseInt(arr[3]);
@@ -1008,16 +1008,20 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
  * looks like <@123456789>
  */
 var getPlayerName_ = function(msg, playerName) {
-  var regex = /^<@(.*)>$/;
-  if (!regex.test(playerName)) {
+  var regex = /^<@!?(.*)>$/;
+  var arr = regex.exec(playerName);
+  if (!arr) {
     return playerName;
   }
   
-  var arr = regex.exec(playerName);
   var id = arr[1];
   var member = msg.channel.members.get(id);
   if (member) {
-    return member.user.username;
+    if (member.nickname) {
+      return member.nickname;
+    } else {
+      return member.user.username;
+    }
   } else {
     return "Unknown player name";
   }
