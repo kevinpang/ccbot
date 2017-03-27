@@ -60,7 +60,10 @@ exports.call = {
     
     var arr = regex.exec(suffix);
     var enemyBaseNumber = parseInt(arr[1]);
-    var playerName = arr[3] ? arr[3] : msg.author.username;
+    var playerName = msg.author.username;
+    if (arr[3]) {
+      playerName = getPlayerName_(msg, arr[3]);
+    }
     
     getWarStatus_(ccId, msg, function(warStatus) {
       var size = parseInt(warStatus.general.size);
@@ -216,7 +219,7 @@ exports.log = {
     var arr = regex.exec(suffix);
     var stars = parseInt(arr[1]);
     var enemyBaseNumber = parseInt(arr[2]);
-    var playerName = arr[3];
+    var playerName = getPlayerName_(msg, arr[3]);
     logAttack_(msg, ccId, playerName, enemyBaseNumber, stars);
   }
 };
@@ -799,6 +802,27 @@ var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
       });
     }
   });
+};
+
+/**
+ * Returns the player name given a player name passed to us. This is to handle
+ * scenarios where someone @'s another player and the player name passed to us
+ * looks like <@123456789>
+ */
+var getPlayerName_ = function(msg, playerName) {
+  var regex = /^<@(.*)>$/;
+  if (!regex.test(playerName)) {
+    return playerName;
+  }
+  
+  var arr = regex.exec(playerName);
+  var id = arr[1];
+  var member = msg.channel.members.get(id);
+  if (member) {
+    return member.user.username;
+  } else {
+    return "Unknown player name";
+  }
 };
 
 /**
