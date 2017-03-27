@@ -609,9 +609,11 @@ var getActiveCalls_ = function(warStatus) {
     var call = warStatus.calls[i];
     
     if (call.stars == "1") {
+      // Has an un-starred call.
       var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
+        // Has an active call.
         activeCalls.push({
           "baseNumber": parseInt(call.posy) + 1,
           "playername": call.playername,
@@ -648,10 +650,11 @@ var getOpenBases_ = function(warStatus) {
     var posy = call.posy;
     
     if (call.stars == "1") {
-      // Has an active call on it
+      // Has an un-starred call.
       var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
+        // Has an active call.
         openBases[posy].open = false;
       }
     } else if (call.stars == "5") {
