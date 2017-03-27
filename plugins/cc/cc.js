@@ -13,7 +13,7 @@ try {
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
     "note", "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
-    "start", "stats", "status", "wartimer"];
+    "setcongrats", "start", "stats", "status", "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -401,6 +401,17 @@ exports.setclantag = {
     config.clantag = suffix;
     saveConfig_(msg.channel.id, config);
     msg.channel.sendMessage("Clan tag set to " + suffix);  
+  }
+};
+
+exports.setcongrats = {
+  usage: "<congrats message>",
+  description: "Sets the congrats message (displayed when someone 3-stars)",
+  process: function(bot, msg, suffix) {
+    var config = getConfig_(msg);
+    config.congrats = suffix;
+    saveConfig_(msg.channel.id, config);
+    msg.channel.sendMessage("Congrats message set to " + suffix);
   }
 };
 
@@ -970,9 +981,14 @@ var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
           console.log("Unable to record stars " + error);
           msg.channel.sendMessage("Unable to record stars " + error);
         } else {
-          msg.channel.sendMessage("Recorded " + stars + " star" + 
+          var message = "Recorded " + stars + " star" + 
               (stars == 1 ? "" : "s") + " for " + playerName + 
-              " on base " + enemyBaseNumber);
+              " on base " + enemyBaseNumber;
+          var config = getConfig_(msg);
+          if (stars == 3 && config.congrats) {
+            message += "\n" + config.congrats;
+          }
+          msg.channel.sendMessage(message);
         }
       });
     }
