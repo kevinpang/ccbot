@@ -364,7 +364,7 @@ exports.start = {
         "size": warSize,
         "timer": convertCallTimer_(config.call_timer),
         "searchable": config.disableArchive ? 0 : 1,
-        "clanid": config.clanid ? config.clanid : ""
+        "clanid": config.clantag ? config.clantag : ""
       }
     }, function(error, response, body) {
       if (error) {
