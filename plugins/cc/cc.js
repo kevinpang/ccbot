@@ -502,13 +502,13 @@ var getWarTimeRemainingInfo_ = function(warStatus) {
       warOver = true;
       message = "The war is over. See results here: "
           + getCcUrl_(warStatus.general.warcode);
-    }
-    
-    var oneDay = 24 * 60 * 60 * 1000;
-    if (warTimeRemaining > oneDay) {
-      message = "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
     } else {
-      message = "War ends in " + formatTimeRemaining_(warTimeRemaining);
+      var oneDay = 24 * 60 * 60 * 1000;
+      if (warTimeRemaining > oneDay) {
+        message = "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
+      } else {
+        message = "War ends in " + formatTimeRemaining_(warTimeRemaining);
+      }  
     }
   }
   
