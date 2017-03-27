@@ -171,8 +171,16 @@ exports.open = {
       } else {
         message += "Open bases:\n";
         for (var i = 0; i < openBases.length; i++) {
-          if (openBases[i]) {
-            message += (i + 1) + "\n";
+          if (openBases[i].open) {
+            message += (i + 1);
+            if (openBases[i].stars > 0) {
+              message += " (";
+              for (var j = 0; j < openBases[i].stars; j++) {
+                message += "*";
+              }
+              message += ")";
+            }
+            message += "\n";
           }
         }
       }
@@ -620,11 +628,17 @@ var getActiveCalls_ = function(warStatus) {
 
 /**
  * Returns a 0-indexed array of open bases for the given war.
+ * 
+ * Open bases are defined as bases that either do not have an active call on
+ * them or bases that have not been 3-starred.
  */
 var getOpenBases_ = function(warStatus) {
   var openBases = [];
   for (var i = 0; i < parseInt(warStatus.general.size); i++) {
-    openBases[i] = true;
+    openBases[i] = {
+      "open": true,
+      "stars": 0
+    };
   }
   
   for (var i = 0; i < warStatus.calls.length; i++) {
@@ -636,11 +650,13 @@ var getOpenBases_ = function(warStatus) {
       var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
-        openBases[posy] = false;
+        openBases[posy].open = false;
       }
     } else if (call.stars == "5") {
       // Base already 3-starred
-      openBases[posy] = false;
+      openBases[posy].open = false;
+    } else if (call.stars == "3" || call.stars == "4") {
+      openBases[posy].stars = parseInt(call.stars) - 2;
     }
   }
 
