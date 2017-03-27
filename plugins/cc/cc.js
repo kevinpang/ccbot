@@ -466,7 +466,7 @@ exports.start = {
 
 exports.stats = {
   description: "View your stats. This requires archiving to be enabled.\n" +
-      "**/stats for <player name>\n" +
+      "**/stats** for <player name>\n" +
       "\tView stats for another player. This requires archiving to be enabled.",
   process: function(bot, msg, suffix) {
     var config = getConfig_(msg);
