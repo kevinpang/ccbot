@@ -75,6 +75,28 @@ exports.call = {
         return;
       }
       
+      // Print out any existing calls on this base
+      var message = "";
+      var activeCalls = getActiveCalls_(warStatus);
+      var activeCallsOnBase = [];
+      if (activeCalls.length > 0) {
+        for (var i = 0; i < activeCalls.length; i++) {
+          var activeCall = activeCalls[i];
+          if (activeCall.baseNumber == enemyBaseNumber) {
+            activeCallsOnBase.push(activeCall);
+          }
+        }
+      }
+      
+      if (activeCallsOnBase.length > 0) {
+        message += "Existing active calls on base #" + enemyBaseNumber + ":\n";
+        for (var i = 0; i < activeCallsOnBase.length; i++) {
+          var activeCallOnBase = activeCallsOnBase[i];
+          message += "\t" + activeCallOnBase.playername + " " +
+              formatTimeRemaining_(activeCallOnBase.timeRemaining) + "\n";          
+        }
+      }
+      
       request.post(CC_API, {
         form: {
           "REQUEST": "APPEND_CALL",
@@ -84,11 +106,12 @@ exports.call = {
         }
       }, function(error, response, body) {
         if (error) {
-          msg.channel.sendMessage("Unable to call base " + error);
+          message += "Unable to call base " + error;
         } else {
-          msg.channel.sendMessage("Called base " + enemyBaseNumber + " for "
-              + playerName);
+          message += "Called base " + enemyBaseNumber + " for " + playerName;
         }
+        
+        msg.channel.sendMessage(message);
       });
     });
   }
@@ -477,7 +500,7 @@ var getWarStatus_ = function(ccId, msg, callback) {
       try {
         callback(JSON.parse(body));  
       } catch (e) {
-        console.log("Error in getUpdate_ callback. War status: " + body);
+        console.log("Error in getUpdate_ callback. " + e + ". War status: " + body);
         msg.channel.sendMessage("Error getting war status for war ID: " + ccId);
       }
     }
@@ -626,6 +649,10 @@ var getActiveCalls_ = function(warStatus) {
   }
 
   activeCalls.sort(function(a, b) {
+    if (a.baseNumber == b.baseNumber) {
+      return a.timeRemaining - b.timeRemaining;
+    }
+    
     return a.baseNumber - b.baseNumber;
   }); 
   
