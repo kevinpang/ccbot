@@ -294,11 +294,17 @@ exports.calls = {
       var activeCalls = [];
       for (var i = 0; i < warStatus.calls.length; i++) {
         var call = warStatus.calls[i];
+        
         if (call.stars == 1) {
-          activeCalls.push({
-            "baseNumber": parseInt(call.posy) + 1,
-            "playername": call.playername
-          });
+          var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+          
+          if (timeRemaining == null || timeRemaining > 0) {
+            activeCalls.push({
+              "baseNumber": parseInt(call.posy) + 1,
+              "playername": call.playername,
+              "timeRemaining": timeRemaining
+            });  
+          }
         }
       }
 
@@ -306,16 +312,34 @@ exports.calls = {
         return a.baseNumber - b.baseNumber;
       });
 
+      var message = "";
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      if (warTimeRemaining != null) {
+        if (warTimeRemaining < 0) {
+          msg.channel.sendMessage("The war is over. See results here: " + getCcUrl_(ccId));
+          return;
+        }
+        
+        var oneDay = 24 * 60 * 60 * 1000;
+        if (warTimeRemaining > oneDay) {
+          message += "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay) + "\n";
+        } else {
+          message += "War ends in " + formatTimeRemaining_(warTimeRemaining) + "\n";
+        }
+      }
+      
       if (activeCalls.length == 0) {
-        msg.channel.sendMessage("No active calls");
+        message += "No active calls";
       } else {
-        var message = "Active calls:\n";
+        message += "Active calls:\n";
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + " " + activeCall.playername + "\n";
+          message += "#" + activeCall.baseNumber + " " + activeCall.playername
+              + " " + formatTimeRemaining_(timeRemaining) + "\n";
         }
-        msg.channel.sendMessage(message);
       }
+      
+      msg.channel.sendMessage(message);
     });
   }
 };
@@ -433,4 +457,102 @@ var convertCallTimer_ = function(callTimer) {
   } else {
     return parseInt(callTimer);
   }
+};
+
+/**
+ * Returns the time remaining (in milliseconds) for the war, or null if
+ * timers are not enabled for the war.
+ */
+var calculateWarTimeRemaining_ = function(warStatus) {
+  try {
+    var checkTime = new Date(warStatus.general.checktime);
+    var timerLength = warStatus.general.timerlength;
+    var endTime = new Date(warStatus.general.starttime).addHours(24);
+    
+    if (timerLength == "0") {
+      // Timers not enabled for this war
+      return null;
+    } else {
+      return endTime - checkTime;
+    }
+  } catch (e) {
+    console.log("")
+  }
+};
+
+/**
+ * Returns the time remaining (in milliseconds) for a specific call, or null if
+ * timers are not enabled for the war, war has not started yet, or war is over.
+ */
+var calculateCallTimeRemaining_ = function(call, warStatus) {
+  try {
+    var callTime = new Date(call.calltime);
+    var checkTime = new Date(warStatus.general.checktime);
+    var startTime = new Date(warStatus.general.starttime);
+    var timerLength = warStatus.general.timerlength;
+    var endTime = new Date(warStatus.general.starttime).addHours(24);
+    
+    if (callTime < startTime) {
+      callTime = startTime;
+    }
+    
+    if (timerLength == "0") {
+      // Timers not enabled for this war
+      return null;
+    } else if (checkTime < startTime) {
+      // War has not started
+      return null;
+    } else if (checkTime > endTime) {
+      // War is over
+      return null;
+    } else if (timerLength == "-2" || timerLength == "-4") {
+      // Flex timer
+      var divisor = parseInt(timerLength.substring(1));
+      var callEndTime = callTime.addMilliseconds((endTime - callTime) / divisor);
+      return callEndTime - checkTime;
+    } else {
+      // Fixed timer
+      var callEndTime = callTime.addHours(parseInt(timerLength));
+      return callEndTime - checkTime;
+    }
+  } catch (e) {
+    console.log("Error calculating call time remaining. Call: " + call
+        + ". War status: " + warStatus);
+    throw e;
+  }
+};
+
+/**
+ * Formats time remaining (in ms) in XXhYYm.
+ */
+var formatTimeRemaining_ = function(timeRemaining) {
+  if (timeRemaining == null) {
+    return "";
+  }
+  
+  timeRemaining /= 60000;
+  var minutes = Math.floor(timeRemaining % 60);
+  timeRemaining /= 60
+  if (timeRemaining > 24) {
+    console.log("Received time remaining >24h " + timeRemaining);
+    return "??h??m";
+  }
+  var hours = Math.floor(timeRemaining);
+  return (hours > 0 ? hours + "h" : "") + minutes + "m";
+};
+
+/**
+ * Monkey-patched method for adding hours to a Date object.
+ */
+Date.prototype.addHours = function(h) {
+  this.addMilliseconds(h*60*60*1000);
+  return this;   
+};
+
+/**
+ * Monkey-patched method for adding milliseconds to a Date object.
+ */
+Date.prototype.addMilliseconds = function(ms) {
+  this.setTime(this.getTime() + (ms));
+  return this;
 };
