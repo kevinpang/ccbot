@@ -109,6 +109,7 @@ exports.call = {
         }
       }, function(error, response, body) {
         if (error) {
+          console.log("Unable to call base " + error);
           message += "Unable to call base " + error;
         } else {
           message += "Called base " + enemyBaseNumber + " for " + playerName;
@@ -204,6 +205,7 @@ exports["delete"] = {
           }
         }, function(error, response, body) {
           if (error) {
+            console.log("Unable to delete call " + error);
             msg.channel.sendMessage("Unable to delete call " + error);
           } else {
             msg.channel.sendMessage("Deleted call on " + enemyBaseNumber
@@ -387,6 +389,7 @@ exports.start = {
       }
     }, function(error, response, body) {
       if (error) {
+        console.log("Error creating war " + error);
         msg.channel.sendMessage("Error creating war: " + error);
       } else {
         // Remove the "war/" from the start.
@@ -463,6 +466,7 @@ exports.wartimer = {
       }
     }, function(error, response, body) {
       if (error) {
+        console.log("Unable to update war " + arr[1] + " time " + error);
         msg.channel.sendMessage("Unable to update war " + arr[1] + " time " + error);
       } else {
         msg.channel.sendMessage("War " + arr[1] + " time updated to " + suffix);
@@ -547,6 +551,7 @@ var getWarStatus_ = function(ccId, msg, callback) {
     }
   }, function(error, response, body) {
     if (error) {
+      console.log("Error retrieving data from Clash Caller: " + error);
       msg.channel.sendMessage("Error retrieving data from Clash Caller: "
           + error);
     } else {
@@ -807,6 +812,7 @@ var logAttack_ = function(msg, ccId, playerName, enemyBaseNumber, stars) {
         }
       }, function(error, response, body) {
         if (error) {
+          console.log("Unable to record stars " + error);
           msg.channel.sendMessage("Unable to record stars " + error);
         } else {
           msg.channel.sendMessage("Recorded " + stars + " star" + 
