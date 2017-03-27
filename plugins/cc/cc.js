@@ -518,7 +518,8 @@ var getWarTimeRemainingInfo_ = function(warStatus) {
 
 /**
  * Returns the time remaining (in milliseconds) for the war, or null if
- * timers are not enabled for the war.
+ * timers are not enabled for the war. Return value can be negative if
+ * the war is over.
  */
 var calculateWarTimeRemaining_ = function(warStatus) {
   try {
