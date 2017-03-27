@@ -11,7 +11,7 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked", "cc", "call", "calls", "config", "delete",
+exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "open",
     "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag", "start",
     "wartimer"];
 
@@ -80,6 +80,12 @@ exports.call = {
     if (!ccId) {
       return;
     }
+    
+    var regex = /^\d+$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format for /call");
+      return;
+    }
 
     var enemyBaseNumber = parseInt(suffix);
     request.post(CC_API, {
@@ -142,6 +148,56 @@ exports.attacked = {
   }
 };
 
+exports.open = {
+  description: "Returns all open bases",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+  
+    getUpdate_(ccId, function(warStatus) {
+      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
+      if (warTimeRemainingInfo.warOver) {
+        msg.channel.sendMessage(warTimeRemainingInfo.message);
+        return;
+      }
+      
+      var message = warTimeRemainingInfo.message + "\n";
+      
+      var activeCalls = getActiveCalls_(warStatus);
+      var openBases = [];
+      for (var i = 0; i < parseInt(warStatus.general.size); i++) {
+        var called = false;
+        for (var j = 0; j < activeCalls.length; j++) {
+          var activeCall = activeCalls[j];
+          if (activeCall.baseNumber - 1 == i) {
+            called = true;
+            break;
+          } else if (activeCall.baseNumber - 1 > i) {
+            // Active calls are sorted so if we get past the base we're
+            // looking for then it's not called.
+            break;
+          }
+        }
+        if (!called) {
+          console.log('open bases adding base #' + (i + 1));
+          openBases.push(i + 1);
+        }
+      }
+      
+      if (openBases.length == 0) {
+        message += "No open bases";
+      } else {
+        message += "Open bases:\n";
+        message += openBases.join("\n");
+      }
+      
+      msg.channel.sendMessage(message);
+    });
+  }
+};
+
 exports.setarchive = {
   usage: "<on|off>",
   description: "Sets archive on/off for new wars",
@@ -156,7 +212,7 @@ exports.setarchive = {
     saveConfig_(msg.channel.id, config);
     msg.channel.sendMessage("Archiving set to " + suffix);
   }
-}
+};
 
 exports.setcalltimer = {
   usage: "<# hours>",
@@ -291,43 +347,15 @@ exports.calls = {
     }
   
     getUpdate_(ccId, function(warStatus) {
-      var activeCalls = [];
-      for (var i = 0; i < warStatus.calls.length; i++) {
-        var call = warStatus.calls[i];
-        
-        if (call.stars == 1) {
-          var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
-          
-          if (timeRemaining == null || timeRemaining > 0) {
-            activeCalls.push({
-              "baseNumber": parseInt(call.posy) + 1,
-              "playername": call.playername,
-              "timeRemaining": timeRemaining
-            });  
-          }
-        }
-      }
-
-      activeCalls.sort(function(a, b) {
-        return a.baseNumber - b.baseNumber;
-      });
-
-      var message = "";
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      if (warTimeRemaining != null) {
-        if (warTimeRemaining < 0) {
-          msg.channel.sendMessage("The war is over. See results here: " + getCcUrl_(ccId));
-          return;
-        }
-        
-        var oneDay = 24 * 60 * 60 * 1000;
-        if (warTimeRemaining > oneDay) {
-          message += "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay) + "\n";
-        } else {
-          message += "War ends in " + formatTimeRemaining_(warTimeRemaining) + "\n";
-        }
+      var warTimeRemainingInfo = getWarTimeRemainingInfo_(warStatus);
+      if (warTimeRemainingInfo.warOver) {
+        msg.channel.sendMessage(warTimeRemainingInfo.message);
+        return;
       }
       
+      var message = warTimeRemainingInfo.message + "\n";
+      
+      var activeCalls = getActiveCalls_(warStatus);
       if (activeCalls.length == 0) {
         message += "No active calls";
       } else {
@@ -335,7 +363,7 @@ exports.calls = {
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
           message += "#" + activeCall.baseNumber + " " + activeCall.playername
-              + " " + formatTimeRemaining_(timeRemaining) + "\n";
+              + " " + formatTimeRemaining_(activeCall.timeRemaining) + "\n";
         }
       }
       
@@ -460,6 +488,37 @@ var convertCallTimer_ = function(callTimer) {
 };
 
 /**
+ * Returns war time remaining information.
+ * 
+ * Message will be blank if war isn't using timers. This is used for display at the
+ * beginning of commands that return the status of the war (e.g. /calls, /open).
+ */
+var getWarTimeRemainingInfo_ = function(warStatus) {
+  var warOver = false;
+  var message = "";
+  var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+  if (warTimeRemaining != null) {
+    if (warTimeRemaining < 0) {
+      warOver = true;
+      message = "The war is over. See results here: " + getCcUrl_(ccId);
+    }
+    
+    var oneDay = 24 * 60 * 60 * 1000;
+    if (warTimeRemaining > oneDay) {
+      message = "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
+    } else {
+      message = "War ends in " + formatTimeRemaining_(warTimeRemaining);
+    }
+  }
+  
+  return {
+    "warOver": warOver,
+    "message": message,
+    "warTimeRemaining": warTimeRemaining
+  }
+};
+
+/**
  * Returns the time remaining (in milliseconds) for the war, or null if
  * timers are not enabled for the war.
  */
@@ -539,6 +598,34 @@ var formatTimeRemaining_ = function(timeRemaining) {
   }
   var hours = Math.floor(timeRemaining);
   return (hours > 0 ? hours + "h" : "") + minutes + "m";
+};
+
+/**
+ * Returns an array of active calls for the given war.
+ */
+var getActiveCalls_ = function(warStatus) {
+  var activeCalls = [];
+  for (var i = 0; i < warStatus.calls.length; i++) {
+    var call = warStatus.calls[i];
+    
+    if (call.stars == 1) {
+      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      
+      if (timeRemaining == null || timeRemaining > 0) {
+        activeCalls.push({
+          "baseNumber": parseInt(call.posy) + 1,
+          "playername": call.playername,
+          "timeRemaining": timeRemaining
+        });  
+      }
+    }
+  }
+
+  activeCalls.sort(function(a, b) {
+    return a.baseNumber - b.baseNumber;
+  }); 
+  
+  return activeCalls;
 };
 
 /**
