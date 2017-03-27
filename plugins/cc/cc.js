@@ -12,7 +12,7 @@ try {
 }
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
-    "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
+    "note", "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
     "start", "status", "wartimer"];
 
 exports.attacked = {
@@ -237,6 +237,43 @@ exports.log = {
     var enemyBaseNumber = parseInt(arr[2]);
     var playerName = getPlayerName_(msg, arr[3]);
     logAttack_(msg, ccId, playerName, enemyBaseNumber, stars);
+  }
+};
+
+exports.note = {
+  usage: "<enemy base #> <note text>",
+  description: "Updates the note on the specified enemy base",
+  process: function(bot, msg, suffix) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+    
+    var regex = /^(\d+)\s(.*)$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Invalid format for /note");
+      return;
+    }
+    
+    var arr = regex.exec(suffix);
+    var enemyBaseNumber = parseInt(arr[1]);
+    var note = arr[2];
+    
+    request.post(CC_API, {
+      form: {
+        "REQUEST": "UPDATE_TARGET_NOTE",
+        "warcode": ccId,
+        "posy": enemyBaseNumber - 1,
+        "value": note
+      }
+    }, function(error, response, body) {
+      if (error) {
+        console.log("Error updating note " + error);
+        msg.channel.sendMessage("Error updating note " + error);
+      } else {
+        msg.channel.sendMessage("Updated note on base #" + enemyBaseNumber);  
+      }
+    });
   }
 };
 
