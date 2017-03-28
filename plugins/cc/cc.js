@@ -1069,7 +1069,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
     message += "* * * ";
   }
   
-  message += "#" + (baseNumber < 10 ? "0" : "") + baseNumber + ": ";
+  message += (baseNumber < 10 ? " " : "") + "#" + baseNumber + ": ";
   
   // Print out calls on this base
   if (calls.length == 0) {
