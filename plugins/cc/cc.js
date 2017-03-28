@@ -432,9 +432,16 @@ exports.setcc = {
   description: "Sets the current war ID",
   process: function(bot, msg, suffix) {
     var config = getConfig_(msg);
+    var prevCcId = config.cc_id;
     config.cc_id = suffix;
     saveConfig_(msg.channel.id, config);
-    msg.channel.sendMessage("Current war ID set to " + suffix);  
+    
+    var message = "";
+    if (prevCcId) {
+      message += "Previous war id: " + prevCcId + "\n";
+    }
+    message += "Current war ID set to " + suffix + " (" + getCcUrl_(suffix) + ")";
+    msg.channel.sendMessage(message);  
   }
 };
 
