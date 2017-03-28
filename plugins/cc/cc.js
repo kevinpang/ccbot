@@ -42,7 +42,7 @@ exports.cc = {
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
     if (ccId) {
-      msg.channel.sendMessage(getCcUrl_(ccId));
+      msg.channel.sendMessage("Current war: " + getCcUrl_(ccId));
     }
   }
 };
@@ -512,9 +512,17 @@ exports.start = {
       } else {
         // Remove the "war/" from the start.
         var ccId = body.substring(4);
+        var prevCcId = config.cc_id;
         config.cc_id = ccId;
         saveConfig_(msg.channel.id, config);
-        msg.channel.sendMessage(getCcUrl_(ccId));  
+        
+        var message = "";
+        if (prevCcId) {
+          message += "Previous war id: " + prevCcId + "\n";
+        }
+        
+        message += "New war created: " + getCcUrl_(ccId);
+        msg.channel.sendMessage(message);  
       }
     });
   }
@@ -716,7 +724,7 @@ var getCcId_ = function(msg) {
  * Returns the Clash Caller url for the specified war ID.
  */
 var getCcUrl_ = function(ccId) {
-  return CC_WAR_URL + ccId;
+  return "<" + CC_WAR_URL + ccId + ">";
 };
 
 /**
