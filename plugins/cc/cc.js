@@ -640,7 +640,7 @@ exports.status = {
           message += "\tNote: " + note + "\n";
         }
         
-        // Print out any active calls on this base
+        // Print out active calls on this base
         var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
         if (activeCallsOnBase.length > 0) {
           message += "\tActive calls:\n";
@@ -650,6 +650,24 @@ exports.status = {
                 formatTimeRemaining_(activeCallOnBase.timeRemaining) + "\n";          
           }
         }
+        
+        // Print out previous calls on this base
+        /*
+        var previousCallsOnBase = getPreviousCallsOnBase_(baseNumber, warStatus);
+        if (previousCallsOnBase.length > 0) {
+          message += "\tPrevious calls:\n";
+          for (var j = 0; j < previousCallsOnBase.length; j++) {
+            var previousCallOnBase = previousCallsOnBase[j];
+            message += "\t\t" + previousCallOnBase.playername + " (";
+            if (previousCallOnBase.expired) {
+              message += "expired";
+            } else {
+              message += formatStars_(previousCallOnBase.stars);
+            }
+            message += ")\n";
+          }
+        }
+        */
       }
       
       msg.channel.sendMessage(message);
@@ -926,16 +944,16 @@ var getEnemyBases_ = function(warStatus) {
     
     if (stars != 1) {
       enemyBases[call.posy].numAttacks += 1;
+      if (enemyBases[call.posy].bestAttack == null ||
+          enemyBases[call.posy].bestAttack.stars < stars) {
+        enemyBases[call.posy].bestAttack = {
+          "playerName": call.playername,
+          "stars": stars - 2
+        };
+      }
     }
     if (stars == 5) {
       enemyBases[call.posy].numThreeStars += 1;
-    }
-    if (enemyBases[call.posy].bestAttack == null ||
-        enemyBases[call.posy].bestAttack.stars < stars) {
-      enemyBases[call.posy].bestAttack = {
-        "playerName": call.playername,
-        "stars": stars - 2
-      };
     }
   }
   
@@ -1007,6 +1025,47 @@ var getActiveCallsOnBase_ = function(baseNumber, warStatus) {
   }
   return activeCallsOnBase;
 };
+
+/**
+ * Returns previous calls (expired calls and previous attacks) on the
+ * specified base for the given war.
+ */
+var getPreviousCallsOnBase_ = function(baseNumber, warStatus) {
+  var previousCalls = [];
+  for (var i = 0; i < warStatus.calls.length; i++) {
+    var call = warStatus.calls[i];
+    if (baseNumber != parseInt(call.posy) + 1) {
+      continue;
+    }
+   
+    var stars = parseInt(call.stars);
+    if (stars == 1) {
+      // Un-starred call.
+      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      if (timeRemaining < 0) {
+        // Expired call.
+        previousCalls.push({
+          "playername": call.playername,
+          "expired": true,
+          "posx": call.posx
+        });
+      }
+    } else if (stars > 1) {
+      // Attacked base
+      previousCalls.push({
+        "playername": call.playername,
+        "stars": stars - 2,
+        "posx": call.posx
+      });
+    }
+  }
+  
+  previousCalls.sort(function(a, b) {
+    return a.posx - b.posx;
+  });
+  
+  return previousCalls;
+}
 
 /**
  * Returns a 0-indexed array of open bases for the given war.
