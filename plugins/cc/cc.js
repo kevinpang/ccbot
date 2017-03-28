@@ -11,9 +11,9 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked", "cc", "call", "calls", "config", "delete", "log",
+exports.commands = ["attacked", "cc", "call", "calls", "config", "congrats", "delete", "log",
     "note", "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
-    "setcongrats", "start", "stats", "status", "wartimer"];
+    "start", "stats", "status", "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -159,7 +159,7 @@ exports.calls = {
         message += "Active calls:\n";
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + " " + activeCall.playername
+          message += "#" + activeCall.baseNumber + ": " + activeCall.playername
               + " " + formatTimeRemaining_(activeCall.timeRemaining) + "\n";
         }
       }
@@ -178,8 +178,65 @@ exports.config = {
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
-        "Congrats message: " + config.congrats;
+        "Congrats message(s): ";
+    if (config.congratsMessages && config.congratsMessages.length > 0) {
+      message += "\n";
+      for (var i = 0; i < config.congratsMessages.length; i++) {
+        message += "\t#" + (i + 1) + ": " + config.congratsMessages[i] + "\n";
+      }
+    } else {
+      message += "none";
+    }
     msg.channel.sendMessage(message);
+  }
+};
+
+exports.congrats = {
+  usage: "<add|remove> <congrats message|congrats number>",
+  description: "Adds/removes a congrats message (message displayed when someone 3-stars)",
+  process: function(bot, msg, suffix) {
+    var regex = /^(add|remove)\s(.*)$/;
+    var arr = regex.exec(suffix);
+    if (!arr) {
+      msg.channel.sendMessage("Invalid format for /congrats");
+      return;
+    }
+    
+    var config = getConfig_(msg);
+    if (arr[1] == "add") {
+      if (!config.congratsMessages) {
+        config.congratsMessages = [];
+      }
+      config.congratsMessages.push(arr[2]);
+      saveConfig_(msg.channel.id, config);
+      msg.channel.sendMessage("Added congrats message: " + arr[2]);
+    } else {
+      if (config.congratsMessages == null || config.congratsMessages.length == 0) {
+        msg.channel.sendMessage("No congrats messages configured");
+        return;
+      }
+      
+      regex = /\d+/;
+      var invalid = false;
+      if (!regex.test(arr[2])) {
+        invalid = true;
+      } else {
+        var congratsNumber = parseInt(arr[2]);
+        if (congratsNumber < 1 || congratsNumber > config.congratsMessages.length) {
+          invalid = true;
+        } else {
+          var congratsMessage = config.congratsMessages[congratsNumber - 1];
+          config.congratsMessages.splice(congratsNumber - 1, 1);
+          saveConfig_(msg.channel.id, config);
+          msg.channel.sendMessage("Removed congrats message: " + congratsMessage);
+        }
+      }
+      
+      if (invalid) {
+        msg.channel.sendMessage("Invalid congrats number. Valid numbers are: 1" +
+            (config.congratsMessages.length == 1 ? "" : "-" + config.congratsMessages.length));
+      }
+    }
   }
 };
 
@@ -316,7 +373,7 @@ exports.open = {
         message += "Open bases:\n";
         for (var i = 0; i < openBases.length; i++) {
           if (openBases[i].open) {
-            message += "#" + (i + 1) + " ";
+            message += "#" + (i + 1) + ": ";
             if (openBases[i].stars == 0) {
               message += "not attacked";
             } else {
@@ -408,17 +465,6 @@ exports.setclantag = {
     config.clantag = suffix;
     saveConfig_(msg.channel.id, config);
     msg.channel.sendMessage("Clan tag set to " + suffix);  
-  }
-};
-
-exports.setcongrats = {
-  usage: "<congrats message>",
-  description: "Sets the congrats message (displayed when someone 3-stars)",
-  process: function(bot, msg, suffix) {
-    var config = getConfig_(msg);
-    config.congrats = suffix;
-    saveConfig_(msg.channel.id, config);
-    msg.channel.sendMessage("Congrats message set to " + suffix);
   }
 };
 
@@ -574,7 +620,7 @@ exports.status = {
       
       var enemyBases = getEnemyBases_(warStatus);
       for (var i = 0; i < enemyBases.length; i++) {
-        message += "#" + (i + 1) + " ";
+        message += "#" + (i + 1) + ": ";
         
         var enemyBase = enemyBases[i];
         if (enemyBase.numAttacks == 0) {
@@ -681,7 +727,8 @@ var getConfig_ = function(msg) {
     return {
       "channel_name": msg.channel.name,
       "guild_id": msg.member ? msg.member.guild.id : "",
-      "guild_name": msg.member ? msg.member.guild.name : ""
+      "guild_name": msg.member ? msg.member.guild.name : "",
+      "congratsMessages": []
     };
   }
 };
@@ -992,8 +1039,8 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
               (stars == 1 ? "" : "s") + " for " + playerName + 
               " on base " + baseNumber;
           var config = getConfig_(msg);
-          if (stars == 3 && config.congrats) {
-            message += "\n" + config.congrats;
+          if (stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
+            message += "\n" + config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)];
           }
           msg.channel.sendMessage(message);
         }
