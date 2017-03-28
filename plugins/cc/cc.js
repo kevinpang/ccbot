@@ -949,7 +949,7 @@ var getEnemyBases_ = function(warStatus) {
     if (stars != 1) {
       enemyBases[call.posy].numAttacks += 1;
       if (enemyBases[call.posy].bestAttack == null ||
-          enemyBases[call.posy].bestAttack.stars < stars) {
+          enemyBases[call.posy].bestAttack.stars < stars - 2) {
         enemyBases[call.posy].bestAttack = {
           "playerName": call.playername,
           "stars": stars - 2,
