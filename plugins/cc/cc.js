@@ -640,34 +640,31 @@ exports.status = {
           message += "\tNote: " + note + "\n";
         }
         
-        // Print out active calls on this base
-        var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
-        if (activeCallsOnBase.length > 0) {
-          message += "\tActive calls:\n";
-          for (var j = 0; j < activeCallsOnBase.length; j++) {
-            var activeCallOnBase = activeCallsOnBase[j];
-            message += "\t\t" + activeCallOnBase.playername + " " +
-                formatTimeRemaining_(activeCallOnBase.timeRemaining) + "\n";          
+        // Print out calls on this base
+        var calls = getCallsOnBase_(baseNumber, warStatus);
+        for (var j = 0; j < calls.length; j++) {
+          var call = calls[j];
+          if (enemyBase.bestAttack && call.calltime == enemyBase.bestAttack.calltime) {
+            // Already displaying this as the best attack.
+            continue;
           }
-        }
-        
-        // Print out previous calls on this base
-        /*
-        var previousCallsOnBase = getPreviousCallsOnBase_(baseNumber, warStatus);
-        if (previousCallsOnBase.length > 0) {
-          message += "\tPrevious calls:\n";
-          for (var j = 0; j < previousCallsOnBase.length; j++) {
-            var previousCallOnBase = previousCallsOnBase[j];
-            message += "\t\t" + previousCallOnBase.playername + " (";
-            if (previousCallOnBase.expired) {
-              message += "expired";
-            } else {
-              message += formatStars_(previousCallOnBase.stars);
+          
+          message += "\t";
+          if (call.attacked) {
+            message += call.playername + " (" + formatStars_(call.stars) + ")";
+          } else {
+            if (call.timeRemaining != null) {
+              if (call.timeRemaining < 0) {
+                // Expired call.
+                message += call.playername + " (expired)";
+              } else {
+                // Active call.
+                message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
+              }
             }
-            message += ")\n";
           }
+          message += "\n";
         }
-        */
       }
       
       msg.channel.sendMessage(message);
@@ -948,7 +945,8 @@ var getEnemyBases_ = function(warStatus) {
           enemyBases[call.posy].bestAttack.stars < stars) {
         enemyBases[call.posy].bestAttack = {
           "playerName": call.playername,
-          "stars": stars - 2
+          "stars": stars - 2,
+          "calltime": call.calltime
         };
       }
     }
@@ -973,6 +971,45 @@ var getNote_ = function(baseNumber, warStatus) {
     }
   }
   return null;
+};
+
+/**
+ * Returns all calls (expired/active/attacks) on the specified
+ * base for the given war.
+ */
+var getCallsOnBase_ = function(baseNumber, warStatus) {
+  var calls = [];
+  for (var i = 0; i < warStatus.calls.length; i++) {
+    var call = warStatus.calls[i];
+    if (baseNumber != parseInt(call.posy) + 1) {
+      continue;
+    }
+    
+    var stars = parseInt(call.stars);
+    var call = {
+      "playername": call.playername,
+      "posx": call.posx,
+      "calltime": call.calltime
+    };
+
+    if (stars == 1) {
+      // Un-starred call.
+      call.timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      call.attacked = false;
+    } else {
+      // Attacked base.
+      call.stars = stars - 2;
+      call.attacked = true;
+    }
+    
+    calls.push(call);
+  }
+
+  calls.sort(function(a, b) {
+    return a.posx - b.posx;
+  });
+  
+  return calls;
 };
 
 /**
