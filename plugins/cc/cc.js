@@ -12,9 +12,24 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked", "cc", "call", "calls", "config", "congrats", "delete", "log",
-    "note", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
-    "start", "stats", "status", "wartimer"];
+exports.commands = ["attacked",
+    "cc",
+    "call",
+    "calls",
+    "config",
+    "congrats",
+    "delete",
+    "log",
+    "note",
+    "setarchive",
+    "setcalltimer",
+    "setcc",
+    "setclanname",
+    "setclantag",
+    "start",
+    "stats",
+    "status",
+    "wartimer"];
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -612,7 +627,7 @@ exports.status = {
             } else {
               if (call.timeRemaining < 0) {
                 // Expired call.
-                message += call.playername + " expired)";
+                message += call.playername + " (expired)";
               } else {
                 // Active call.
                 message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
