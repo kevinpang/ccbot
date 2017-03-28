@@ -606,7 +606,9 @@ exports.status = {
           if (call.attacked) {
             message += call.playername + " (" + formatStars_(call.stars) + ")";
           } else {
-            if (call.timeRemaining != null) {
+            if (call.timeRemaining == null) {
+              message += call.playername;
+            } else {
               if (call.timeRemaining < 0) {
                 // Expired call.
                 message += call.playername + " expired)";
