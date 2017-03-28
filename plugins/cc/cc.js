@@ -293,7 +293,7 @@ exports["delete"] = {
 };
 
 exports.log = {
-  usage: "<# of stars> on <enemy base #> by <player name>",
+  usage: "<# of stars> on <enemy base #> <by|for> <player name>",
   description: "Logs an attack for another player",
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
@@ -301,7 +301,7 @@ exports.log = {
       return;
     }
     
-    var regex = /^(\d+)\son\s(\d+)\sby\s(.*)$/;
+    var regex = /^(\d+)\son\s(\d+)\s(by|for)\s(.*)$/;
     var arr = regex.exec(suffix);
     if (!arr) {
       msg.channel.sendMessage("Invalid format for /log");
@@ -310,7 +310,7 @@ exports.log = {
     
     var stars = parseInt(arr[1]);
     var baseNumber = parseInt(arr[2]);
-    var playerName = getPlayerName_(msg, arr[3]);
+    var playerName = getPlayerName_(msg, arr[4]);
     logAttack_(msg, ccId, playerName, baseNumber, stars);
   }
 };
