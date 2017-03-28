@@ -642,6 +642,12 @@ exports.status = {
           		enemyBase.bestAttack.playerName + " (" +
           		formatStars_(enemyBase.bestAttack.stars) + ")\n";
         }
+        
+        // Print out existing note on this base
+        var note = getNote_(i + 1, warStatus);
+        if (note) {
+          message += "\tNote: " + note + "\n";
+        }
       }
       
       msg.channel.sendMessage(message);
