@@ -207,6 +207,10 @@ exports.congrats = {
       if (!config.congratsMessages) {
         config.congratsMessages = [];
       }
+      if (config.congratsMessages.length > 100) {
+        msg.channel.sendMessage("Too many congrats messages. Please remove some before adding more.");
+        return;
+      }
       config.congratsMessages.push(arr[2]);
       saveConfig_(msg.channel.id, config);
       msg.channel.sendMessage("Added congrats message: " + arr[2]);
