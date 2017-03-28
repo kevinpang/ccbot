@@ -380,14 +380,10 @@ exports.open = {
         for (var i = 0; i < openBases.length; i++) {
           if (openBases[i].open) {
             message += "#" + (i + 1) + ": ";
-            if (openBases[i].stars == 0) {
+            if (openBases[i].stars == null) {
               message += "not attacked";
             } else {
-              message += "(";
-              for (var j = 0; j < openBases[i].stars; j++) {
-                message += "\\*";
-              }
-              message += ")";
+              message += "(" + formatStars_(openBases[i].stars) + ")";
             }
             message += "\n";
             
@@ -643,11 +639,8 @@ exports.status = {
           message += "not attacked\n";
         } else {
           message += "(" + enemyBase.numThreeStars + "/" + enemyBase.numAttacks + ") " +
-          		enemyBase.bestAttack.playerName + " (";
-          for (var j = 0; j < enemyBase.bestAttack.stars; j++) {
-            message += "\\*";
-          }
-          message += ")\n";
+          		enemyBase.bestAttack.playerName + " (" +
+          		formatStars_(enemyBase.bestAttack.stars) + ")\n";
         }
       }
       
@@ -999,7 +992,7 @@ var getOpenBases_ = function(warStatus) {
   for (var i = 0; i < parseInt(warStatus.general.size); i++) {
     openBases[i] = {
       "open": true,
-      "stars": 0
+      "stars": null
     };
   }
   
@@ -1018,7 +1011,7 @@ var getOpenBases_ = function(warStatus) {
     } else if (call.stars == "5") {
       // Base already 3-starred
       openBases[posy].open = false;
-    } else if (call.stars == "3" || call.stars == "4") {
+    } else if (call.stars == "2" || call.stars == "3" || call.stars == "4") {
       openBases[posy].stars = parseInt(call.stars) - 2;
     }
   }
@@ -1089,6 +1082,13 @@ var getPlayerName_ = function(msg, playerName) {
     logger.warn("Unable to figure out player name: " + playerName);
     return "Unknown player name";
   }
+};
+
+/**
+ * Formats stars for display.
+ */
+var formatStars_ = function(stars) {
+  return stars + " star" + (stars == 1 ? "" : "s");
 };
 
 /**
