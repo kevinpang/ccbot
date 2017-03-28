@@ -94,17 +94,7 @@ exports.call = {
       }
       
       // Print out any existing calls on this base
-      var activeCalls = getActiveCalls_(warStatus);
-      var activeCallsOnBase = [];
-      if (activeCalls.length > 0) {
-        for (var i = 0; i < activeCalls.length; i++) {
-          var activeCall = activeCalls[i];
-          if (activeCall.baseNumber == baseNumber) {
-            activeCallsOnBase.push(activeCall);
-          }
-        }
-      }
-      
+      var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
       if (activeCallsOnBase.length > 0) {
         message += "Active calls:\n";
         for (var i = 0; i < activeCallsOnBase.length; i++) {
@@ -956,7 +946,7 @@ var getNote_ = function(baseNumber, warStatus) {
 };
 
 /**
- * Returns an array of active calls for the given war.
+ * Returns active calls for the given war.
  */
 var getActiveCalls_ = function(warStatus) {
   var activeCalls = [];
@@ -987,6 +977,23 @@ var getActiveCalls_ = function(warStatus) {
   }); 
   
   return activeCalls;
+};
+
+/**
+ * Returns active calls on the specified base for the given war.
+ */
+var getActiveCallsOnBase_ = function(baseNumber, warStatus) {
+  var activeCalls = getActiveCalls_(warStatus);
+  var activeCallsOnBase = [];
+  if (activeCalls.length > 0) {
+    for (var i = 0; i < activeCalls.length; i++) {
+      var activeCall = activeCalls[i];
+      if (activeCall.baseNumber == baseNumber) {
+        activeCallsOnBase.push(activeCall);
+      }
+    }
+  }
+  return activeCallsOnBase;
 };
 
 /**
