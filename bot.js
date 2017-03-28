@@ -70,7 +70,7 @@ function checkMessageForCommand(msg, isEdit) {
   
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
-	  logger.info(msg.content + " from " + msg.author.username + 
+	  logger.info("\"" + msg.content + "\" from " + msg.author.username + 
         " in " + (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
         msg.channel.name);
 		var cmdTxt = msg.content.split(" ")[0].substring(COMMAND_PREFIX.length);
