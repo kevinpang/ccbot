@@ -563,7 +563,7 @@ exports.stats = {
             }
           }
           
-          var message = "Stats for " + playerName + "\n";
+          var message = "__Stats for " + playerName + "__\n";
           message += "Wars participated: " + numWars + "\n";
           message += "Total stars: " + stars + "\n";
           message += "Total attacks: " + attacks + "\n";
