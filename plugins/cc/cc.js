@@ -173,7 +173,8 @@ exports.config = {
   description: "Returns bot configuration for current channel",
   process: function(bot, msg) {
     var config = getConfig_(msg);
-    var message = "Current war ID: " + config.cc_id + "\n" +
+    var message = "Current war ID: " + config.cc_id + 
+        (config.cc_id ? (" (" + getCcUrl_(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
