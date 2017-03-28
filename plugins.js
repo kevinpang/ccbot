@@ -1,3 +1,5 @@
+var logger = require('winston');
+
 var fs = require('fs'), path = require('path');
 function getDirectories(srcpath) {
   return fs.readdirSync(srcpath).filter(function(file) {
@@ -53,18 +55,18 @@ function preload_plugins() {
       if (plugin_directory != "./plugins/") { // install plugin modules for
         // Electrify builds
         npm.prefix = exec_dir;
-        console.log(npm.prefix);
+        logger.info(npm.prefix);
       }
       npm.commands.install(deps, function(er, data) {
         if (er) {
-          console.log(er);
+          logger.warn(er);
         }
-        console.log("Plugin preload complete");
+        logger.info("Plugin preload complete");
         load_plugins()
       });
 
       if (err) {
-        console.log("preload_plugins: " + err);
+        logger.warn("preload_plugins: " + err);
       }
     });
   } else {
@@ -80,7 +82,7 @@ function load_plugins() {
     try {
       plugin = require(plugin_directory + plugin_folders[i])
     } catch (err) {
-      console.log("Improper setup of the '" + plugin_folders[i]
+      logger.warn("Improper setup of the '" + plugin_folders[i]
           + "' plugin. : " + err);
     }
     if (plugin) {
@@ -94,5 +96,5 @@ function load_plugins() {
       }
     }
   }
-  console.log("Loaded " + dbot.commandCount() + " chat commands")
+  logger.info("Loaded " + dbot.commandCount() + " chat commands")
 }

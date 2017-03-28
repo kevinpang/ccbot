@@ -1,26 +1,35 @@
-console.logCopy = console.log.bind(console);
-console.log = function(message)
-{
-  var currentDate = "[" + new Date().toUTCString() + "] ";
-  this.logCopy(currentDate + message);
-};
+var logger = require('winston');
+
+logger.configure({
+  transports: [
+    new (logger.transports.File)({
+      filename: 'logs/log.txt',
+      maxsize: 1000000,
+      maxFiles: 100
+    }),
+    new (logger.transports.Console)({
+      colorize: true,
+      timestamp: true
+    })
+  ]
+});
 
 var COMMAND_PREFIX = '/';
 
 try {
 	var Discord = require("discord.js");
-} catch (e){
-	console.log(e.stack);
-	console.log(process.version);
-	console.log("Please run npm install and ensure it passes with no errors!");
+} catch (e) {
+	logger.error(e.stack);
+	logger.error(process.version);
+	logger.error("Please run npm install and ensure it passes with no errors!");
 	process.exit();
 }
-console.log("Starting DiscordBot\nNode version: " + process.version + "\nDiscord.js version: " + Discord.version);
+logger.info("Starting DiscordBot\nNode version: " + process.version + "\nDiscord.js version: " + Discord.version);
 
 try {
   var Auth = require("./auth.json");
 } catch (e) {
-  console.log("Please create an auth.json file like auth.json.example " + e);
+  logger.error("Please create an auth.json file like auth.json.example " + e);
   process.exit();
 }
 
@@ -41,14 +50,14 @@ var commands = {
 var bot = new Discord.Client();
 
 bot.on("ready", function () {
-	console.log("Logged in! Serving in " + bot.guilds.array().length + " servers");
+  logger.info("Logged in! Serving in " + bot.guilds.array().length + " servers");
 	require("./plugins.js").init();
-	console.log("type "+COMMAND_PREFIX+"help in Discord for a commands list.");
+	logger.info("type "+COMMAND_PREFIX+"help in Discord for a commands list.");
 	bot.user.setGame(COMMAND_PREFIX+"help | " + bot.guilds.array().length +" Servers"); 
 });
 
 bot.on("disconnected", function () {
-	console.log("Disconnected!");
+  logger.error("Disconnected!");
 	process.exit(1); // exit node.js with an error
 });
 
@@ -61,9 +70,9 @@ function checkMessageForCommand(msg, isEdit) {
   
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
-    console.log("treating " + msg.content + " from " + msg.author.username + 
+	  logger.info(msg.content + " from " + msg.author.username + 
         " in " + (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
-        msg.channel.name + " as command");
+        msg.channel.name);
 		var cmdTxt = msg.content.split(" ")[0].substring(COMMAND_PREFIX.length);
 		// add one for the ! and one for the space
     var suffix = msg.content.substring(cmdTxt.length+COMMAND_PREFIX.length+1);
@@ -134,7 +143,7 @@ function checkMessageForCommand(msg, isEdit) {
 			try{
 				cmd.process(bot, msg, suffix, isEdit);
 			} catch(e){
-			  console.log("command " + cmdTxt + " failed: " + e);
+			  logger.warn("command " + cmdTxt + " failed: " + e);
 			  var msgTxt = "command " + cmdTxt + " failed :(";
 				msg.channel.sendMessage(msgTxt);
 			}
@@ -163,7 +172,7 @@ exports.addCommand = function(commandName, commandObject){
   try {
     commands[commandName] = commandObject;
   } catch(err){
-    console.log(err);
+    logger.warn(err);
   }
 };
 
@@ -174,6 +183,6 @@ exports.commandCount = function(){
 if (Auth.botToken) {
   bot.login(Auth.botToken);
 } else {
-  console.log("No bot token specified");
+  logger.error("No bot token specified");
   process.exit();
 }

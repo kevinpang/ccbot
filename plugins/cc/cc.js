@@ -1,3 +1,4 @@
+var logger = require('winston');
 var fs = require('fs');
 var request = require('request');
 
@@ -7,7 +8,7 @@ var CC_WAR_URL = "http://www.clashcaller.com/war/";
 try {
   var Configs = require("../../configs.json");
 } catch (e) {
-  console.log("Please create an configs.json file like configs.json.example " + e);
+  logger.error("Please create an configs.json file like configs.json.example " + e);
   process.exit();
 }
 
@@ -122,7 +123,7 @@ exports.call = {
         }
       }, function(error, response, body) {
         if (error) {
-          console.log("Unable to call base " + error);
+          logger.warn("Unable to call base " + error);
           message += "Unable to call base " + error;
         } else {
           message += "Called base " + baseNumber + " for " + playerName;
@@ -281,7 +282,7 @@ exports["delete"] = {
           }
         }, function(error, response, body) {
           if (error) {
-            console.log("Unable to delete call " + error);
+            logger.warn("Unable to delete call " + error);
             msg.channel.sendMessage("Unable to delete call " + error);
           } else {
             msg.channel.sendMessage("Deleted call on " + baseNumber
@@ -344,7 +345,7 @@ exports.note = {
       }
     }, function(error, response, body) {
       if (error) {
-        console.log("Error updating note " + error);
+        logger.warn("Error updating note " + error);
         msg.channel.sendMessage("Error updating note " + error);
       } else {
         msg.channel.sendMessage("Updated note on base #" + baseNumber);  
@@ -508,7 +509,7 @@ exports.start = {
       }
     }, function(error, response, body) {
       if (error) {
-        console.log("Error creating war " + error);
+        logger.warn("Error creating war " + error);
         msg.channel.sendMessage("Error creating war: " + error);
       } else {
         // Remove the "war/" from the start.
@@ -560,8 +561,10 @@ exports.stats = {
       }
     }, function(error, response, body) {
       if (error) {
-        console.log("Unable to find player: " + error);
-        msg.channel.sendMessage("Unable to find player: " + error);
+        logger.warn("Unable to find player " + playerName +
+            " in clan " + config.clantag + ": " + error);
+        msg.channel.sendMessage("Unable to find player " + playerName +
+            " in clan " + config.clantag + ": " + error);
       } else {
         body = JSON.parse(body);
         
@@ -683,7 +686,7 @@ exports.wartimer = {
       }
     }, function(error, response, body) {
       if (error) {
-        console.log("Unable to update war " + arr[1] + " time " + error);
+        logger.warn("Unable to update war " + arr[1] + " time " + error);
         msg.channel.sendMessage("Unable to update war " + arr[1] + " time " + error);
       } else {
         msg.channel.sendMessage("War " + arr[1] + " time updated to " + suffix);
@@ -754,7 +757,7 @@ var saveConfig_ = function(id, config) {
   try {
     fs.writeFile("./configs.json", JSON.stringify(Configs, null, 2), null);
   } catch (e) {
-    console.log("Failed saving config " + e);
+    logger.warn("Failed saving config " + e);
   }
 };
 
@@ -769,14 +772,14 @@ var getWarStatus_ = function(ccId, msg, callback) {
     }
   }, function(error, response, body) {
     if (error) {
-      console.log("Error retrieving data from Clash Caller: " + error);
+      logger.warn("Error retrieving data from Clash Caller: " + error);
       msg.channel.sendMessage("Error retrieving data from Clash Caller: "
           + error);
     } else {
       try {
         callback(JSON.parse(body));  
       } catch (e) {
-        console.log("Error in getWarStatus_ callback. " + e + ". War status: " + body);
+        logger.warn("Error in getWarStatus_ callback. " + e + ". War status: " + body);
         msg.channel.sendMessage("Error getting war status for war ID: " + ccId);
       }
     }
@@ -835,7 +838,7 @@ var calculateWarTimeRemaining_ = function(warStatus) {
       return endTime - checkTime;
     }
   } catch (e) {
-    console.log("")
+    logger.warn("Unable to calculate war time remaining: " + JSON.stringify(warStatus));
   }
 };
 
@@ -876,8 +879,8 @@ var calculateCallTimeRemaining_ = function(call, warStatus) {
       return callEndTime - checkTime;
     }
   } catch (e) {
-    console.log("Error calculating call time remaining. Call: " + call
-        + ". War status: " + warStatus);
+    logger.warn("Error calculating call time remaining. Call: " + call
+        + ". War status: " + JSON.stringify(warStatus));
     throw e;
   }
 };
@@ -894,7 +897,7 @@ var formatTimeRemaining_ = function(timeRemaining) {
   var minutes = Math.floor(timeRemaining % 60);
   timeRemaining /= 60
   if (timeRemaining > 24) {
-    console.log("Received time remaining >24h " + timeRemaining);
+    logger.warn("Received time remaining >24h " + timeRemaining);
     return "??h??m";
   }
   var hours = Math.floor(timeRemaining);
@@ -1045,7 +1048,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
         }
       }, function(error, response, body) {
         if (error) {
-          console.log("Unable to record stars " + error);
+          logger.warn("Unable to record stars " + error);
           msg.channel.sendMessage("Unable to record stars " + error);
         } else {
           var message = "Recorded " + stars + " star" + 
@@ -1083,7 +1086,7 @@ var getPlayerName_ = function(msg, playerName) {
       return member.user.username;
     }
   } else {
-    console.log("Unable to figure out player name: " + playerName);
+    logger.warn("Unable to figure out player name: " + playerName);
     return "Unknown player name";
   }
 };

@@ -7,7 +7,8 @@
   "author": "kpanghmc@gmail.com",
   "dependencies": {
     "discord.js": "11.0.x",
-    "npm": ""
+    "npm": "",
+    "winston": "2.3.x"
   },
   "main": "bot.js",
   "scripts": {
