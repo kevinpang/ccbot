@@ -1064,47 +1064,6 @@ var getActiveCallsOnBase_ = function(baseNumber, warStatus) {
 };
 
 /**
- * Returns previous calls (expired calls and previous attacks) on the
- * specified base for the given war.
- */
-var getPreviousCallsOnBase_ = function(baseNumber, warStatus) {
-  var previousCalls = [];
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    if (baseNumber != parseInt(call.posy) + 1) {
-      continue;
-    }
-   
-    var stars = parseInt(call.stars);
-    if (stars == 1) {
-      // Un-starred call.
-      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
-      if (timeRemaining < 0) {
-        // Expired call.
-        previousCalls.push({
-          "playername": call.playername,
-          "expired": true,
-          "posx": call.posx
-        });
-      }
-    } else if (stars > 1) {
-      // Attacked base
-      previousCalls.push({
-        "playername": call.playername,
-        "stars": stars - 2,
-        "posx": call.posx
-      });
-    }
-  }
-  
-  previousCalls.sort(function(a, b) {
-    return a.posx - b.posx;
-  });
-  
-  return previousCalls;
-}
-
-/**
  * Logs an attack.
  */
 var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
