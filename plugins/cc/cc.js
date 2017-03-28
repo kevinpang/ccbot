@@ -93,7 +93,7 @@ exports.call = {
         message += "Note: " + note + "\n";
       }
       
-      // Print out any existing calls on this base
+      // Print out any active calls on this base
       var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
       if (activeCallsOnBase.length > 0) {
         message += "Active calls:\n";
@@ -622,7 +622,8 @@ exports.status = {
       
       var enemyBases = getEnemyBases_(warStatus);
       for (var i = 0; i < enemyBases.length; i++) {
-        message += "#" + (i + 1) + ": ";
+        var baseNumber = i + 1;
+        message += "#" + baseNumber + ": ";
         
         var enemyBase = enemyBases[i];
         if (enemyBase.numAttacks == 0) {
@@ -634,9 +635,20 @@ exports.status = {
         }
         
         // Print out existing note on this base
-        var note = getNote_(i + 1, warStatus);
+        var note = getNote_(baseNumber, warStatus);
         if (note) {
           message += "\tNote: " + note + "\n";
+        }
+        
+        // Print out any active calls on this base
+        var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
+        if (activeCallsOnBase.length > 0) {
+          message += "\tActive calls:\n";
+          for (var j = 0; j < activeCallsOnBase.length; j++) {
+            var activeCallOnBase = activeCallsOnBase[j];
+            message += "\t\t" + activeCallOnBase.playername + " " +
+                formatTimeRemaining_(activeCallOnBase.timeRemaining) + "\n";          
+          }
         }
       }
       
