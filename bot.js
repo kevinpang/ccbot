@@ -62,17 +62,19 @@ bot.on("disconnected", function () {
 });
 
 function checkMessageForCommand(msg, isEdit) {
-  // No-op if we don't have write priveledges on the channel.
-  if (msg.channel.permissionsFor && 
-      !msg.channel.permissionsFor(bot.user).hasPermission('SEND_MESSAGES')) {
-    return; 
-  }
-  
 	// check if message is a command
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(COMMAND_PREFIX))){
+	  var guildAndChannel = (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
+        msg.channel.name;
 	  logger.info("\"" + msg.content + "\" from " + msg.author.username + 
-        " in " + (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
-        msg.channel.name);
+        " in " + guildAndChannel);
+	  // No-op if we don't have write priveledges on the channel.
+	  if (msg.channel.permissionsFor && 
+	      !msg.channel.permissionsFor(bot.user).hasPermission('SEND_MESSAGES')) {
+	    logger.warn("Ignoring because bot lacks SEND_MESSAGES permission in " +
+	        guildAndChannel);
+	    return; 
+	  }
 		var cmdTxt = msg.content.split(" ")[0].substring(COMMAND_PREFIX.length);
 		// add one for the ! and one for the space
     var suffix = msg.content.substring(cmdTxt.length+COMMAND_PREFIX.length+1);
