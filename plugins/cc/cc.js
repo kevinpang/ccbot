@@ -151,7 +151,7 @@ exports.calls = {
         return;
       }
       
-      message += "\n";
+      message += "\n\n";
       
       var activeCalls = getActiveCalls_(warStatus);
       if (activeCalls.length == 0) {
@@ -370,7 +370,7 @@ exports.open = {
         return;
       }
       
-      message += "\n";
+      message += "\n\n";
       
       var openBases = getOpenBases_(warStatus);
       if (openBases.length == 0) {
@@ -628,7 +628,7 @@ exports.status = {
     
     getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n";
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\nWar status:\n";
       
       var enemyBases = getEnemyBases_(warStatus);
       for (var i = 0; i < enemyBases.length; i++) {
@@ -805,11 +805,13 @@ var getWarTimeRemainingMessage_ = function(ccId, warTimeRemaining) {
   if (warTimeRemaining == null) {
     return ""
   } else if (warTimeRemaining < 0) {
-    return "The war is over. See results here: " + getCcUrl_(ccId);
+    return "The war is over (" + getCcUrl_(ccId) + ")";
   } else if (warTimeRemaining > oneDay) {
-    return "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay);
+    return "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay) +
+        " (" + getCcUrl_(ccId) + ")";
   } else {
-    return "War ends in " + formatTimeRemaining_(warTimeRemaining);
+    return "War ends in " + formatTimeRemaining_(warTimeRemaining) +
+        " (" + getCcUrl_(ccId) + ")";;
   }
 };
 
