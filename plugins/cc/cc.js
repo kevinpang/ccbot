@@ -946,7 +946,6 @@ var getEnemyBases_ = function(warStatus) {
         enemyBases[call.posy].bestAttack = {
           "playerName": call.playername,
           "stars": stars - 2,
-          "calltime": call.calltime
         };
       }
     }
@@ -989,7 +988,6 @@ var getCallsOnBase_ = function(baseNumber, warStatus) {
     var call = {
       "playername": call.playername,
       "posx": call.posx,
-      "calltime": call.calltime
     };
 
     if (stars == 1) {
