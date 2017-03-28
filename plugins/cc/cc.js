@@ -99,25 +99,6 @@ exports.call = {
         msg.channel.sendMessage(getWarTimeRemainingMessage_(ccId, warTimeRemaining));
         return;
       }
-
-      var message = "";
-      
-      // Print out existing note on this base
-      var note = getNote_(baseNumber, warStatus);
-      if (note) {
-        message += "Note: " + note + "\n";
-      }
-      
-      // Print out any active calls on this base
-      var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
-      if (activeCallsOnBase.length > 0) {
-        message += "__Active Calls__\n";
-        for (var i = 0; i < activeCallsOnBase.length; i++) {
-          var activeCallOnBase = activeCallsOnBase[i];
-          message += "\t" + activeCallOnBase.playername + " " +
-              formatTimeRemaining_(activeCallOnBase.timeRemaining) + "\n";          
-        }
-      }
       
       request.post(CC_API, {
         form: {
@@ -129,12 +110,31 @@ exports.call = {
       }, function(error, response, body) {
         if (error) {
           logger.warn("Unable to call base " + error);
-          message += "Unable to call base " + error;
+          msg.channel.sendMessage("Unable to call base " + error);
         } else {
-          message += "Called base " + baseNumber + " for " + playerName;
+          getWarStatus_(ccId, msg, function(warStatus) {
+            var message = "Called base " + baseNumber + " for " + playerName;
+            
+            // Print out existing note on this base
+            var note = getNote_(baseNumber, warStatus);
+            if (note) {
+              message += "\n\nNote: " + note;
+            }
+            
+            // Print out any active calls on this base
+            var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
+            if (activeCallsOnBase.length > 0) {
+              message += "\n\n__Active Calls on #" + baseNumber + "__\n";
+              for (var i = 0; i < activeCallsOnBase.length; i++) {
+                var activeCallOnBase = activeCallsOnBase[i];
+                message += activeCallOnBase.playername + " (" +
+                    formatTimeRemaining_(activeCallOnBase.timeRemaining) + ")\n";          
+              }
+            }            
+            
+            msg.channel.sendMessage(message);
+          });
         }
-        
-        msg.channel.sendMessage(message);
       });
     });
   }
@@ -166,7 +166,7 @@ exports.calls = {
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
           message += "#" + activeCall.baseNumber + ": " + activeCall.playername
-              + " " + formatTimeRemaining_(activeCall.timeRemaining) + "\n";
+              + " (" + formatTimeRemaining_(activeCall.timeRemaining) + ")\n";
         }
       }
       
@@ -594,49 +594,16 @@ exports.status = {
     getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
       var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__War Status__\n";
-      
+      message += "```\n";
       var currentStars = getCurrentStars_(warStatus);
       for (var i = 0; i < currentStars.length; i++) {
         var baseNumber = i + 1;
-        message += "#" + baseNumber + ": **";
-        
         var stars = currentStars[i];
-        if (stars == null) {
-          message += "not attacked";
-        } else {
-          message += formatStars_(stars);
-        }
-        message += "**\n";
-        
-        // Print out existing note on this base
-        var note = getNote_(baseNumber, warStatus);
-        if (note) {
-          message += "\tNote: " + note + "\n";
-        }
-        
-        // Print out calls on this base
         var calls = getCallsOnBase_(baseNumber, warStatus);
-        for (var j = 0; j < calls.length; j++) {
-          var call = calls[j];
-          message += "\t";
-          if (call.attacked) {
-            message += call.playername + " (" + formatStars_(call.stars) + ")";
-          } else {
-            if (call.timeRemaining == null) {
-              message += call.playername;
-            } else {
-              if (call.timeRemaining < 0) {
-                // Expired call.
-                message += call.playername + " (expired)";
-              } else {
-                // Active call.
-                message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
-              }
-            }
-          }
-          message += "\n";
-        }
+        var note = getNote_(baseNumber, warStatus);
+        message += formatBase_(stars, baseNumber, calls, note);
       }
+      message += "```";
       
       msg.channel.sendMessage(message);
     });
@@ -1085,6 +1052,60 @@ var getPlayerName_ = function(msg, playerName) {
     logger.warn("Unable to figure out player name: " + playerName);
     return "Unknown player name";
   }
+};
+
+/**
+ * Formats a base for display. Assumes we're in monospace mode.
+ */
+var formatBase_ = function(stars, baseNumber, calls, note) {
+  var message = "";
+  if (stars == null || stars == 0) {
+    message += "      ";
+  } else if (stars == 1) {
+    message += "    * ";
+  } else if (stars == 2) {
+    message += "  * * ";
+  } else if (stars == 3) {
+    message += "* * * ";
+  }
+  
+  message += "#" + (baseNumber < 10 ? "0" : "") + baseNumber + ": ";
+  
+  // Print out calls on this base
+  if (calls.length == 0) {
+    message += "OPEN\n";
+  } else {
+    for (var j = 0; j < calls.length; j++) {
+      var call = calls[j];
+      if (j > 0) {
+        message += "           ";
+      }
+      
+      if (call.attacked) {
+        message += call.playername + " (" + formatStars_(call.stars) + ")";
+      } else {
+        if (call.timeRemaining == null) {
+          message += call.playername;
+        } else {
+          if (call.timeRemaining < 0) {
+            // Expired call.
+            message += call.playername + " (expired)";
+          } else {
+            // Active call.
+            message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
+          }
+        }
+      }
+      message += "\n";
+    }
+  }
+  
+  // Print out existing note on this base
+  if (note) {
+    message += "           Note: " + note + "\n";
+  }
+
+  return message;
 };
 
 /**
