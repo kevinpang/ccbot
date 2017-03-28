@@ -636,9 +636,7 @@ exports.status = {
         if (enemyBase.numAttacks == 0) {
           message += "not attacked\n";
         } else {
-          message += "(" + enemyBase.numThreeStars + "/" + enemyBase.numAttacks + ") " +
-          		enemyBase.bestAttack.playerName + " (" +
-          		formatStars_(enemyBase.bestAttack.stars) + ")\n";
+          message += formatStars_(enemyBase.bestAttack.stars) + "\n";
         }
         
         // Print out existing note on this base
@@ -651,11 +649,6 @@ exports.status = {
         var calls = getCallsOnBase_(baseNumber, warStatus);
         for (var j = 0; j < calls.length; j++) {
           var call = calls[j];
-          if (enemyBase.bestAttack && call.calltime == enemyBase.bestAttack.calltime) {
-            // Already displaying this as the best attack.
-            continue;
-          }
-          
           message += "\t";
           if (call.attacked) {
             message += call.playername + " (" + formatStars_(call.stars) + ")";
