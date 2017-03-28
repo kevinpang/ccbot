@@ -13,7 +13,7 @@ try {
 }
 
 exports.commands = ["attacked", "cc", "call", "calls", "config", "congrats", "delete", "log",
-    "note", "open", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
+    "note", "setarchive", "setcalltimer", "setcc", "setclanname", "setclantag",
     "start", "stats", "status", "wartimer"];
 
 exports.attacked = {
@@ -1110,44 +1110,6 @@ var getPreviousCallsOnBase_ = function(baseNumber, warStatus) {
   
   return previousCalls;
 }
-
-/**
- * Returns a 0-indexed array of open bases for the given war.
- * 
- * Open bases are defined as bases that either do not have an active call on
- * them or bases that have not been 3-starred.
- */
-var getOpenBases_ = function(warStatus) {
-  var openBases = [];
-  for (var i = 0; i < parseInt(warStatus.general.size); i++) {
-    openBases[i] = {
-      "open": true,
-      "stars": null
-    };
-  }
-  
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    var posy = call.posy;
-    
-    if (call.stars == "1") {
-      // Has an un-starred call.
-      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
-      
-      if (timeRemaining == null || timeRemaining > 0) {
-        // Has an active call.
-        openBases[posy].open = false;
-      }
-    } else if (call.stars == "5") {
-      // Base already 3-starred
-      openBases[posy].open = false;
-    } else if (call.stars == "2" || call.stars == "3" || call.stars == "4") {
-      openBases[posy].stars = parseInt(call.stars) - 2;
-    }
-  }
-
-  return openBases;
-};
 
 /**
  * Logs an attack.
