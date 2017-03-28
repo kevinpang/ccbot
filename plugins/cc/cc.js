@@ -96,7 +96,7 @@ exports.call = {
       // Print out any active calls on this base
       var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
       if (activeCallsOnBase.length > 0) {
-        message += "Active calls:\n";
+        message += "__Active Calls__\n";
         for (var i = 0; i < activeCallsOnBase.length; i++) {
           var activeCallOnBase = activeCallsOnBase[i];
           message += "\t" + activeCallOnBase.playername + " " +
@@ -147,7 +147,7 @@ exports.calls = {
       if (activeCalls.length == 0) {
         message += "No active calls";
       } else {
-        message += "Active calls:\n";
+        message += "__Active Calls__\n";
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
           message += "#" + activeCall.baseNumber + ": " + activeCall.playername
@@ -578,19 +578,20 @@ exports.status = {
     
     getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\nWar status:\n";
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__War Status__\n";
       
       var currentStars = getCurrentStars_(warStatus);
       for (var i = 0; i < currentStars.length; i++) {
         var baseNumber = i + 1;
-        message += "#" + baseNumber + ": ";
+        message += "#" + baseNumber + ": **";
         
         var stars = currentStars[i];
         if (stars == null) {
-          message += "not attacked\n";
+          message += "not attacked";
         } else {
-          message += formatStars_(stars) + "\n";
+          message += formatStars_(stars);
         }
+        message += "**\n";
         
         // Print out existing note on this base
         var note = getNote_(baseNumber, warStatus);

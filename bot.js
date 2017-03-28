@@ -111,35 +111,33 @@ function checkMessageForCommand(msg, isEdit) {
 					}
 					msg.channel.sendMessage(info);
 				} else {
-					msg.channel.sendMessage("**Available Commands:**").then(function(){
-						var batch = "";
-						var sortedCommands = Object.keys(commands).sort();
-						for(var i in sortedCommands) {
-							var cmd = sortedCommands[i];
-							var info = "**"+COMMAND_PREFIX + cmd+"**";
-							var usage = commands[cmd].usage;
-							if(usage){
-								info += " " + usage;
-							}
-							var description = commands[cmd].description;
-							if(description instanceof Function){
-								description = description();
-							}
-							if(description){
-								info += "\n\t" + description;
-							}
-							var newBatch = batch + "\n" + info;
-							if(newBatch.length > (1024 - 8)){ // limit message length
-								msg.channel.sendMessage(batch);
-								batch = info;
-							} else {
-								batch = newBatch
-							}
+					var batch = "";
+					var sortedCommands = Object.keys(commands).sort();
+					for(var i in sortedCommands) {
+						var cmd = sortedCommands[i];
+						var info = "**"+COMMAND_PREFIX + cmd+"**";
+						var usage = commands[cmd].usage;
+						if(usage){
+							info += " " + usage;
 						}
-						if(batch.length > 0){
+						var description = commands[cmd].description;
+						if(description instanceof Function){
+							description = description();
+						}
+						if(description){
+							info += "\n\t" + description;
+						}
+						var newBatch = batch + "\n" + info;
+						if(newBatch.length > (1024 - 8)){ // limit message length
 							msg.channel.sendMessage(batch);
+							batch = info;
+						} else {
+							batch = newBatch
 						}
-				});
+					}
+					if(batch.length > 0){
+						msg.channel.sendMessage(batch);
+					}
 			}
     } else if(cmd) {
 			try{
