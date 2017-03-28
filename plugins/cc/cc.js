@@ -344,53 +344,6 @@ exports.note = {
   }
 };
 
-exports.open = {
-  description: "Returns all open bases",
-  process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
-    if (!ccId) {
-      return;
-    }
-  
-    getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
-      if (warTimeRemaining < 0) {
-        msg.channel.sendMessage(message);
-        return;
-      }
-      
-      message += "\n\n";
-      
-      var openBases = getOpenBases_(warStatus);
-      if (openBases.length == 0) {
-        message += "No open bases";
-      } else {
-        message += "Open bases:\n";
-        for (var i = 0; i < openBases.length; i++) {
-          if (openBases[i].open) {
-            message += "#" + (i + 1) + ": ";
-            if (openBases[i].stars == null) {
-              message += "not attacked";
-            } else {
-              message += "(" + formatStars_(openBases[i].stars) + ")";
-            }
-            message += "\n";
-            
-            // Print out existing note on this base
-            var note = getNote_(i + 1, warStatus);
-            if (note) {
-              message += "\tNote: " + note + "\n";
-            }
-          }
-        }
-      }
-      
-      msg.channel.sendMessage(message);
-    });
-  }
-};
-
 exports.setarchive = {
   usage: "<on|off>",
   description: "Sets archive on/off for new wars",
@@ -627,16 +580,16 @@ exports.status = {
       var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
       var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\nWar status:\n";
       
-      var enemyBases = getEnemyBases_(warStatus);
-      for (var i = 0; i < enemyBases.length; i++) {
+      var currentStars = getCurrentStars_(warStatus);
+      for (var i = 0; i < currentStars.length; i++) {
         var baseNumber = i + 1;
         message += "#" + baseNumber + ": ";
         
-        var enemyBase = enemyBases[i];
-        if (enemyBase.numAttacks == 0) {
+        var stars = currentStars[i];
+        if (stars == null) {
           message += "not attacked\n";
         } else {
-          message += formatStars_(enemyBase.bestAttack.stars) + "\n";
+          message += formatStars_(stars) + "\n";
         }
         
         // Print out existing note on this base
@@ -656,7 +609,7 @@ exports.status = {
             if (call.timeRemaining != null) {
               if (call.timeRemaining < 0) {
                 // Expired call.
-                message += call.playername + " (expired)";
+                message += call.playername + " expired)";
               } else {
                 // Active call.
                 message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
@@ -923,38 +876,28 @@ var formatTimeRemaining_ = function(timeRemaining) {
 };
 
 /**
- * Returns an array of enemy base statuses for the given war.
+ * Returns the current star status of every enemy base.
  */
-var getEnemyBases_ = function(warStatus) {
-  var enemyBases = [];
+var getCurrentStars_ = function(warStatus) {
+  var currentStars = [];
   for (var i = 0; i < parseInt(warStatus.general.size); i++) {
-    enemyBases[i] = {
-      "numAttacks": 0,
-      "bestAttack": null,
-      "numThreeStars": 0
-    };
+    currentStars[i] = null;
   }
   
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
     var stars = parseInt(call.stars);
-    
-    if (stars != 1) {
-      enemyBases[call.posy].numAttacks += 1;
-      if (enemyBases[call.posy].bestAttack == null ||
-          enemyBases[call.posy].bestAttack.stars < stars - 2) {
-        enemyBases[call.posy].bestAttack = {
-          "playerName": call.playername,
-          "stars": stars - 2,
-        };
+    if (stars > 1) {
+      // Base has been attacked.
+      stars = stars - 2;
+      if (currentStars[call.posy] == null ||
+          currentStars[call.posy] < stars) {
+        currentStars[call.posy] = stars;
       }
-    }
-    if (stars == 5) {
-      enemyBases[call.posy].numThreeStars += 1;
     }
   }
   
-  return enemyBases;
+  return currentStars;
 };
 
 /**
@@ -977,7 +920,7 @@ var getNote_ = function(baseNumber, warStatus) {
  * base for the given war.
  */
 var getCallsOnBase_ = function(baseNumber, warStatus) {
-  var calls = [];
+  var callsOnBase = [];
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
     if (baseNumber != parseInt(call.posy) + 1) {
@@ -985,29 +928,29 @@ var getCallsOnBase_ = function(baseNumber, warStatus) {
     }
     
     var stars = parseInt(call.stars);
-    var call = {
+    var callOnBase = {
       "playername": call.playername,
       "posx": call.posx,
     };
 
     if (stars == 1) {
       // Un-starred call.
-      call.timeRemaining = calculateCallTimeRemaining_(call, warStatus);
-      call.attacked = false;
+      callOnBase.timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      callOnBase.attacked = false;
     } else {
       // Attacked base.
-      call.stars = stars - 2;
-      call.attacked = true;
+      callOnBase.stars = stars - 2;
+      callOnBase.attacked = true;
     }
     
-    calls.push(call);
+    callsOnBase.push(callOnBase);
   }
 
-  calls.sort(function(a, b) {
+  callsOnBase.sort(function(a, b) {
     return a.posx - b.posx;
   });
   
-  return calls;
+  return callsOnBase;
 };
 
 /**
