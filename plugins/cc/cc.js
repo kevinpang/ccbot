@@ -43,7 +43,7 @@ exports.commands = [
 exports.about = {
   description: "About the bot",
   process: function(bot, msg) {
-    msg.channel.sendMessage("About ccbot\n\n" +
+    msg.channel.sendMessage(
         "Author: Jericho (Reddit Havoc)\n" +
         "Install link: <https://discordapp.com/oauth2/authorize?&client_id=" +
             Auth.clientId + "&scope=bot&permissions=0>\n" +
@@ -786,7 +786,7 @@ var convertCallTimer_ = function(callTimer) {
 var getWarTimeRemainingMessage_ = function(ccId, warTimeRemaining) {
   var oneDay = 24 * 60 * 60 * 1000;
   if (warTimeRemaining == null) {
-    return ""
+    return "Current war: " + getCcUrl_(ccId);
   } else if (warTimeRemaining < 0) {
     return "The war is over (" + getCcUrl_(ccId) + ")";
   } else if (warTimeRemaining > oneDay) {
