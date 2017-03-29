@@ -1058,20 +1058,7 @@ var getPlayerName_ = function(msg, playerName) {
  * Formats a base for display. Assumes we're in monospace mode.
  */
 var formatBase_ = function(stars, baseNumber, calls, note) {
-  var message = "";
-  
-  if (stars == null) {
-    message += "\u3000\u3000 ";
-  } else if (stars == 0) {
-    message += "☆☆☆";
-  } else if (stars == 1) {
-    message += "★☆☆";
-  } else if (stars == 2) {
-    message += "★★☆";
-  } else if (stars == 3) {
-    message += "★★★";
-  }
-  
+  var message = formatStars_(stars);
   message += (baseNumber < 10 ? "  " : " ") + "#" + baseNumber + ": ";
   
   // Print out calls on this base
@@ -1085,7 +1072,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
       }
       
       if (call.attacked) {
-        message += call.playername + " (" + formatStars_(call.stars) + ")";
+        message += call.playername + " " + formatStars_(call.stars) + "";
       } else {
         if (call.timeRemaining == null) {
           message += call.playername;
@@ -1115,7 +1102,17 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
  * Formats stars for display.
  */
 var formatStars_ = function(stars) {
-  return stars + " star" + (stars == 1 ? "" : "s");
+  if (stars == null) {
+    return "\u3000\u3000 ";
+  } else if (stars == 0) {
+    return "☆☆☆";
+  } else if (stars == 1) {
+    return "★☆☆";
+  } else if (stars == 2) {
+    return "★★☆";
+  } else if (stars == 3) {
+    return "★★★";
+  }
 };
 
 /**
