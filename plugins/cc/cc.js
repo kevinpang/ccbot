@@ -12,7 +12,16 @@ try {
   process.exit();
 }
 
-exports.commands = ["attacked",
+try {
+  var Auth = require("../../auth.json");
+} catch (e) {
+  logger.error("Please create an auth.json file like auth.json.example " + e);
+  process.exit();
+}
+
+exports.commands = [
+    "about",
+    "attacked",
     "cc",
     "call",
     "calls",
@@ -30,6 +39,18 @@ exports.commands = ["attacked",
     "stats",
     "status",
     "wartimer"];
+
+exports.about = {
+  description: "About the bot",
+  process: function(bot, msg) {
+    msg.channel.sendMessage("Written by Jericho from Reddit Havoc. Based off of the GroupMe bot written by Kannabis from Reddit Mu.\n" +
+        "To add this ccbot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=" +
+        Auth.clientId + "&scope=bot&permissions=0\n" +
+        "Source code can be found at <https://github.com/kevinpang/ccbot>\n" +
+        "File feature requests/bugs at <https://github.com/kevinpang/ccbot/issues>\n" +
+        "For discussions about the bot, please join our Discord server: https://discordapp.com/invite/jwpU9J6");
+  }
+}
 
 exports.attacked = {
   usage: "<enemy base #> for <# of stars>",
@@ -185,7 +206,7 @@ exports.config = {
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
-        "Congrats message(s): ";
+        "Congrats messages: ";
     if (config.congratsMessages && config.congratsMessages.length > 0) {
       message += "\n";
       for (var i = 0; i < config.congratsMessages.length; i++) {
