@@ -150,7 +150,7 @@ exports.call = {
               for (var i = 0; i < activeCallsOnBase.length; i++) {
                 var activeCallOnBase = activeCallsOnBase[i];
                 message += formatActiveCall_(
-                    activeCallOnBase.playername, activeCallOnBase.timeRemaining);
+                    activeCallOnBase.playername, activeCallOnBase.timeRemaining) + "\n";
               }
             }            
             
@@ -188,7 +188,7 @@ exports.calls = {
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
           message += "#" + activeCall.baseNumber + ": ";
-          message += formatActiveCall_(activeCall.playername, activeCall.timeRemaining);
+          message += formatActiveCall_(activeCall.playername, activeCall.timeRemaining) + "\n";
         }
       }
       
@@ -1104,7 +1104,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
             message += call.playername + " (expired)";
           } else {
             // Active call.
-            message += call.playername + " (" + formatTimeRemaining_(call.timeRemaining) + ")";
+            message += formatActiveCall_(call.playername, call.timeRemaining);
           }
         }
       }
@@ -1145,7 +1145,6 @@ var formatActiveCall_ = function(playername, timeRemaining) {
   if (timeRemaining) {
     message += " (" + formatTimeRemaining_(timeRemaining) + ")";
   }
-  message += "\n";
   return message;
 };
 
