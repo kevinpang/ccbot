@@ -149,8 +149,8 @@ exports.call = {
               message += "\n\n__Active Calls on #" + baseNumber + "__\n";
               for (var i = 0; i < activeCallsOnBase.length; i++) {
                 var activeCallOnBase = activeCallsOnBase[i];
-                message += activeCallOnBase.playername + " (" +
-                    formatTimeRemaining_(activeCallOnBase.timeRemaining) + ")\n";          
+                message += formatActiveCall_(
+                    activeCallOnBase.playername, activeCallOnBase.timeRemaining);
               }
             }            
             
@@ -187,8 +187,8 @@ exports.calls = {
         message += "__Active Calls__\n";
         for (var i = 0; i < activeCalls.length; i++) {
           var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + ": " + activeCall.playername
-              + " (" + formatTimeRemaining_(activeCall.timeRemaining) + ")\n";
+          message += "#" + activeCall.baseNumber + ": ";
+          message += formatActiveCall_(activeCall.playername, activeCall.timeRemaining);
         }
       }
       
@@ -1135,6 +1135,18 @@ var formatStars_ = function(stars) {
   } else if (stars == 3) {
     return "★★★";
   }
+};
+
+/**
+ * Formats an active call on a base.
+ */
+var formatActiveCall_ = function(playername, timeRemaining) {
+  var message = playername;
+  if (timeRemaining) {
+    message += " (" + formatTimeRemaining_(timeRemaining) + ")";
+  }
+  message += "\n";
+  return message;
 };
 
 /**
