@@ -43,12 +43,13 @@ exports.commands = [
 exports.about = {
   description: "About the bot",
   process: function(bot, msg) {
-    msg.channel.sendMessage("Written by Jericho from Reddit Havoc. Based off of the GroupMe bot written by Kannabis from Reddit Mu.\n" +
-        "To add this ccbot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=" +
-        Auth.clientId + "&scope=bot&permissions=0\n" +
-        "Source code can be found at <https://github.com/kevinpang/ccbot>\n" +
-        "File feature requests/bugs at <https://github.com/kevinpang/ccbot/issues>\n" +
-        "For discussions about the bot, please join our Discord server: https://discordapp.com/invite/jwpU9J6");
+    msg.channel.sendMessage("About ccbot\n\n" +
+        "Author: Jericho (Reddit Havoc)\n" +
+        "Install link: <https://discordapp.com/oauth2/authorize?&client_id=" +
+            Auth.clientId + "&scope=bot&permissions=0>\n" +
+        "Source: <https://github.com/kevinpang/ccbot>\n" +
+        "Issues: <https://github.com/kevinpang/ccbot/issues>\n" +
+        "Discord: <https://discordapp.com/invite/jwpU9J6>");
   }
 }
 
