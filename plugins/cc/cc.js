@@ -1059,17 +1059,20 @@ var getPlayerName_ = function(msg, playerName) {
  */
 var formatBase_ = function(stars, baseNumber, calls, note) {
   var message = "";
-  if (stars == null || stars == 0) {
-    message += "      ";
+  
+  if (stars == null) {
+    message += "\u3000\u3000 ";
+  } else if (stars == 0) {
+    message += "☆☆☆";
   } else if (stars == 1) {
-    message += "    * ";
+    message += "★☆☆";
   } else if (stars == 2) {
-    message += "  * * ";
+    message += "★★☆";
   } else if (stars == 3) {
-    message += "* * * ";
+    message += "★★★";
   }
   
-  message += (baseNumber < 10 ? " " : "") + "#" + baseNumber + ": ";
+  message += (baseNumber < 10 ? "  " : " ") + "#" + baseNumber + ": ";
   
   // Print out calls on this base
   if (calls.length == 0) {
@@ -1078,7 +1081,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
     for (var j = 0; j < calls.length; j++) {
       var call = calls[j];
       if (j > 0) {
-        message += "           ";
+        message += "\u3000\u3000       ";
       }
       
       if (call.attacked) {
@@ -1102,7 +1105,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   
   // Print out existing note on this base
   if (note) {
-    message += "           Note: " + note + "\n";
+    message += "\u3000\u3000       Note: " + note + "\n";
   }
 
   return message;
