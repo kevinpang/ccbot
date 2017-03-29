@@ -5,6 +5,9 @@ var request = require('request');
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
 
+var WHITE_STAR = "\u2605"; // ★ - looks white in Discord's default dark theme
+var BLACK_STAR = "\u2606"; // ☆ - looks black in Discord's default dark theme
+
 try {
   var Configs = require("../../configs.json");
 } catch (e) {
@@ -1126,15 +1129,9 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
 var formatStars_ = function(stars) {
   if (stars == null) {
     return "\u3000\u3000 ";
-  } else if (stars == 0) {
-    return "☆☆☆";
-  } else if (stars == 1) {
-    return "★☆☆";
-  } else if (stars == 2) {
-    return "★★☆";
-  } else if (stars == 3) {
-    return "★★★";
   }
+  
+  return WHITE_STAR.repeat(stars) + BLACK_STAR.repeat(3 - stars);
 };
 
 /**
