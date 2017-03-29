@@ -1119,11 +1119,34 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   
   // Print out existing note on this base
   if (note) {
-    message += additionalLineLeftPadding + "Note: " + note + "\n";
+    var noteStr = "Note: " + note;
+    var noteArr = split_(noteStr, 45);
+    for (var i = 0; i < noteArr.length; i++) {
+      message += additionalLineLeftPadding + noteArr[i] + "\n";
+    }
   }
 
   return message;
 };
+
+/**
+ * Splits the input string into an array of strings no longer than length l.
+ */
+var split_ = function(str, l) {
+  var strs = [];
+  while(str.length > l) {
+      var pos = str.substring(0, l).lastIndexOf(' ');
+      pos = pos <= 0 ? l : pos;
+      strs.push(str.substring(0, pos));
+      var i = str.indexOf(' ', pos)+1;
+      if (i < pos || i > pos+l) {
+        i = pos;
+      }
+      str = str.substring(i);
+  }
+  strs.push(str);
+  return strs;
+}
 
 /**
  * Formats stars for display.
