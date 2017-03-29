@@ -1086,6 +1086,8 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   var message = formatStars_(stars);
   message += (baseNumber < 10 ? "  " : " ") + "#" + baseNumber + ": ";
   
+  var additionalLineLeftPadding = "\u3000\u3000       ";
+  
   // Print out calls on this base
   if (calls.length == 0) {
     message += "OPEN\n";
@@ -1093,7 +1095,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
     for (var j = 0; j < calls.length; j++) {
       var call = calls[j];
       if (j > 0) {
-        message += "\u3000\u3000       ";
+        message += additionalLineLeftPadding;
       }
       
       if (call.attacked) {
@@ -1117,7 +1119,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   
   // Print out existing note on this base
   if (note) {
-    message += "\u3000\u3000       Note: " + note + "\n";
+    message += additionalLineLeftPadding + "Note: " + note + "\n";
   }
 
   return message;
