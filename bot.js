@@ -38,7 +38,13 @@ var commands = {};
 var bot = new Discord.Client();
 
 bot.on("ready", function () {
-  logger.info("Logged in! Serving in " + bot.guilds.array().length + " servers");
+  var guilds = bot.guilds.array();
+  logger.info("Logged in! Serving in " + guilds.length + " server" +
+      (guilds.length == 1 ? "" : "s") + ":");
+  for (var i = 0; i < guilds.length; i++) {
+    logger.info((i + 1) + ". " + guilds[i].name);
+  }
+  
 	require("./plugins.js").init();
 	logger.info("type "+COMMAND_PREFIX+"help in Discord for a commands list.");
 	bot.user.setGame(COMMAND_PREFIX+"help | " + bot.guilds.array().length +" Servers"); 
