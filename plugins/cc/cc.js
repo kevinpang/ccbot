@@ -45,11 +45,11 @@ exports.about = {
   process: function(bot, msg) {
     msg.channel.sendMessage(
         "Author: Jericho (Reddit Havoc)\n" +
-        "Install link: <https://discordapp.com/oauth2/authorize?&client_id=" +
-            Auth.clientId + "&scope=bot&permissions=0>\n" +
         "Source: <https://github.com/kevinpang/ccbot>\n" +
         "Issues: <https://github.com/kevinpang/ccbot/issues>\n" +
-        "Discord: <https://discordapp.com/invite/jwpU9J6>");
+        "Discord: <https://discordapp.com/invite/jwpU9J6>\n" +
+        "Install: <https://discordapp.com/oauth2/authorize?&client_id=" +
+            Auth.clientId + "&scope=bot&permissions=0>");
   }
 }
 
