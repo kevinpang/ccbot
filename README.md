@@ -11,7 +11,7 @@ Screenshots of ccbot in action:
 
 # Installation
 Visit
-(https://discordapp.com/oauth2/authorize?&client_id=295229962045358083&scope=bot&permissions=0) and select which
+https://discordapp.com/oauth2/authorize?client_id=295229962045358083&scope=bot&permissions=0 and select which
 server to add the bot to.
 
 Note that by default the bot will work in all channels on your server that it has READ and WRITE access to. If you want to only enable it for certain channels, disable its READ access on those channels (disable
