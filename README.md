@@ -19,10 +19,16 @@ WRITE access on the default channel since you can't disable READ on that one).
 
 # Usage
 The most common commands you'll use are:  
-/start <war size> <enemy clan name> - starts a new war  
-/call <enemy base #> - calls a base for you in the current war  
-/attacked <enemy base #> for <# stars> - records an attack for you in the current war  
-/status - shows the current war status
+* /start <war size> <enemy clan name>
+  * Starts a new war  
+* /call <enemy base #>
+  * Calls a base for you in the current war  
+* /attacked <enemy base #> for <# stars>
+  * Records an attack for you in the current war  
+* /status
+  * Shows the current war status
+* /calls
+  * Shows all active calls
 
 There are lots of other features including member stats and configuration options. Type "/help" to get a full list of available commands.
 
