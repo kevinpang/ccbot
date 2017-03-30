@@ -515,9 +515,9 @@ exports.start = {
 };
 
 exports.stats = {
-  description: "View your stats. This requires archiving to be enabled.\n" +
+  description: "View your stats\n" +
       "**/stats** for <player name>\n" +
-      "\tView stats for another player. This requires archiving to be enabled.",
+      "\tView stats for another player",
   process: function(bot, msg, suffix) {
     var config = getConfig_(msg);
     if (!config.clantag) {
@@ -599,7 +599,10 @@ exports.stats = {
           msg.channel.sendMessage(message);
         } else {
           msg.channel.sendMessage("No attacks found for player " + 
-              playerName + " in clan " + config.clantag);
+              playerName + " in clan " + config.clantag + ".\n\n" +
+              "Please verify that:\n" +
+              "1. Archiving is enabled (use \"/setarchive on\" to enable it for future wars created from ccbot\n" +
+              "2. Your name on this channel matches the name you've been using in previous Clash Caller wars");
         }
       }
     });
