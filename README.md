@@ -11,7 +11,7 @@ Screenshots of ccbot in action:
 
 # Installation
 Visit
-https://discordapp.com/oauth2/authorize?client_id=295229962045358083&scope=bot&permissions=0 and select which
+[https://discordapp.com/oauth2/authorize?client_id=295229962045358083&scope=bot&permissions=0](https://discordapp.com/oauth2/authorize?client_id=295229962045358083&scope=bot&permissions=0) and select which
 server to add the bot to.
 
 Note that by default the bot will work in all channels on your server that it has READ and WRITE access to. If you want to only enable it for certain channels, disable its READ access on those channels (disable
@@ -31,7 +31,7 @@ Create an auth.json and configs.json file (see auth.json.example and configs.jso
 like) then run `npm start`.
 
 # Creating your own bot
-Create a Discord bot by visiting https://discordapp.com/developers/applications/me and click on "New App". Follow the
+Create a Discord bot by visiting [https://discordapp.com/developers/applications/me](https://discordapp.com/developers/applications/me) and click on "New App". Follow the
 steps and you'll eventually be redirected to a page that contains your bot's client ID and token.
 
-To add your bot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=ENTER_YOUR_CLIENT_ID_HERE&scope=bot&permissions=0 and add it to one of the servers you are logged into.
+To add your bot to a Discord server, visit [https://discordapp.com/oauth2/authorize?client_id=ENTER_YOUR_CLIENT_ID_HERE&scope=bot&permissions=0](https://discordapp.com/oauth2/authorize?client_id=ENTER_YOUR_CLIENT_ID_HERE&scope=bot&permissions=0) and add it to one of the servers you are logged into.
