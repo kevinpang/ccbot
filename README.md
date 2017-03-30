@@ -18,10 +18,10 @@ Note that by default the bot will work in all channels on your server that it ha
 WRITE access on the default channel since you can't disable READ on that one).
 
 # Usage
-The most common commands you'll use are:
-/start <war size> <enemy clan name> - starts a new war
-/call <enemy base #> - calls a base for you in the current war
-/attacked <enemy base #> for <# stars> - records an attack for you in the current war
+The most common commands you'll use are:  
+/start <war size> <enemy clan name> - starts a new war  
+/call <enemy base #> - calls a base for you in the current war  
+/attacked <enemy base #> for <# stars> - records an attack for you in the current war  
 /status - shows the current war status
 
 There are lots of other features including member stats and configuration options. Type "/help" to get a full list of available commands.
