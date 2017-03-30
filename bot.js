@@ -5,7 +5,8 @@ logger.configure({
     new (logger.transports.File)({
       filename: 'logs/log.txt',
       maxsize: 1000000,
-      maxFiles: 100
+      maxFiles: 100,
+      level: 'debug'
     }),
     new (logger.transports.Console)({
       colorize: true,
