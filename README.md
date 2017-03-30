@@ -7,29 +7,29 @@ Screenshots of ccbot in action:
 ![/call and /attacked](http://i.imgur.com/oij2FMF.png)
 ![/stats](http://i.imgur.com/teYsCpe.png)
 
-# Features
-- /help => returns full list of available commands
-- /say text => echos text
-- /ping => bot says "pong"
-- /start <war size> <Enemy Clan Name> => starts a war on clashcaller.com
-- /call <enemy base #> => calls a base for you in the current war
-- /attacked <enemy base #> for <# stars> => records your attack in the current war
-
-# Adding bot to your Discord server
-If you want to add the existing ccbot to your own Discord server just visit
+# Installation
+Visit
 https://discordapp.com/oauth2/authorize?&client_id=295229962045358083&scope=bot&permissions=0 and select which
 server to add the bot to.
 
-Note that by default the bot will work in all channels on your server that it has READ access to. If you want to only
-enable it for certain channels you'll need to disable its READ access on all channels you want it disabled on (disable
-WRITE access on the default channel since you can't disable reading on that one).
+Note that by default the bot will work in all channels on your server that it has READ and WRITE access to. If you want to only enable it for certain channels, disable its READ access on those channels (disable
+WRITE access on the default channel since you can't disable READ on that one).
+
+# Usage
+The most common commands you'll use are:
+/start <war size> <enemy clan name> - starts a new war
+/call <enemy base #> - calls a base for you in the current war
+/attacked <enemy base #> for <# stars> - records an attack for you in the current war
+/status - shows the current war status
+
+There are lots of other features including member stats and configuration options. Type "/help" to get a full list of available commands.
+
+# Running locally
+Create an auth.json and configs.json file (see auth.json.example and configs.json.example for what these should look
+like) then run `npm start`.
 
 # Creating your own bot
 Create a Discord bot by visiting https://discordapp.com/developers/applications/me and click on "New App". Follow the
 steps and you'll eventually be redirected to a page that contains your bot's client ID and token.
 
 To add your bot to a Discord server, visit https://discordapp.com/oauth2/authorize?&client_id=ENTER_YOUR_CLIENT_ID_HERE&scope=bot&permissions=0 and add it to one of the servers you are logged into.
-
-# Running locally
-Create an auth.json and configs.json file (see auth.json.example and configs.json.example for what these should look
-like) then run `npm start`.
