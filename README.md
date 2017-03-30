@@ -18,7 +18,6 @@ Note that by default the bot will work in all channels on your server that it ha
 WRITE access on the default channel since you can't disable READ on that one).
 
 # Usage
-The most common commands you'll use are:  
 * /start <war size> <enemy clan name>
   * Starts a new war  
 * /call <enemy base #>
