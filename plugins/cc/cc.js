@@ -756,6 +756,7 @@ var getWarStatus_ = function(ccId, msg, callback) {
           + error);
     } else {
       try {
+        logger.debug("GET_UPDATE response for war " + ccId + ": " + body);
         callback(JSON.parse(body));  
       } catch (e) {
         logger.warn("Error in getWarStatus_ callback. " + e + ". War status: " + body);
