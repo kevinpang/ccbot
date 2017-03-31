@@ -1,5 +1,3 @@
-[kevinpang.github.io/ccbot/](kevinpang.github.io/ccbot/)
-
 # Description
 A Clash Caller bot for Discord. Based off of <a href="https://github.com/butttons/cc-bot">cc-bot</a>
 and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.
