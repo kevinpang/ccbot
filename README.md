@@ -2,7 +2,7 @@
 A Clash Caller bot for Discord. Based off of <a href="https://github.com/butttons/cc-bot">cc-bot</a>
 and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.
 
-Screenshots of ccbot in action:
+# Screenshots
 ![/status](http://i.imgur.com/Dfjy09V.png)
 
 ![/call and /attacked](http://i.imgur.com/oij2FMF.png)
