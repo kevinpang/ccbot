@@ -2,6 +2,8 @@
 A Clash Caller bot for Discord. Based off of <a href="https://github.com/butttons/cc-bot">cc-bot</a>
 and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.
 
+Website: kevinpang.github.io/ccbot/
+
 Screenshots of ccbot in action:
 ![/status](http://i.imgur.com/Dfjy09V.png)
 
@@ -16,6 +18,9 @@ server to add the bot to.
 
 Note that by default the bot will work in all channels on your server that it has READ and WRITE access to. If you want to only enable it for certain channels, disable its READ access on those channels (disable
 WRITE access on the default channel since you can't disable READ on that one).
+
+Also note that the war data is unique per channel. This means that you can have multiple channels in different wars on the
+same server, which is useful for clans who have feeders or sister clans all in the same server.
 
 # Usage
 * /start <war size> <enemy clan name>
