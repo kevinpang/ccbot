@@ -682,7 +682,7 @@ var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
   for (var i = 0; i < warStatus.calls.length; i++) {
     var call = warStatus.calls[i];
     if (call.posy == baseNumber - 1
-        && call.playername == playerName) {
+        && call.playername.toLowerCase() == playerName.toLowerCase()) {
       return call.posx;
       break;
     }
