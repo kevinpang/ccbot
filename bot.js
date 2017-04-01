@@ -162,7 +162,8 @@ function checkMessageForCommand(msg, isEdit) {
 				cmd.process(bot, msg, suffix, isEdit);
 			} catch(e){
 			  logger.warn("command " + cmdTxt + " failed: " + e);
-			  var msgTxt = "command " + cmdTxt + " failed :(";
+			  var msgTxt = "Command \"" + cmdTxt + "\" failed. Please report the issue " +
+			      "at <https://discordapp.com/invite/jwpU9J6>";
 				msg.channel.sendMessage(msgTxt);
 			}
 		} else {
