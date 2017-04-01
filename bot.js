@@ -1,5 +1,6 @@
 var logger = require('winston');
 var configs = require('./configs.js');
+var utils = require('./utils.js');
 
 logger.configure({
   transports: [
@@ -69,9 +70,9 @@ function checkMessageForCommand(msg, isEdit) {
 	if(msg.author.id != bot.user.id && (msg.content.startsWith(commandPrefix))){
 	  var guildAndChannel = (msg.channel.guild ? msg.channel.guild.name + "/" : "") + 
         msg.channel.name;
-	  logger.info("\"" + msg.content + "\" from " + msg.author.username + 
+	  logger.info("\"" + msg.content + "\" from " + utils.getAuthorName(msg) + 
         " in " + guildAndChannel);
-	  // No-op if we don't have write priveledges on the channel.
+	  // No-op if we don't have write priviledges on the channel.
 	  if (msg.channel.permissionsFor && 
 	      !msg.channel.permissionsFor(bot.user).hasPermission('SEND_MESSAGES')) {
 	    logger.warn("Ignoring because bot lacks SEND_MESSAGES permission in " +
