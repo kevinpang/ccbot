@@ -114,7 +114,7 @@ exports.call = {
     var baseNumber = parseInt(arr[1]);
     var playerName = utils.getAuthorName(msg);
     if (arr[3]) {
-      playerName = getPlayerName_(msg, arr[3]);
+      playerName = utils.getPlayerName(msg, arr[3]);
     }
     
     getWarStatus_(ccId, msg, function(warStatus) {
@@ -316,7 +316,7 @@ exports["delete"] = {
     var baseNumber = parseInt(arr[1]);
     var playerName = utils.getAuthorName(msg);
     if (arr[3]) {
-      playerName = getPlayerName_(msg, arr[3]);
+      playerName = utils.getPlayerName(msg, arr[3]);
     }
   
     getWarStatus_(ccId, msg, function(warStatus) {
@@ -363,7 +363,7 @@ exports.log = {
     
     var stars = parseInt(arr[1]);
     var baseNumber = parseInt(arr[2]);
-    var playerName = getPlayerName_(msg, arr[4]);
+    var playerName = utils.getPlayerName(msg, arr[4]);
     logAttack_(msg, ccId, playerName, baseNumber, stars);
   }
 };
@@ -596,7 +596,7 @@ exports.stats = {
         return;
       }
       
-      playerName = getPlayerName_(msg, arr[1]);
+      playerName = utils.getPlayerName(msg, arr[1]);
     }
     
     request.post(CC_API, {
@@ -1089,32 +1089,6 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
       });
     }
   });
-};
-
-/**
- * Returns the player name given a player name passed to us. This is to handle
- * scenarios where someone @'s another player and the player name passed to us
- * looks like <@123456789>
- */
-var getPlayerName_ = function(msg, playerName) {
-  var regex = /^<@!?(.*)>$/;
-  var arr = regex.exec(playerName);
-  if (!arr) {
-    return playerName;
-  }
-  
-  var id = arr[1];
-  var member = msg.channel.members.get(id);
-  if (member) {
-    if (member.nickname) {
-      return member.nickname;
-    } else {
-      return member.user.username;
-    }
-  } else {
-    logger.warn("Unable to figure out player name: " + playerName);
-    return "Unknown player name";
-  }
 };
 
 /**
