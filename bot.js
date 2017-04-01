@@ -158,14 +158,7 @@ function checkMessageForCommand(msg, isEdit) {
 					}
 			}
     } else if(cmd) {
-			try{
-				cmd.process(bot, msg, suffix, isEdit);
-			} catch(e){
-			  logger.warn("command " + cmdTxt + " failed: " + e);
-			  var msgTxt = "Command \"" + cmdTxt + "\" failed. Please report the issue " +
-			      "at <https://discordapp.com/invite/jwpU9J6>";
-				msg.channel.sendMessage(msgTxt);
-			}
+			cmd.process(bot, msg, suffix, isEdit);
 		} else {
 			msg.channel.sendMessage(cmdTxt + " not recognized as a command!").then((message => message.delete(5000)))
 		}
@@ -187,6 +180,9 @@ bot.on("message", function(msg) {
     checkMessageForCommand(msg, false)  
   } catch (e) {
     logger.warn("Error processing message: " + msg + ". Exception: " + e);
+    var msgTxt = "Error processing message \"" + msg + "\". Please report the issue " +
+        "at <https://discordapp.com/invite/jwpU9J6>";
+    msg.channel.sendMessage(msgTxt);
   }
 });
 
@@ -194,7 +190,10 @@ bot.on("messageUpdate", (oldMessage, newMessage) => {
   try {
     checkMessageForCommand(newMessage, true);
   } catch (e) {
-    logger.warn("Error processing messageUpdate: " + newMessage + ". Exception: " + e);
+    logger.warn("Error processing messageUpdate: " + msg + ". Exception: " + e);
+    var msgTxt = "Error processing message \"" + msg + "\". Please report the issue " +
+        "at <https://discordapp.com/invite/jwpU9J6>";
+    msg.channel.sendMessage(msgTxt);
   }
 });
 
