@@ -71,7 +71,7 @@ exports.attacked = {
 
     var baseNumber = parseInt(arr[1]);
     var stars = parseInt(arr[2]);
-    logAttack_(msg, ccId, getAuthorName_(msg), baseNumber, stars);
+    logAttack_(msg, ccId, utils.getAuthorName(msg), baseNumber, stars);
   }
 };
 
@@ -112,7 +112,7 @@ exports.call = {
     }
     
     var baseNumber = parseInt(arr[1]);
-    var playerName = getAuthorName_(msg);
+    var playerName = utils.getAuthorName(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
     }
@@ -314,7 +314,7 @@ exports["delete"] = {
     }
     
     var baseNumber = parseInt(arr[1]);
-    var playerName = getAuthorName_(msg);
+    var playerName = utils.getAuthorName(msg);
     if (arr[3]) {
       playerName = getPlayerName_(msg, arr[3]);
     }
@@ -587,7 +587,7 @@ exports.stats = {
       return;
     }
     
-    var playerName = getAuthorName_(msg);
+    var playerName = utils.getAuthorName(msg);
     if (suffix) {
       var regex = /^for\s(.*)?$/;
       var arr = regex.exec(suffix);
@@ -1206,16 +1206,6 @@ var formatActiveCall_ = function(playername, timeRemaining) {
     message += " (" + formatTimeRemaining_(timeRemaining) + ")";
   }
   return message;
-};
-
-/**
- * Returns the author's nickname if available, or username if no nickname is provided.
- */
-var getAuthorName_ = function(msg) {
-  if (msg.member && msg.member.nickname) {
-    return msg.member.nickname;
-  }
-  return msg.author.username;
 };
 
 /**
