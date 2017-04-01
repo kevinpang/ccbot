@@ -1,6 +1,7 @@
 var logger = require('winston');
 var request = require('request');
 var configs = require('../../configs.js');
+var utils = require('../../utils.js');
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -506,8 +507,7 @@ exports.setcommandprefix = {
     
     var serverConfig = configs.getServerConfig(msg);
     serverConfig.commandPrefix = suffix;
-    var serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    configs.saveServerConfig(serverId, serverConfig);
+    configs.saveServerConfig(utils.getServerId(msg), serverConfig);
     msg.channel.sendMessage("Command prefix set to " + suffix);
   }
 };

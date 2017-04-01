@@ -1,5 +1,6 @@
 var fs = require('fs');
 var logger = require('winston');
+var utils = require('./utils.js');
 
 try {
   var Configs = require("./configs.json");
@@ -58,9 +59,7 @@ exports.saveChannelConfig = function(id, config) {
  * Returns a server config from config.js or a default server config if not found.
  */
 exports.getServerConfig = function(msg) {
-  var config = msg.channel.guild ?
-      Configs.serverConfigs[msg.channel.guild.id] :
-      Configs.serverConfigs[msg.channel.id];
+  var config = Configs.serverConfigs[utils.getServerId(msg)];
   if (config) {
     return config;
   } else {
@@ -69,7 +68,7 @@ exports.getServerConfig = function(msg) {
       "commandPrefix": exports.DEFAULT_COMMAND_PREFIX
     };
   }
-}
+};
 
 /**
  * Saves a server config.
