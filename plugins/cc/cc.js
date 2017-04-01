@@ -1,5 +1,4 @@
 var logger = require('winston');
-var fs = require('fs');
 var request = require('request');
 var configs = require('../../configs.js');
 
@@ -32,13 +31,16 @@ exports.commands = [
     "setcc",
     "setclanname",
     "setclantag",
+    "setcommandprefix",
     "start",
     "stats",
     "status",
     "wartimer"];
 
 exports.about = {
-  description: "About the bot",
+  help: [{
+    description: "About the bot" 
+  }],
   process: function(bot, msg) {
     msg.channel.sendMessage(
         "Author: Jericho (Reddit Havoc)\n" +
@@ -49,8 +51,10 @@ exports.about = {
 }
 
 exports.attacked = {
-  usage: "<enemy base #> for <# of stars>",
-  description: "Log your attack",
+  help: [{
+    usage: "<enemy base #> for <# of stars>",
+    description: "Log your attack"
+  }],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -71,7 +75,9 @@ exports.attacked = {
 };
 
 exports.cc = {
-  description: "Get Clash Caller link to current war",
+  help: [{
+    description: "Get Clash Caller link to current war"
+  }],
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
     if (ccId) {
@@ -81,10 +87,16 @@ exports.cc = {
 };
 
 exports.call = {
-  usage: "<enemy base #>",
-  description: "Call a base for yourself.\n" +
-      "**/call** <enemy base #> for <player name>\n" +
-      "\tCall a base for another player.",
+  help: [
+    {
+      usage: "<enemy base #>",
+      description: "Call a base for yourself"
+    },
+    {
+      usage: "<enemy base #> for <player name>",
+      description: "Call a base for another player"
+    }
+  ],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -158,7 +170,9 @@ exports.call = {
 };
 
 exports.calls = {
-  description: "Gets all active calls",
+  help: [{
+    description: "Gets all active calls"
+  }],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -193,15 +207,19 @@ exports.calls = {
 };
 
 exports.config = {
-  description: "Returns bot configuration for current channel",
+  help: [{
+    description: "Returns bot configuration for current channel"
+  }],
   process: function(bot, msg) {
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
+    var serverConfig = configs.getServerConfig(msg);
     var message = "Current war ID: " + config.cc_id + 
         (config.cc_id ? (" (" + getCcUrl_(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
+        "Command prefix: " + serverConfig.commandPrefix + "\n" +
         "Congrats messages: ";
     if (config.congratsMessages && config.congratsMessages.length > 0) {
       message += "\n";
@@ -216,8 +234,10 @@ exports.config = {
 };
 
 exports.congrats = {
-  usage: "<add|remove> <congrats message|congrats number>",
-  description: "Adds/removes a congrats message (message displayed when someone 3-stars)",
+  help: [{
+    usage: "<add|remove> <congrats message|congrats number>",
+    description: "Adds/removes a congrats message (message displayed when someone 3-stars)"
+  }],
   process: function(bot, msg, suffix) {
     var regex = /^(add|remove)\s(.*)$/;
     var arr = regex.exec(suffix);
@@ -226,7 +246,7 @@ exports.congrats = {
       return;
     }
     
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     if (arr[1] == "add") {
       if (!config.congratsMessages) {
         config.congratsMessages = [];
@@ -236,7 +256,7 @@ exports.congrats = {
         return;
       }
       config.congratsMessages.push(arr[2]);
-      configs.save(msg.channel.id, config);
+      configs.saveChannelConfig(msg.channel.id, config);
       msg.channel.sendMessage("Added congrats message: " + arr[2]);
     } else {
       if (config.congratsMessages == null || config.congratsMessages.length == 0) {
@@ -255,7 +275,7 @@ exports.congrats = {
         } else {
           var congratsMessage = config.congratsMessages[congratsNumber - 1];
           config.congratsMessages.splice(congratsNumber - 1, 1);
-          configs.save(msg.channel.id, config);
+          configs.saveChannelConfig(msg.channel.id, config);
           msg.channel.sendMessage("Removed congrats message: " + congratsMessage);
         }
       }
@@ -269,10 +289,16 @@ exports.congrats = {
 };
 
 exports["delete"] = {
-  usage: "<enemy base #>",
-  description: "Deletes your call on the specified base\n" +
-      "**/delete** <enemy base #> for <player name>\n" +
-      "\tDelete a base for another player.",
+  help: [
+    {
+      usage: "<enemy base #>",
+      description: "Delete call on a base for yourself"
+    },
+    {
+      usage: "<enemy base #> for <player name>",
+      description: "Delete call on a base for another player"
+    }
+  ],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -317,8 +343,10 @@ exports["delete"] = {
 };
 
 exports.log = {
-  usage: "<# of stars> on <enemy base #> <by|for> <player name>",
-  description: "Logs an attack for another player",
+  help: [{
+    usage: "<# of stars> on <enemy base #> <by|for> <player name>",
+    description: "Logs an attack for another player"
+  }],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -340,8 +368,10 @@ exports.log = {
 };
 
 exports.note = {
-  usage: "<enemy base #> <note text>",
-  description: "Updates the note on the specified enemy base",
+  help: [{
+    usage: "<enemy base #> <note text>",
+    description: "Updates the note on the specified enemy base"
+  }],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -377,24 +407,28 @@ exports.note = {
 };
 
 exports.setarchive = {
-  usage: "<on|off>",
-  description: "Sets archive on/off for new wars",
+  help: [{
+    usage: "<on|off>",
+    description: "Sets archive on/off for new wars"
+  }],
   process: function(bot, msg, suffix) {
     if (suffix != 'on' && suffix != 'off') {
       msg.channel.sendMessage("Please specify whether archiving should be on or off");
       return;
     }
     
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     config.disableArchive = suffix == 'off';
-    configs.save(msg.channel.id, config);
+    configs.saveChannelConfig(msg.channel.id, config);
     msg.channel.sendMessage("Archiving set to " + suffix);
   }
 };
 
 exports.setcalltimer = {
-  usage: "<# hours>",
-  description: "Sets the call timer for new wars (use 1/2 or 1/4 for flex timers)",
+  help: [{
+    usage: "<# hours>",
+    description: "Sets the call timer for new wars (use 1/2 or 1/4 for flex timers)"
+  }],
   process: function(bot, msg, suffix) {
     var validTimers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
         "12", "24", "1/2", "1/4"];
@@ -405,21 +439,23 @@ exports.setcalltimer = {
       return;
     }
     
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     config.call_timer = suffix;
-    configs.save(msg.channel.id, config);
+    configs.saveChannelConfig(msg.channel.id, config);
     msg.channel.sendMessage("Call timer set to " + suffix);
   }
 };
 
 exports.setcc = {
-  usage: "<war ID>",
-  description: "Sets the current war ID",
+  help: [{
+    usage: "<war ID>",
+    description: "Sets the current war ID"
+  }],
   process: function(bot, msg, suffix) {
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     var prevCcId = config.cc_id;
     config.cc_id = suffix;
-    configs.save(msg.channel.id, config);
+    configs.saveChannelConfig(msg.channel.id, config);
     
     var message = "";
     if (prevCcId) {
@@ -431,30 +467,55 @@ exports.setcc = {
 };
 
 exports.setclanname = {
-  usage: "<clan name>",
-  description: "Sets the clan name for new wars",
+  help: [{
+    usage: "<clan name>",
+    description: "Sets the clan name for new wars"
+  }],
   process: function(bot, msg, suffix) {
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     config.clanname = suffix;
-    configs.save(msg.channel.id, config);
+    configs.saveChannelConfig(msg.channel.id, config);
     msg.channel.sendMessage("Clan name set to " + suffix);  
   }
 };
 
 exports.setclantag = {
-  usage: "<clan tag>",
-  description: "Sets the clan tag for new wars",
+  help: [{
+    usage: "<clan tag>",
+    description: "Sets the clan tag for new wars"
+  }],
   process: function(bot, msg, suffix) {
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     config.clantag = suffix;
-    configs.save(msg.channel.id, config);
+    configs.saveChannelConfig(msg.channel.id, config);
     msg.channel.sendMessage("Clan tag set to " + suffix);  
   }
 };
 
+exports.setcommandprefix = {
+  help: [{
+    usage: "<command prefix>",
+    description: "Sets the command prefix for ccbot. Default is /"
+  }],
+  process: function(bot, msg, suffix) {
+    var regex = /^\S*$/;
+    if (!regex.test(suffix)) {
+      msg.channel.sendMessage("Prefix must be one continuous string of characters (no spaces)");
+      return;
+    }
+    
+    var serverConfig = configs.getServerConfig(msg);
+    serverConfig.commandPrefix = suffix;
+    configs.saveServerConfig(msg.channel.guild.id, serverConfig);
+    msg.channel.sendMessage("Command prefix set to " + suffix);
+  }
+};
+
 exports.start = {
-  usage: "<war size> <enemy clan name>",
-  description: "Starts a war on Clash Caller",
+  help: [{
+    usage: "<war size> <enemy clan name>",
+    description: "Starts a war on Clash Caller"
+  }],
   process: function(bot, msg, suffix) {
     var regex = /(\d+)\s(.*)$/;
     var arr = regex.exec(suffix);
@@ -474,7 +535,7 @@ exports.start = {
       return;
     }
 
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     request.post(CC_API, {
       form: {
         "REQUEST": "CREATE_WAR",
@@ -494,7 +555,7 @@ exports.start = {
         var ccId = body.substring(4);
         var prevCcId = config.cc_id;
         config.cc_id = ccId;
-        configs.save(msg.channel.id, config);
+        configs.saveChannelConfig(msg.channel.id, config);
         
         var message = "";
         if (prevCcId) {
@@ -509,11 +570,17 @@ exports.start = {
 };
 
 exports.stats = {
-  description: "View your stats\n" +
-      "**/stats** for <player name>\n" +
-      "\tView stats for another player",
+  help: [
+    {
+      description: "View your stats"
+    },
+    {
+      usage: "for <player name>",
+      description: "View stats for another player"
+    }
+  ],
   process: function(bot, msg, suffix) {
-    var config = configs.get(msg);
+    var config = configs.getChannelConfig(msg);
     if (!config.clantag) {
       msg.channel.sendMessage("Use /setclantag to specify a clan tag first");
       return;
@@ -604,7 +671,9 @@ exports.stats = {
 };
 
 exports.status = {
-  description: "Returns the current war status",
+  help: [{
+    description: "Returns the current war status"
+  }],
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -631,8 +700,10 @@ exports.status = {
 };
 
 exports.wartimer = {
-  usage: "<start|end> <##h##m>",
-  description: "Updates the current war's start or end time",
+  help: [{
+    usage: "<start|end> <##h##m>",
+    description: "Updates the current war's start or end time"
+  }],
   process: function(bot, msg, suffix) {
     var ccId = getCcId_(msg);
     if (!ccId) {
@@ -690,7 +761,7 @@ var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
  * Gets the current war's war ID or null if not found.
  */
 var getCcId_ = function(msg) {
-  var config = configs.get(msg);
+  var config = configs.getChannelConfig(msg);
   if (!config.cc_id) {
     msg.channel.sendMessage("No current war.");
     return null;
@@ -1008,7 +1079,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
           var message = "Recorded " + stars + " star" + 
               (stars == 1 ? "" : "s") + " for " + playerName + 
               " on base " + baseNumber;
-          var config = configs.get(msg);
+          var config = configs.getChannelConfig(msg);
           if (stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
             message += "\n" + config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)];
           }

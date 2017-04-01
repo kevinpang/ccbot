@@ -1,3 +1,4 @@
+var fs = require('fs');
 var logger = require('winston');
 
 try {
@@ -7,10 +8,30 @@ try {
   process.exit();
 }
 
+exports.DEFAULT_COMMAND_PREFIX = "/";
+
 /**
- * Returns a config from config.js or a default config if not found.
+ * Returns the entire configs.json file.
  */
-exports.get = function(msg) {
+exports.get = function() {
+  return Configs;
+};
+
+/**
+ * Saves the entire configs.json file.
+ */
+exports.save = function() {
+  try {
+    fs.writeFile("./configs.json", JSON.stringify(Configs, null, 2), null);
+  } catch (e) {
+    logger.warn("Failed saving config " + e);
+  }
+};
+
+/**
+ * Returns a channel config from config.js or a default channel config if not found.
+ */
+exports.getChannelConfig = function(msg) {
   var config = Configs[msg.channel.id];
   if (config) {
     return config;
@@ -26,13 +47,32 @@ exports.get = function(msg) {
 };
 
 /**
- * Saves a config to Redis.
+ * Saves a channel config.
  */
-exports.save = function(id, config) {
+exports.saveChannelConfig = function(id, config) {
   Configs[id] = config;
-  try {
-    fs.writeFile("./configs.json", JSON.stringify(Configs, null, 2), null);
-  } catch (e) {
-    logger.warn("Failed saving config " + e);
+  exports.save();
+};
+
+/**
+ * Returns a server config from config.js or a default server config if not found.
+ */
+exports.getServerConfig = function(msg) {
+  var config = Configs.serverConfigs[msg.channel.guild.id];
+  if (config) {
+    return config;
+  } else {
+    // Return a default config.
+    return {
+      "commandPrefix": exports.DEFAULT_COMMAND_PREFIX
+    };
   }
+}
+
+/**
+ * Saves a server config.
+ */
+exports.saveServerConfig = function(id, config) {
+  Configs.serverConfigs[id] = config;
+  exports.save();
 };
