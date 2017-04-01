@@ -1,19 +1,13 @@
 var logger = require('winston');
 var fs = require('fs');
 var request = require('request');
+var configs = require('../../configs.js');
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
 
 var WHITE_STAR = "\u2605"; // ★ - looks white in Discord's default dark theme
 var BLACK_STAR = "\u2606"; // ☆ - looks black in Discord's default dark theme
-
-try {
-  var Configs = require("../../configs.json");
-} catch (e) {
-  logger.error("Please create an configs.json file like configs.json.example " + e);
-  process.exit();
-}
 
 try {
   var Auth = require("../../auth.json");
@@ -201,7 +195,7 @@ exports.calls = {
 exports.config = {
   description: "Returns bot configuration for current channel",
   process: function(bot, msg) {
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     var message = "Current war ID: " + config.cc_id + 
         (config.cc_id ? (" (" + getCcUrl_(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
@@ -232,7 +226,7 @@ exports.congrats = {
       return;
     }
     
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     if (arr[1] == "add") {
       if (!config.congratsMessages) {
         config.congratsMessages = [];
@@ -242,7 +236,7 @@ exports.congrats = {
         return;
       }
       config.congratsMessages.push(arr[2]);
-      saveConfig_(msg.channel.id, config);
+      configs.save(msg.channel.id, config);
       msg.channel.sendMessage("Added congrats message: " + arr[2]);
     } else {
       if (config.congratsMessages == null || config.congratsMessages.length == 0) {
@@ -261,7 +255,7 @@ exports.congrats = {
         } else {
           var congratsMessage = config.congratsMessages[congratsNumber - 1];
           config.congratsMessages.splice(congratsNumber - 1, 1);
-          saveConfig_(msg.channel.id, config);
+          configs.save(msg.channel.id, config);
           msg.channel.sendMessage("Removed congrats message: " + congratsMessage);
         }
       }
@@ -391,9 +385,9 @@ exports.setarchive = {
       return;
     }
     
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     config.disableArchive = suffix == 'off';
-    saveConfig_(msg.channel.id, config);
+    configs.save(msg.channel.id, config);
     msg.channel.sendMessage("Archiving set to " + suffix);
   }
 };
@@ -411,9 +405,9 @@ exports.setcalltimer = {
       return;
     }
     
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     config.call_timer = suffix;
-    saveConfig_(msg.channel.id, config);
+    configs.save(msg.channel.id, config);
     msg.channel.sendMessage("Call timer set to " + suffix);
   }
 };
@@ -422,10 +416,10 @@ exports.setcc = {
   usage: "<war ID>",
   description: "Sets the current war ID",
   process: function(bot, msg, suffix) {
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     var prevCcId = config.cc_id;
     config.cc_id = suffix;
-    saveConfig_(msg.channel.id, config);
+    configs.save(msg.channel.id, config);
     
     var message = "";
     if (prevCcId) {
@@ -440,9 +434,9 @@ exports.setclanname = {
   usage: "<clan name>",
   description: "Sets the clan name for new wars",
   process: function(bot, msg, suffix) {
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     config.clanname = suffix;
-    saveConfig_(msg.channel.id, config);
+    configs.save(msg.channel.id, config);
     msg.channel.sendMessage("Clan name set to " + suffix);  
   }
 };
@@ -451,9 +445,9 @@ exports.setclantag = {
   usage: "<clan tag>",
   description: "Sets the clan tag for new wars",
   process: function(bot, msg, suffix) {
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     config.clantag = suffix;
-    saveConfig_(msg.channel.id, config);
+    configs.save(msg.channel.id, config);
     msg.channel.sendMessage("Clan tag set to " + suffix);  
   }
 };
@@ -480,7 +474,7 @@ exports.start = {
       return;
     }
 
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     request.post(CC_API, {
       form: {
         "REQUEST": "CREATE_WAR",
@@ -500,7 +494,7 @@ exports.start = {
         var ccId = body.substring(4);
         var prevCcId = config.cc_id;
         config.cc_id = ccId;
-        saveConfig_(msg.channel.id, config);
+        configs.save(msg.channel.id, config);
         
         var message = "";
         if (prevCcId) {
@@ -519,7 +513,7 @@ exports.stats = {
       "**/stats** for <player name>\n" +
       "\tView stats for another player",
   process: function(bot, msg, suffix) {
-    var config = getConfig_(msg);
+    var config = configs.get(msg);
     if (!config.clantag) {
       msg.channel.sendMessage("Use /setclantag to specify a clan tag first");
       return;
@@ -696,7 +690,7 @@ var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
  * Gets the current war's war ID or null if not found.
  */
 var getCcId_ = function(msg) {
-  var config = getConfig_(msg);
+  var config = configs.get(msg);
   if (!config.cc_id) {
     msg.channel.sendMessage("No current war.");
     return null;
@@ -709,36 +703,6 @@ var getCcId_ = function(msg) {
  */
 var getCcUrl_ = function(ccId) {
   return "<" + CC_WAR_URL + ccId + ">";
-};
-
-/**
- * Returns a config from config.js or a default config if not found.
- */
-var getConfig_ = function(msg) {
-  var config = Configs[msg.channel.id];
-  if (config) {
-    return config;
-  } else {
-    // Return a default config.
-    return {
-      "channel_name": msg.channel.name,
-      "guild_id": msg.member ? msg.member.guild.id : "",
-      "guild_name": msg.member ? msg.member.guild.name : "",
-      "congratsMessages": []
-    };
-  }
-};
-
-/**
- * Saves a config to Redis.
- */
-var saveConfig_ = function(id, config) {
-  Configs[id] = config;
-  try {
-    fs.writeFile("./configs.json", JSON.stringify(Configs, null, 2), null);
-  } catch (e) {
-    logger.warn("Failed saving config " + e);
-  }
 };
 
 /**
@@ -1044,7 +1008,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
           var message = "Recorded " + stars + " star" + 
               (stars == 1 ? "" : "s") + " for " + playerName + 
               " on base " + baseNumber;
-          var config = getConfig_(msg);
+          var config = configs.get(msg);
           if (stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
             message += "\n" + config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)];
           }
