@@ -506,7 +506,8 @@ exports.setcommandprefix = {
     
     var serverConfig = configs.getServerConfig(msg);
     serverConfig.commandPrefix = suffix;
-    configs.saveServerConfig(msg.channel.guild.id, serverConfig);
+    var serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
+    configs.saveServerConfig(serverId, serverConfig);
     msg.channel.sendMessage("Command prefix set to " + suffix);
   }
 };
