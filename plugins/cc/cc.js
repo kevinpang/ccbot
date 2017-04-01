@@ -1211,7 +1211,7 @@ var formatActiveCall_ = function(playername, timeRemaining) {
  * Returns the author's nickname if available, or username if no nickname is provided.
  */
 var getAuthorName_ = function(msg) {
-  if (msg.member.nickname) {
+  if (msg.member && msg.member.nickname) {
     return msg.member.nickname;
   }
   return msg.author.username;
