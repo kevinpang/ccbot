@@ -58,7 +58,9 @@ exports.saveChannelConfig = function(id, config) {
  * Returns a server config from config.js or a default server config if not found.
  */
 exports.getServerConfig = function(msg) {
-  var config = Configs.serverConfigs[msg.channel.guild.id];
+  var config = msg.channel.guild ?
+      Configs.serverConfigs[msg.channel.guild.id] :
+      Configs.serverConfigs[msg.channel.id];
   if (config) {
     return config;
   } else {
