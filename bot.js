@@ -32,11 +32,6 @@ var logger = new logger.Logger({
   ]
 });
 
-logger.debug('debug log');
-logger.info('info log');
-logger.warn('warn log');
-logger.error('error log');
-
 // Initialize serverConfigs if not defined.
 var cfgs = configs.get();
 if (!cfgs.serverConfigs) {
