@@ -6,9 +6,6 @@ var utils = require('../../utils.js');
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
 
-var WHITE_STAR = "\u2605"; // ★ - looks white in Discord's default dark theme
-var BLACK_STAR = "\u2606"; // ☆ - looks black in Discord's default dark theme
-
 try {
   var Auth = require("../../auth.json");
 } catch (e) {
@@ -1098,7 +1095,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   var message = formatStars_(stars);
   message += (baseNumber < 10 ? "  " : " ") + "#" + baseNumber + ": ";
   
-  var additionalLineLeftPadding = "\u3000\u3000       ";
+  var additionalLineLeftPadding = "         ";
   
   // Print out calls on this base
   if (calls.length == 0) {
@@ -1111,7 +1108,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
       }
       
       if (call.attacked) {
-        message += call.playername + " " + formatStars_(call.stars) + "";
+        message += call.playername + " [" + formatStars_(call.stars) + "]";
       } else {
         if (call.timeRemaining == null) {
           message += call.playername;
@@ -1165,10 +1162,10 @@ var split_ = function(str, l) {
  */
 var formatStars_ = function(stars) {
   if (stars == null) {
-    return "\u3000\u3000 ";
+    return "   ";
   }
   
-  return WHITE_STAR.repeat(stars) + BLACK_STAR.repeat(3 - stars);
+  return " ".repeat(3 - stars) + "*".repeat(stars);
 };
 
 /**
