@@ -1,3 +1,5 @@
+var logger = require('winston');
+
 /**
  * Returns the server ID if available, otherwise returns the channel ID.
  */
