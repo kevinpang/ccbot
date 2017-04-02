@@ -1,4 +1,4 @@
-var logger = require('winston');
+var logger = require('../../logger.js');
 var request = require('request');
 var configs = require('../../configs.js');
 var utils = require('../../utils.js');

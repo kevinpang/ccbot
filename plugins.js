@@ -1,4 +1,4 @@
-var logger = require('winston');
+var logger = require('./logger.js');
 
 var fs = require('fs'), path = require('path');
 function getDirectories(srcpath) {

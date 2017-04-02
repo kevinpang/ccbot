@@ -1,5 +1,5 @@
 var fs = require('fs');
-var logger = require('winston');
+var logger = require('./logger.js');
 var utils = require('./utils.js');
 
 try {
