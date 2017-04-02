@@ -2,20 +2,40 @@ var logger = require('winston');
 var configs = require('./configs.js');
 var utils = require('./utils.js');
 
-logger.configure({
+var fileTransports = {
+  warn: new logger.transports.File({
+    filename: 'logs/warn.txt',
+    maxsize: 1000000,
+    maxFiles: 10,
+    level: 'warn'
+  }),
+  debug: new logger.transports.File({
+    filename: 'logs/debug.txt',
+    maxsize: 1000000,
+    maxFiles: 10,
+    level: 'debug'
+  })
+};
+fileTransports.warn.name = 'file.warn';
+fileTransports.debug.name = 'file.debug';
+
+var consoleTransport = new logger.transports.Console({
+  colorize: true,
+  timestamp: true
+});
+
+var logger = new logger.Logger({
   transports: [
-    new (logger.transports.File)({
-      filename: 'logs/log.txt',
-      maxsize: 1000000,
-      maxFiles: 100,
-      level: 'debug'
-    }),
-    new (logger.transports.Console)({
-      colorize: true,
-      timestamp: true
-    })
+    fileTransports.warn,
+    fileTransports.debug,
+    consoleTransport
   ]
 });
+
+logger.debug('debug log');
+logger.info('info log');
+logger.warn('warn log');
+logger.error('error log');
 
 // Initialize serverConfigs if not defined.
 var cfgs = configs.get();
