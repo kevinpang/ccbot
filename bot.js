@@ -60,7 +60,7 @@ function checkMessageForCommand(msg, isEdit) {
 	  // No-op if we don't have write priviledges on the channel.
 	  if (msg.channel.permissionsFor && 
 	      !msg.channel.permissionsFor(bot.user).hasPermission('SEND_MESSAGES')) {
-	    logger.warn("Ignoring \"" + msg.content + "\" because bot lacks SEND_MESSAGES permission in " +
+	    logger.info("Ignoring \"" + msg.content + "\" because bot lacks SEND_MESSAGES permission in " +
 	        guildAndChannel);
 	    return; 
 	  }
