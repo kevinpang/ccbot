@@ -209,15 +209,19 @@ exports.config = {
     description: "Returns bot configuration for current channel"
   }],
   process: function(bot, msg) {
-    var config = configs.getChannelConfig(msg);
     var serverConfig = configs.getServerConfig(msg);
-    var message = "Current war ID: " + config.cc_id + 
+    var message = "__Server Config__\n";
+    message += "Command prefix: " + serverConfig.commandPrefix + "\n";
+    message += "\n";
+
+    var config = configs.getChannelConfig(msg);
+    message += "__Channel Config__\n" +
+        "Current war ID: " + config.cc_id + 
         (config.cc_id ? (" (" + getCcUrl_(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
-        "Command prefix: " + serverConfig.commandPrefix + "\n" +
         "Congrats messages: ";
     if (config.congratsMessages && config.congratsMessages.length > 0) {
       message += "\n";
@@ -225,8 +229,9 @@ exports.config = {
         message += "\t#" + (i + 1) + ": " + config.congratsMessages[i] + "\n";
       }
     } else {
-      message += "none";
+      message += "none\n";
     }
+    
     msg.channel.sendMessage(message);
   }
 };
