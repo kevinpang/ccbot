@@ -7,6 +7,12 @@ var fileTransports = {
     maxFiles: 10,
     level: 'warn'
   }),
+  info: new winston.transports.File({
+    filename: 'logs/info.txt',
+    maxsize: 1000000,
+    maxFiles: 10,
+    level: 'info'
+  }),
   debug: new winston.transports.File({
     filename: 'logs/debug.txt',
     maxsize: 1000000,
@@ -15,6 +21,7 @@ var fileTransports = {
   })
 };
 fileTransports.warn.name = 'file.warn';
+fileTransports.info.name = 'file.info';
 fileTransports.debug.name = 'file.debug';
 
 var consoleTransport = new winston.transports.Console({
@@ -25,6 +32,7 @@ var consoleTransport = new winston.transports.Console({
 module.exports = new winston.Logger({
   transports: [
     fileTransports.warn,
+    fileTransports.info,
     fileTransports.debug,
     consoleTransport
   ]

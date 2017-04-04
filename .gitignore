@@ -36,3 +36,4 @@ configs.json
 *.pem
 *.ppk
 notes.txt
+.vscode*
