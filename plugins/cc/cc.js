@@ -686,6 +686,7 @@ exports.status = {
     getWarStatus_(ccId, msg, function(warStatus) {
       var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
       var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__War Status__\n";
+
       message += "```\n";
       var currentStars = getCurrentStars_(warStatus);
       for (var i = 0; i < currentStars.length; i++) {
@@ -694,6 +695,13 @@ exports.status = {
         var calls = getCallsOnBase_(baseNumber, warStatus);
         var note = getNote_(baseNumber, warStatus);
         message += formatBase_(stars, baseNumber, calls, note);
+
+        // Send message in chunks to avoid hitting Discord's message character limit.
+        if (message.length > 1024) {
+          message += "```";
+          msg.channel.sendMessage(message);
+          message = "```\n";
+        }
       }
       message += "```";
       
