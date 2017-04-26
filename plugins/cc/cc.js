@@ -140,7 +140,14 @@ exports.call = {
           msg.channel.sendMessage("Unable to call base " + error);
         } else {
           getWarStatus_(ccId, msg, function(warStatus) {
-            var message = "Called base " + baseNumber + " for " + playerName;
+            var message = "";
+            
+            var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
+            if (activeCallsOnBase.length > 1) {
+              message += "**WARNING: THERE ARE OTHER ACTIVE CALLS ON THIS BASE!**\n\n";
+            }
+
+            message += "Called base " + baseNumber + " for " + playerName;
             
             // Print out existing note on this base
             var note = getNote_(baseNumber, warStatus);
@@ -149,7 +156,6 @@ exports.call = {
             }
             
             // Print out any active calls on this base
-            var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
             if (activeCallsOnBase.length > 0) {
               message += "\n\n__Active Calls on #" + baseNumber + "__\n";
               for (var i = 0; i < activeCallsOnBase.length; i++) {
