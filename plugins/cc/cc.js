@@ -1,3 +1,4 @@
+var decode = require('decode-html');
 var logger = require('../../logger.js');
 var request = require('request');
 var configs = require('../../configs.js');
@@ -972,7 +973,8 @@ var getNote_ = function(baseNumber, warStatus) {
     var target = warStatus.targets[i];
     if (parseInt(target.position) == baseNumber - 1) {
       if (target.note != null && target.note != "") {
-        return target.note;
+        // Hack since cc escapes apostrophes as &#039; instead of &#39
+        return decode(target.note).replace('&#039;', '\'');
       }
     }
   }

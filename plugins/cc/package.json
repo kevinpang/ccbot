@@ -1,6 +1,7 @@
 {
   "main": "cc.js",
   "dependencies": {
+    "decode-html": "1.x",
     "request": "2.x"
   }
 }
