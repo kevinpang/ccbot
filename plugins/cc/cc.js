@@ -45,7 +45,8 @@ exports.about = {
         "Author: Jericho (Reddit Havoc)\n" +
         "Website: https://kevinpang.github.io/ccbot/\n" +
         "Source: <https://github.com/kevinpang/ccbot>\n" +
-        "Discord: <https://discordapp.com/invite/jwpU9J6>\n");
+        "Discord: <https://discordapp.com/invite/jwpU9J6>\n" +
+        "Install: <https://discordapp.com/oauth2/authorize?client_id=295229962045358083&scope=bot&permissions=0>\n");
   }
 }
 
