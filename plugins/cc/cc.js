@@ -1151,7 +1151,14 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
   // Print out existing note on this base
   if (note) {
     var noteStr = "Note: " + note;
-    var noteArr = split_(noteStr, 45);
+    var noteLines = noteStr.split('\n');
+    var noteArr = [];
+    for (var i = 0; i < noteLines.length; i++) {
+      console.log(noteLines[i]);
+      console.log(split_(noteLines[i], 45));
+      noteArr = noteArr.concat(split_(noteLines[i], 45));
+      console.log(noteArr);
+    }
     for (var i = 0; i < noteArr.length; i++) {
       message += additionalLineLeftPadding + noteArr[i] + "\n";
     }
@@ -1166,14 +1173,14 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
 var split_ = function(str, l) {
   var strs = [];
   while(str.length > l) {
-      var pos = str.substring(0, l).lastIndexOf(' ');
-      pos = pos <= 0 ? l : pos;
-      strs.push(str.substring(0, pos));
-      var i = str.indexOf(' ', pos)+1;
-      if (i < pos || i > pos+l) {
-        i = pos;
-      }
-      str = str.substring(i);
+    var pos = str.substring(0, l).lastIndexOf(' ');
+    pos = pos <= 0 ? l : pos;
+    strs.push(str.substring(0, pos));
+    var i = str.indexOf(' ', pos)+1;
+    if (i < pos || i > pos+l) {
+      i = pos;
+    }
+    str = str.substring(i);
   }
   strs.push(str);
   return strs;
