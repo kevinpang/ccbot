@@ -705,7 +705,7 @@ exports.status = {
         message += formatBase_(stars, baseNumber, calls, note);
 
         // Send message in chunks to avoid hitting Discord's message character limit.
-        if (message.length > 1024) {
+        if (message.length > 800) {
           message += "```";
           msg.channel.sendMessage(message);
           message = "```\n";
