@@ -25,6 +25,7 @@ exports.commands = [
     "delete",
     "log",
     "note",
+    "open",
     "setarchive",
     "setcalltimer",
     "setcc",
@@ -417,6 +418,29 @@ exports.note = {
   }
 };
 
+exports.open = {
+  help: [{
+    description: "Returns all non-3 starred bases without active calls"
+  }],
+  process: function(bot, msg) {
+    var ccId = getCcId_(msg);
+    if (!ccId) {
+      return;
+    }
+    
+    getWarStatus_(ccId, msg, function(warStatus) {
+      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__Open Bases__\n";
+
+      message += "```\n";
+      message += formatBases_(warStatus, true);
+      message += "```";
+      
+      msg.channel.sendMessage(message);
+    });
+  }
+}
+
 exports.setarchive = {
   help: [{
     usage: "<on|off>",
@@ -696,21 +720,7 @@ exports.status = {
       var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__War Status__\n";
 
       message += "```\n";
-      var currentStars = getCurrentStars_(warStatus);
-      for (var i = 0; i < currentStars.length; i++) {
-        var baseNumber = i + 1;
-        var stars = currentStars[i];
-        var calls = getCallsOnBase_(baseNumber, warStatus);
-        var note = getNote_(baseNumber, warStatus);
-        message += formatBase_(stars, baseNumber, calls, note);
-
-        // Send message in chunks to avoid hitting Discord's message character limit.
-        if (message.length > 800) {
-          message += "```";
-          msg.channel.sendMessage(message);
-          message = "```\n";
-        }
-      }
+      message += formatBases_(warStatus, false);
       message += "```";
       
       msg.channel.sendMessage(message);
@@ -768,7 +778,6 @@ var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
     if (call.posy == baseNumber - 1
         && call.playername.toLowerCase() == playerName.toLowerCase()) {
       return call.posx;
-      break;
     }
   }
   msg.channel.sendMessage("Unable to find call on base " + baseNumber
@@ -1109,6 +1118,42 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
     }
   });
 };
+
+/**
+ * Formats bases for display. Assumes we're in monospace mode.
+ */
+var formatBases_ = function(warStatus, onlyShowOpenBases) {
+  var message = '';
+  var currentStars = getCurrentStars_(warStatus);
+  for (var i = 0; i < currentStars.length; i++) {
+    var baseNumber = i + 1;
+    var stars = currentStars[i];
+    var calls = getCallsOnBase_(baseNumber, warStatus);
+    var note = getNote_(baseNumber, warStatus);
+
+    if (onlyShowOpenBases) {
+      if (stars == 3) {
+        continue;
+      }
+
+      for (var j = 0; j < calls.length; j++) {
+        var call = calls[j];
+        if (!call.attacked) {
+          continue;
+        }
+      }
+    }
+    message += formatBase_(stars, baseNumber, calls, note);
+
+    // Send message in chunks to avoid hitting Discord's message character limit.
+    if (message.length > 800) {
+      message += "```";
+      msg.channel.sendMessage(message);
+      message = "```\n";
+    }
+  }
+  return message;
+}
 
 /**
  * Formats a base for display. Assumes we're in monospace mode.
