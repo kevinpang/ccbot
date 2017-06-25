@@ -1136,11 +1136,17 @@ var formatBases_ = function(warStatus, onlyShowOpenBases) {
         continue;
       }
 
+      var hasActiveCall = false;
       for (var j = 0; j < calls.length; j++) {
         var call = calls[j];
-        if (!call.attacked) {
-          continue;
+        if (!call.attacked && (call.timeRemaining == null || call.timeRemaining > 0)) {
+          hasActiveCall = true;
+          break;
         }
+      }
+
+      if (hasActiveCall) {
+        continue;
       }
     }
     message += formatBase_(stars, baseNumber, calls, note);
