@@ -819,6 +819,12 @@ var getWarStatus_ = function(ccId, msg, callback) {
       msg.channel.sendMessage("Error retrieving data from Clash Caller: "
           + error);
     } else {
+      // CC API returns <success> when it can't find the war ID.
+      if (body == '<success>') {
+        msg.channel.sendMessage("Cannot find war: " + ccId + ". Please make sure war still exists " + getCcUrl_(ccId));
+        return;
+      }
+
       try {
         logger.debug("GET_UPDATE response for war " + ccId + ": " + body);
         callback(JSON.parse(body));  
