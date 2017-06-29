@@ -1130,6 +1130,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
  */
 var formatBases_ = function(warStatus, onlyShowOpenBases) {
   var message = '';
+  var chunkLength = 0;
   var currentStars = getCurrentStars_(warStatus);
   for (var i = 0; i < currentStars.length; i++) {
     var baseNumber = i + 1;
@@ -1155,13 +1156,15 @@ var formatBases_ = function(warStatus, onlyShowOpenBases) {
         continue;
       }
     }
-    message += formatBase_(stars, baseNumber, calls, note);
+
+    var formattedBase = formatBase_(stars, baseNumber, calls, note);
+    message += formattedBase;
+    chunkLength += formattedBase.length;
 
     // Send message in chunks to avoid hitting Discord's message character limit.
-    if (message.length > 800) {
-      message += "```";
-      msg.channel.sendMessage(message);
-      message = "```\n";
+    if (chunkLength > 1000) {
+      message += "```\n```";
+      chunkLength = 0;
     }
   }
   return message;
