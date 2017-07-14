@@ -1209,10 +1209,7 @@ var formatBase_ = function(stars, baseNumber, calls, note) {
     var noteLines = noteStr.split('\n');
     var noteArr = [];
     for (var i = 0; i < noteLines.length; i++) {
-      console.log(noteLines[i]);
-      console.log(split_(noteLines[i], 45));
       noteArr = noteArr.concat(split_(noteLines[i], 45));
-      console.log(noteArr);
     }
     for (var i = 0; i < noteArr.length; i++) {
       message += additionalLineLeftPadding + noteArr[i] + "\n";
