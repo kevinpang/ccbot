@@ -429,14 +429,7 @@ exports.open = {
     }
     
     getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__Open Bases__\n";
-
-      message += "```\n";
-      message += formatBases_(warStatus, true);
-      message += "```";
-      
-      msg.channel.sendMessage(message);
+      sendStatus_(ccId, warStatus, true, msg);
     });
   }
 }
@@ -716,14 +709,7 @@ exports.status = {
     }
     
     getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining) + "\n\n__War Status__\n";
-
-      message += "```\n";
-      message += formatBases_(warStatus, false);
-      message += "```";
-      
-      msg.channel.sendMessage(message);
+      sendStatus_(ccId, warStatus, false, msg);
     });
   }
 };
@@ -1126,11 +1112,18 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
 };
 
 /**
- * Formats bases for display. Assumes we're in monospace mode.
+ * Send status.
  */
-var formatBases_ = function(warStatus, onlyShowOpenBases) {
-  var message = '';
-  var chunkLength = 0;
+var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
+  var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+  var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
+  if (onlyShowOpenBases) {
+    message += "\n\n__Open Bases__\n";
+  } else {
+    message += "\n\n__War Status__\n";
+  }
+  message += "```\n";
+
   var currentStars = getCurrentStars_(warStatus);
   for (var i = 0; i < currentStars.length; i++) {
     var baseNumber = i + 1;
@@ -1159,15 +1152,17 @@ var formatBases_ = function(warStatus, onlyShowOpenBases) {
 
     var formattedBase = formatBase_(stars, baseNumber, calls, note);
     message += formattedBase;
-    chunkLength += formattedBase.length;
 
     // Send message in chunks to avoid hitting Discord's message character limit.
-    if (chunkLength > 1000) {
-      message += "```\n```";
-      chunkLength = 0;
+    if (message.length > 1000) {
+      message += "```";
+      msg.channel.sendMessage(message);
+      message = "```\n";
     }
   }
-  return message;
+
+  message += "```";
+  msg.channel.sendMessage(message);
 }
 
 /**
