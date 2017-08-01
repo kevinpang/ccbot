@@ -62,7 +62,7 @@ exports.attacked = {
       return;
     }
     
-    var regex = /^(\d+)\sfor\s(\d+).*$/;
+    var regex = /^(\d{1,2}).+(\d).*$/;
     var arr = regex.exec(suffix);
     if (!arr) {
       msg.channel.sendMessage("Invalid format for /attacked");
