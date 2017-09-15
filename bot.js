@@ -1,4 +1,4 @@
-var myconfigs = require('./configs.js');
+var configs = require('./configs.js');
 var logger = require('./logger.js');
 var utils = require('./utils.js');
 
