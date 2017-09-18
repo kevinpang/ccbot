@@ -3,7 +3,11 @@ var logger = require('./logger.js');
 var utils = require('./utils.js');
 
 // Initialize serverConfigs if not defined.
-
+var cfgs = configs.get();
+if (!cfgs.serverConfigs) {
+  cfgs.serverConfigs = {};
+  configs.save(cfgs);
+}
 
 try {
 	var Discord = require("discord.js");
