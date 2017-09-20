@@ -37,3 +37,4 @@ configs.json
 *.ppk
 notes.txt
 .vscode*
+.node-persist
