@@ -1210,7 +1210,7 @@ let sendWarSummary_ = function(clanTag, channel) {
 
     // Format current war statistics
     let message = '__War Summary (Beta)__\n';
-    message += '```\n';
+    message += '```';
     message += `${clanName} (${clanTag}) vs ${enemyName} (${enemyClanTag})\n`;
     message += `Stars: ${numStars} - ${numEnemyStars}\n`;
     message += `Percentage: ${percentage}% - ${enemyPercentage}%\n\n`;
@@ -1232,7 +1232,7 @@ let sendWarSummary_ = function(clanTag, channel) {
     message += `10v11 2*: ${formatThvTh_(clanStatistics.num10v11TwoStars, clanStatistics.num10v11Attempts)} - ` +
         `${formatThvTh_(enemyStatistics.num10v11TwoStars, enemyStatistics.num10v11Attempts)}\n`;
     message += `9v10  2*: ${formatThvTh_(clanStatistics.num9v10TwoStars, clanStatistics.num9v10Attempts)} - ` +
-        `${formatThvTh_(enemyStatistics.num9v10TwoStars, enemyStatistics.num9v10Attempts)}\n`;
+        `${formatThvTh_(enemyStatistics.num9v10TwoStars, enemyStatistics.num9v10Attempts)}`;
 
     message += '```';
 
