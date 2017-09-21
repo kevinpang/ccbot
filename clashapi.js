@@ -23,6 +23,12 @@ exports.getCurrentWar = function(clanTag) {
       then(currentWar => {
         logger.debug(`Current war for ${clanTag}: ${JSON.stringify(currentWar)}`);
         return currentWar;
+        /* Test code */
+        /*
+        var fs = require('fs');
+        var obj = JSON.parse(fs.readFileSync('./sample_data/clash_of_clans_api_ended_war.json', 'utf8'));
+        return obj;
+        */
       }).
       catch(err => {
         logger.debug(`Unable to fetch current war data from clash API for ${clanTag}`);

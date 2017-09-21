@@ -1192,8 +1192,8 @@ let sendCurrentWarStatistics_ = function(clanTag, channel) {
     let numEnemyAttacks = currentWar.opponent.attacks;
 
     let playerTagToThLevelMap = getPlayerTagToThLevelMap_(currentWar);
-    let clanStatistics = getCurrentWarStatisticsForClan_(currentWar.clan);
-    let enemyStatistics = getCurrentWarStatisticsForClan_(currentWar.opponent);
+    let clanStatistics = getCurrentWarStatisticsForClan_(currentWar.clan, playerTagToThLevelMap);
+    let enemyStatistics = getCurrentWarStatisticsForClan_(currentWar.opponent, playerTagToThLevelMap);
 
     // Format current war statistics
     let message = '__War Statistics (Beta)__\n';
@@ -1228,7 +1228,7 @@ let sendCurrentWarStatistics_ = function(clanTag, channel) {
 };
 
 let formatThvTh_ = function(numSuccess, numAttempts) {
-  return `${numSuccess}/${numAttempts}` + (numAttempts > 0 ? Math.floor(numSuccess/numAttempts) : '');
+  return `${numSuccess}/${numAttempts}` + (numAttempts > 0 ? ` (${Math.floor(numSuccess/numAttempts*100)}%)` : '');
 };
 
 /**
