@@ -3,7 +3,9 @@ A Clash Caller bot for Discord. Based off of <a href="https://github.com/buttton
 and <a href="https://github.com/chalda/DiscordBot">DiscordBot</a>.
 
 # Screenshots
-![/status](https://i.imgur.com/llCqH9Z.png)
+![/status](http://i.imgur.com/Dfjy09V.png)
+
+![/summary](https://i.imgur.com/dMu1iBR.png)
 
 ![/call and /attacked](http://i.imgur.com/oij2FMF.png)
 
