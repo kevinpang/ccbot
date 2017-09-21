@@ -36,6 +36,7 @@ exports.commands = [
     "start",
     "stats",
     "status",
+    "summary",
     "wartimer"];
 
 exports.about = {
@@ -511,7 +512,7 @@ exports.setclanname = {
 exports.setclantag = {
   help: [{
     usage: "<clan tag>",
-    description: "Sets the clan tag for new wars. Required if you want war statistics returned from /status command."
+    description: "Sets the clan tag for new wars. Required if you want war statistics returned from /summary command."
   }],
   process: function(bot, msg, suffix) {
     var config = configs.getChannelConfig(msg);
@@ -701,7 +702,7 @@ exports.stats = {
 
 exports.status = {
   help: [{
-    description: "Returns the current war status from Clash Caller. Also returns war statistics if your war log is public and you have set your clan tag via the /setclantag command"
+    description: "Returns the current call statuses from Clash Caller"
   }],
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
@@ -711,12 +712,22 @@ exports.status = {
     
     getWarStatus_(ccId, msg, function(warStatus) {
       sendStatus_(ccId, warStatus, false, msg);
-
-      let config = configs.getChannelConfig(msg);
-      if (config && config.clantag) {
-        sendCurrentWarStatistics_(config.clantag, msg.channel);
-      }
     });
+  }
+};
+
+exports.summary = {
+  help: [{
+    description: "Returns a summary of your clan's current war based on data from the Clash of Clans API. " +
+        "Requires in-game war log to be public and clan tag to be set via /setclantag command."
+  }],
+  process: function(bot, msg) {
+    let config = configs.getChannelConfig(msg);
+    if (config && config.clantag) {
+      sendWarSummary_(config.clantag, msg.channel);
+    } else {
+      msg.channel.sendMessage('Please configure your clan tag via /setclantag');
+    }
   }
 };
 
@@ -1174,7 +1185,7 @@ var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
 /**
  * Sends current war statistics retrieved from Clash of Clans API.
  */
-let sendCurrentWarStatistics_ = function(clanTag, channel) {
+let sendWarSummary_ = function(clanTag, channel) {
   clashapi.getCurrentWar(clanTag).then(currentWar => {
     if (!currentWar) {
       logger.warning(`currentWar == null for ${clanTag}`);
@@ -1196,7 +1207,7 @@ let sendCurrentWarStatistics_ = function(clanTag, channel) {
     let enemyStatistics = getCurrentWarStatisticsForClan_(currentWar.opponent, playerTagToThLevelMap);
 
     // Format current war statistics
-    let message = '__War Statistics (Beta)__\n';
+    let message = '__War Summary (Beta)__\n';
     message += '```';
     message += `${clanName} vs ${enemyName}\n`;
     message += `Stars: ${numStars} - ${numEnemyStars}\n`;
@@ -1224,6 +1235,9 @@ let sendCurrentWarStatistics_ = function(clanTag, channel) {
     message += '```';
 
     channel.sendMessage(message);
+  }).catch(err => {
+    channel.sendMessage(`Unable to retrieve current war from Clash of Clans API for clan tag ${clanTag}. ` +
+        `Please make sure your clan tag is correct and that your clan's war log is public.`);
   });
 };
 
