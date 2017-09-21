@@ -1193,7 +1193,9 @@ let sendWarSummary_ = function(clanTag, channel) {
     }
 
     let clanName = currentWar.clan.name;
+    let clanTag = currentWar.clan.tag;
     let enemyName = currentWar.opponent.name;
+    let enemyClanTag = currentWar.opponent.tag;
     let warSize = currentWar.teamSize;
     let numStars = currentWar.clan.stars;
     let numEnemyStars = currentWar.opponent.stars;
@@ -1209,7 +1211,7 @@ let sendWarSummary_ = function(clanTag, channel) {
     // Format current war statistics
     let message = '__War Summary (Beta)__\n';
     message += '```';
-    message += `${clanName} vs ${enemyName}\n`;
+    message += `${clanName} (${clanTag}) vs ${enemyName} (${enemyClanTag})\n`;
     message += `Stars: ${numStars} - ${numEnemyStars}\n`;
     message += `Percentage: ${percentage}% - ${enemyPercentage}%\n\n`;
     message += `Attacks: ${numAttacks}/${warSize * 2} - ${numEnemyAttacks}/${warSize * 2}\n`;
