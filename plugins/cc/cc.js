@@ -1,3 +1,4 @@
+const clashapi = require('../../clashapi.js');
 var decode = require('decode-html');
 var logger = require('../../logger.js');
 var request = require('request');
@@ -710,6 +711,11 @@ exports.status = {
     
     getWarStatus_(ccId, msg, function(warStatus) {
       sendStatus_(ccId, warStatus, false, msg);
+
+      let config = configs.getChannelConfig(msg);
+      if (config && config.clantag) {
+        sendCurrentWarStatistics_(config.clantag, msg.channel);
+      }
     });
   }
 };
@@ -1112,7 +1118,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
 };
 
 /**
- * Send status.
+ * Sends war status.
  */
 var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
   var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
@@ -1164,6 +1170,210 @@ var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
   message += "```";
   msg.channel.sendMessage(message);
 }
+
+/**
+ * Sends current war statistics retrieved from Clash of Clans API.
+ */
+let sendCurrentWarStatistics_ = function(clanTag, channel) {
+  clashapi.getCurrentWar(clanTag).then(currentWar => {
+    if (!currentWar) {
+      logger.warning(`currentWar == null for ${clanTag}`);
+      return;
+    }
+
+    let clanName = currentWar.clan.name;
+    let enemyName = currentWar.opponent.name;
+    let warSize = currentWar.teamSize;
+    let numStars = currentWar.clan.stars;
+    let numEnemyStars = currentWar.opponent.stars;
+    let percentage = currentWar.clan.destructionPercentage;
+    let enemyPercentage = currentWar.opponent.destructionPercentage;
+    let numAttacks = currentWar.clan.attacks;
+    let numEnemyAttacks = currentWar.opponent.attacks;
+
+    let playerTagToThLevelMap = getPlayerTagToThLevelMap_(currentWar);
+    let clanStatistics = getCurrentWarStatisticsForClan_(currentWar.clan);
+    let enemyStatistics = getCurrentWarStatisticsForClan_(currentWar.opponent);
+
+    // Format current war statistics
+    let message = '__War Statistics (Beta)__\n';
+    message += '```';
+    message += `${clanName} vs ${enemyName}\n`;
+    message += `Stars: ${numStars} - ${numEnemyStars}\n`;
+    message += `Percentage: ${percentage}% - ${enemyPercentage}%\n\n`;
+    message += `Attacks: ${numAttacks}/${warSize * 2} - ${numEnemyAttacks}/${warSize * 2}\n`;
+    message += `Breakdown: ${clanStatistics.numTh11s}/${clanStatistics.numTh10s}/${clanStatistics.numTh9s} - ` +
+        `${enemyStatistics.numTh11s}/${enemyStatistics.numTh10s}/${enemyStatistics.numTh9s}\n`;
+    message += `Attacks left: ${clanStatistics.numTh11AttacksLeft}/${clanStatistics.numTh10AttacksLeft}/${clanStatistics.numTh9AttacksLeft} - ` +
+        `${enemyStatistics.numTh11AttacksLeft}/${enemyStatistics.numTh10AttacksLeft}/${enemyStatistics.numTh9AttacksLeft}\n\n`;
+    message += `11v11 3*: ${formatThvTh_(clanStatistics.num11v11ThreeStars, clanStatistics.num11v11Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num11v11ThreeStars, enemyStatistics.num11v11Attempts)}\n`;
+    message += `10v10 3*: ${formatThvTh_(clanStatistics.num10v10ThreeStars, clanStatistics.num10v10Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num10v10ThreeStars, enemyStatistics.num10v10Attempts)}\n`;
+    message += `9v9   3*: ${formatThvTh_(clanStatistics.num9v9ThreeStars, clanStatistics.num9v9Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num9v9ThreeStars, enemyStatistics.num9v9Attempts)}\n`;
+    message += `11v10 3*: ${formatThvTh_(clanStatistics.num11v10ThreeStars, clanStatistics.num11v10Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num11v10ThreeStars, enemyStatistics.num11v10Attempts)}\n`;
+    message += `10v9  3*: ${formatThvTh_(clanStatistics.num10v9ThreeStars, clanStatistics.num10v9Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num10v9ThreeStars, enemyStatistics.num10v9Attempts)}\n`;
+    message += `10v11 2*: ${formatThvTh_(clanStatistics.num10v11TwoStars, clanStatistics.num10v11Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num10v11TwoStars, enemyStatistics.num10v11Attempts)}\n`;
+    message += `9v10  2*: ${formatThvTh_(clanStatistics.num9v10TwoStars, clanStatistics.num9v10Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num9v10TwoStars, enemyStatistics.num9v10Attempts)}\n`;
+
+    message += '```';
+
+    channel.sendMessage(message);
+  });
+};
+
+let formatThvTh_ = function(numSuccess, numAttempts) {
+  return `${numSuccess}/${numAttempts}` + (numAttempts > 0 ? Math.floor(numSuccess/numAttempts) : '');
+};
+
+/**
+ * Returns the current war statistics for the given clan.
+ * 
+ * @param {*} clan either the clan or opponent JSON object returned by the Clash of Clans API
+ */
+let getCurrentWarStatisticsForClan_ = function(clan, playerTagToThLevelMap) {
+  let statistics = {
+    'numTh9s': 0,
+    'numTh10s': 0,
+    'numTh11s': 0,
+    'numTh11AttacksLeft': 0,
+    'numTh10AttacksLeft': 0,
+    'numTh9AttacksLeft': 0,
+    'num11v11ThreeStars': 0,
+    'num11v11Attempts': 0,
+    'num10v10ThreeStars': 0,
+    'num10v10Attempts': 0,
+    'num9v9ThreeStars': 0,
+    'num9v9Attempts': 0,
+    'num11v10ThreeStars': 0,
+    'num11v10Attempts': 0,
+    'num10v9ThreeStars': 0,
+    'num10v9Attempts': 0,
+    'num10v11TwoStars': 0,
+    'num10v11Attempts': 0,
+    'num9v10TwoStars': 0,
+    'num9v10Attempts': 0
+  };
+
+  for (let i = 0; i < clan.members.length; i++) {
+    let member = clan.members[i];   
+    switch (member.townhallLevel) {
+      case 9:
+        statistics.numTh9s++;
+        if (member.attacks) {
+          statistics.numTh9AttacksLeft += 2 - member.attacks.length;
+
+          for (let j = 0; j < member.attacks.length; j++) {
+            let attack = member.attacks[j];
+            let defenderThLevel = playerTagToThLevelMap[attack.defenderTag];
+            switch (defenderThLevel) {
+              case 9:
+                statistics.num9v9Attempts++;
+                if (attack.stars == 3) {
+                  statistics.num9v9ThreeStars++;
+                }
+                break;
+              case 10:
+                statistics.num9v10Attempts++;
+                if (attack.stars == 2) {
+                  statistics.num9v10TwoStars++;
+                }
+                break;
+            }
+          }
+        } else {
+          statistics.numTh9AttacksLeft += 2;
+        }
+        break;
+      case 10:
+        statistics.numTh10s++;
+        if (member.attacks) {
+          statistics.numTh10AttacksLeft += 2 - member.attacks.length;
+
+          for (let j = 0; j < member.attacks.length; j++) {
+            let attack = member.attacks[j];
+            let defenderThLevel = playerTagToThLevelMap[attack.defenderTag];
+            switch (defenderThLevel) {
+              case 9:
+                statistics.num10v9Attempts++;
+                if (attack.stars == 3) {
+                  statistics.num10v9ThreeStars++;
+                }
+                break;
+              case 10:
+                statistics.num10v10Attempts++;
+                if (attack.stars == 3) {
+                  statistics.num10v10ThreeStars++;
+                }
+                break;
+              case 11:
+                statistics.num10v11Attempts++;
+                if (attack.stars == 2) {
+                  statistics.num10v11TwoStars++;
+                }
+                break;
+            }
+          }
+        } else {
+          statistics.numTh10AttacksLeft += 2;
+        }
+        break;
+      case 11:
+        statistics.numTh11s++;
+        if (member.attacks) {
+          statistics.numTh11AttacksLeft += 2 - member.attacks.length;
+
+          for (let j = 0; j < member.attacks.length; j++) {
+            let attack = member.attacks[j];
+            let defenderThLevel = playerTagToThLevelMap[attack.defenderTag];
+            switch (defenderThLevel) {
+              case 10:
+                statistics.num11v10Attempts++;
+                if (attack.stars == 3) {
+                  statistics.num11v10ThreeStars++;
+                }
+                break;
+              case 11:
+                statistics.num11v11Attempts++;
+                if (attack.stars == 2) {
+                  statistics.num11v11ThreeStars++;
+                }
+                break;
+            }
+          }
+        } else {
+          statistics.numTh11AttacksLeft += 2;
+        }
+        break;
+    }
+  }
+
+  return statistics;
+}
+
+/**
+ * Returns a map of player tag to th level given the current war returned by Clash of Clans API.
+ */
+let getPlayerTagToThLevelMap_ = function(currentWar) {
+  let map = {};
+
+  for (let i = 0; i < currentWar.clan.members.length; i++) {
+    let member = currentWar.clan.members[i];
+    map[member.tag] = member.townhallLevel;
+  }
+
+  for (let i = 0; i < currentWar.opponent.members.length; i++) {
+    let member = currentWar.opponent.members[i];
+    map[member.tag] = member.townhallLevel;
+  }
+
+  return map;
+};
 
 /**
  * Formats a base for display. Assumes we're in monospace mode.
