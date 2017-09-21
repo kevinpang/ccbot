@@ -1,4 +1,5 @@
 {
-  "botToken": "Enter bot token here",
-  "clientId": "Enter bot client ID here"
+  "botToken": "Enter Discord bot token here",
+  "clientId": "Enter Discord bot client ID here",
+  "clashApiToken": "Enter Clash of Clans API token here"
 }

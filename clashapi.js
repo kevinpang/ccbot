@@ -9,7 +9,7 @@ try {
 }
 
 let clashApiClient = clashApi({
-  token: auth.clashApiToken
+  token: auth.clashApiToken || 'test'
 });
 
 // Returns a future for the current war for the specific clan.
