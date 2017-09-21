@@ -511,7 +511,7 @@ exports.setclanname = {
 exports.setclantag = {
   help: [{
     usage: "<clan tag>",
-    description: "Sets the clan tag for new wars"
+    description: "Sets the clan tag for new wars. Required if you want war statistics returned from /status command."
   }],
   process: function(bot, msg, suffix) {
     var config = configs.getChannelConfig(msg);
@@ -701,7 +701,7 @@ exports.stats = {
 
 exports.status = {
   help: [{
-    description: "Returns the current war status"
+    description: "Returns the current war status from Clash Caller. Also returns war statistics if your war log is public and you have set your clan tag via the /setclantag command"
   }],
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
