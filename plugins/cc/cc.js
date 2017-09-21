@@ -1210,7 +1210,7 @@ let sendWarSummary_ = function(clanTag, channel) {
 
     // Format current war statistics
     let message = '__War Summary (Beta)__\n';
-    message += '```';
+    message += '```\n';
     message += `${clanName} (${clanTag}) vs ${enemyName} (${enemyClanTag})\n`;
     message += `Stars: ${numStars} - ${numEnemyStars}\n`;
     message += `Percentage: ${percentage}% - ${enemyPercentage}%\n\n`;
