@@ -1,0 +1,387 @@
+{
+    "state": "preparation",
+    "teamSize": 25,
+    "preparationStartTime": "20170921T021623.000Z",
+    "startTime": "20170922T011623.000Z",
+    "endTime": "20170923T011623.000Z",
+    "clan": {
+        "tag": "#JY9GU99",
+        "name": "Reddit Havoc",
+        "badgeUrls": {
+            "small": "https://api-assets.clashofclans.com/badges/70/nLdL-kmhEy6V8h-yRGu7jCE45oagnnDIfY0IbHCYqeI.png",
+            "large": "https://api-assets.clashofclans.com/badges/512/nLdL-kmhEy6V8h-yRGu7jCE45oagnnDIfY0IbHCYqeI.png",
+            "medium": "https://api-assets.clashofclans.com/badges/200/nLdL-kmhEy6V8h-yRGu7jCE45oagnnDIfY0IbHCYqeI.png"
+        },
+        "clanLevel": 14,
+        "attacks": 0,
+        "stars": 0,
+        "destructionPercentage": 0,
+        "members": [
+            {
+                "tag": "#PPJ0UUG",
+                "name": "jroddington",
+                "townhallLevel": 10,
+                "mapPosition": 12,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#RLPCJ9L0",
+                "name": "Preetham",
+                "townhallLevel": 9,
+                "mapPosition": 23,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#28YPYYVQ8",
+                "name": "Victor",
+                "townhallLevel": 10,
+                "mapPosition": 18,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#P028R0RV",
+                "name": "KD24",
+                "townhallLevel": 9,
+                "mapPosition": 25,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#QRGQRJUU",
+                "name": "Lord Kinsonson",
+                "townhallLevel": 11,
+                "mapPosition": 5,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#208CGP800",
+                "name": "BrownDragon",
+                "townhallLevel": 11,
+                "mapPosition": 2,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#9PJU000J",
+                "name": "cbucks12",
+                "townhallLevel": 11,
+                "mapPosition": 4,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#YV0CRG0P",
+                "name": "Jericho",
+                "townhallLevel": 10,
+                "mapPosition": 13,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#RQRQQPQ9",
+                "name": "Bighose",
+                "townhallLevel": 11,
+                "mapPosition": 1,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#89VG2QLL",
+                "name": "JLP-RTJG",
+                "townhallLevel": 9,
+                "mapPosition": 21,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#20JYLLVJ0",
+                "name": "Drizzit",
+                "townhallLevel": 9,
+                "mapPosition": 22,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#28PCG08Q",
+                "name": "CodNacho",
+                "townhallLevel": 10,
+                "mapPosition": 17,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#8999CRVY",
+                "name": "Aether 04",
+                "townhallLevel": 11,
+                "mapPosition": 9,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#LL8V8LP",
+                "name": "™ ¶=|oài ™",
+                "townhallLevel": 11,
+                "mapPosition": 6,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#2P2C0L8LV",
+                "name": "bodevoador",
+                "townhallLevel": 10,
+                "mapPosition": 19,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#99JGPGCP",
+                "name": "djdnav",
+                "townhallLevel": 10,
+                "mapPosition": 11,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#RL2L9GJJ",
+                "name": "Rumplespiltzkin",
+                "townhallLevel": 10,
+                "mapPosition": 16,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#GUCLVUJV",
+                "name": "zzeroxxero",
+                "townhallLevel": 11,
+                "mapPosition": 3,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#C0JY0UQ8",
+                "name": "Swiftlotus",
+                "townhallLevel": 10,
+                "mapPosition": 14,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#89PPY028",
+                "name": "MiniHose",
+                "townhallLevel": 10,
+                "mapPosition": 15,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#JU282C0G",
+                "name": "arcade",
+                "townhallLevel": 11,
+                "mapPosition": 8,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#UC8CRPGL",
+                "name": "sMAshdot",
+                "townhallLevel": 9,
+                "mapPosition": 24,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#G09LJ22",
+                "name": "AnonymousGolem",
+                "townhallLevel": 10,
+                "mapPosition": 10,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#L9P2LJY",
+                "name": "Bass",
+                "townhallLevel": 11,
+                "mapPosition": 7,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#20G22G0C8",
+                "name": "Blazem",
+                "townhallLevel": 9,
+                "mapPosition": 20,
+                "opponentAttacks": 0
+            }
+        ]
+    },
+    "opponent": {
+        "tag": "#20RGV8LU",
+        "name": "MICHIGAN",
+        "badgeUrls": {
+            "small": "https://api-assets.clashofclans.com/badges/70/kOLQsyH4SiX8G80O7XjdCkS2rKmK2mf5HslHthJQ7Fk.png",
+            "large": "https://api-assets.clashofclans.com/badges/512/kOLQsyH4SiX8G80O7XjdCkS2rKmK2mf5HslHthJQ7Fk.png",
+            "medium": "https://api-assets.clashofclans.com/badges/200/kOLQsyH4SiX8G80O7XjdCkS2rKmK2mf5HslHthJQ7Fk.png"
+        },
+        "clanLevel": 15,
+        "attacks": 0,
+        "stars": 0,
+        "destructionPercentage": 0,
+        "members": [
+            {
+                "tag": "#G8J9RP0R",
+                "name": "Wolrab",
+                "townhallLevel": 11,
+                "mapPosition": 2,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#VQ8GY9C9",
+                "name": "Heathen",
+                "townhallLevel": 10,
+                "mapPosition": 17,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#JY0LPRCL",
+                "name": "MightyJD",
+                "townhallLevel": 11,
+                "mapPosition": 3,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#90RJ0R8L",
+                "name": "joeking1978",
+                "townhallLevel": 11,
+                "mapPosition": 4,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#22YQL8JUQ",
+                "name": "AJc",
+                "townhallLevel": 10,
+                "mapPosition": 22,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#2Q9882JRJ",
+                "name": "Đuck my §ick",
+                "townhallLevel": 10,
+                "mapPosition": 25,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#C8V92UJL",
+                "name": "keoden82",
+                "townhallLevel": 11,
+                "mapPosition": 11,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#Q9RJ9YYC",
+                "name": "Jason",
+                "townhallLevel": 11,
+                "mapPosition": 9,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#GPPC8GYR",
+                "name": "michiganmanjd",
+                "townhallLevel": 11,
+                "mapPosition": 6,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#2PVQC0V",
+                "name": "Craig Christ",
+                "townhallLevel": 10,
+                "mapPosition": 23,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#Y88UP0UC",
+                "name": "Derek",
+                "townhallLevel": 10,
+                "mapPosition": 16,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#QLCU9ULQ",
+                "name": "Bkirt",
+                "townhallLevel": 11,
+                "mapPosition": 7,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#RYCPC80G",
+                "name": "The Macallan 25",
+                "townhallLevel": 10,
+                "mapPosition": 12,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#VPUGGV9",
+                "name": "JU][V][P][V][AN",
+                "townhallLevel": 10,
+                "mapPosition": 13,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#2VGR0UJV",
+                "name": "][V][aximus",
+                "townhallLevel": 11,
+                "mapPosition": 8,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#QG09288V",
+                "name": "GRWolverineFan",
+                "townhallLevel": 10,
+                "mapPosition": 19,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#UUQ2VR8",
+                "name": "Greg",
+                "townhallLevel": 10,
+                "mapPosition": 15,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#P0GGPPUP",
+                "name": "Peter",
+                "townhallLevel": 11,
+                "mapPosition": 10,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#9J892C0R",
+                "name": "AirJoe",
+                "townhallLevel": 11,
+                "mapPosition": 1,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#QGCQJ929",
+                "name": "Enraged Aries",
+                "townhallLevel": 11,
+                "mapPosition": 14,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#9YJCC9VR",
+                "name": "Big Spoon",
+                "townhallLevel": 10,
+                "mapPosition": 18,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#2JQRQLCQP",
+                "name": "Haus",
+                "townhallLevel": 9,
+                "mapPosition": 21,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#G9980GJJ",
+                "name": "denkeo28",
+                "townhallLevel": 9,
+                "mapPosition": 24,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#9QLRJR2V",
+                "name": "tb",
+                "townhallLevel": 9,
+                "mapPosition": 20,
+                "opponentAttacks": 0
+            },
+            {
+                "tag": "#90RVCCVQ",
+                "name": "616rep",
+                "townhallLevel": 11,
+                "mapPosition": 5,
+                "opponentAttacks": 0
+            }
+        ]
+    }
+}
