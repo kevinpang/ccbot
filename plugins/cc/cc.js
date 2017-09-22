@@ -326,27 +326,9 @@ exports["delete"] = {
       playerName = utils.getPlayerName(msg, arr[3]);
     }
   
-    getWarStatus_(ccId, msg, function(warStatus) {
-      var posx = findCallPosX_(warStatus, msg, playerName, baseNumber);
-      if (posx) {
-        request.post(CC_API, {
-          form: {
-            "REQUEST": "DELETE_CALL",
-            "warcode": ccId,
-            "posx": posx,
-            "posy": baseNumber - 1
-          }
-        }, function(error, response, body) {
-          if (error) {
-            logger.warn("Unable to delete call " + error);
-            msg.channel.sendMessage("Unable to delete call " + error);
-          } else {
-            msg.channel.sendMessage("Deleted call on " + baseNumber
-                + " for " + playerName);
-          }
-        })
-      }
-    });
+    clashcallerapi.deleteCall(ccId, playerName, baseNumber)
+        .then(() => {msg.channel.sendMessage(`Deleted call on ${baseNumber} for ${playerName}`)})
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 
