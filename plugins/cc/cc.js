@@ -1,4 +1,5 @@
 const clashapi = require('../../clashapi.js');
+const clashcallerapi = require('../../clashcallerapi.js');
 var decode = require('decode-html');
 var logger = require('../../logger.js');
 var request = require('request');
@@ -703,9 +704,9 @@ exports.status = {
       return;
     }
     
-    getWarStatus_(ccId, msg, function(warStatus) {
-      sendStatus_(ccId, warStatus, false, msg);
-    });
+    clashcallerapi.getWarStatus(ccId)
+        .then(warStatus => sendStatus_(ccId, warStatus, false, msg))
+        .catch(error => {msg.channel.sendMessage(error)});
   }
 };
 
