@@ -77,7 +77,6 @@ let findCallPosX_ = function(warStatus, playerName, baseNumber) {
     let call = warStatus.calls[i];
     if (call.posy == baseNumber - 1
         && call.playername.toLowerCase() == playerName.toLowerCase()) {
-          logger.warn('findcallposx 2');
       return call.posx;
     }
   }
