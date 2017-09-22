@@ -1355,7 +1355,7 @@ let getCurrentWarStatisticsForClan_ = function(clan, playerTagToThLevelMap) {
                 break;
               case 11:
                 statistics.num11v11Attempts++;
-                if (attack.stars == 2) {
+                if (attack.stars == 3) {
                   statistics.num11v11ThreeStars++;
                 }
                 break;
