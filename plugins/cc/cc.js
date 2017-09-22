@@ -8,13 +8,6 @@ var utils = require('../../utils.js');
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
 
-try {
-  var Auth = require("../../auth.json");
-} catch (e) {
-  logger.error("Please create an auth.json file like auth.json.example " + e);
-  process.exit();
-}
-
 exports.commands = [
     "about",
     "attacked",
