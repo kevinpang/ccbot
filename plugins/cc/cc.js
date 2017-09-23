@@ -86,89 +86,66 @@ exports.cc = {
 exports.call = {
   help: [
     {
-      usage: "<enemy base #>",
-      description: "Call a base for yourself"
+      usage: '<enemy base #>',
+      description: 'Call a base for yourself'
     },
     {
-      usage: "<enemy base #> for <player name>",
-      description: "Call a base for another player"
+      usage: '<enemy base #> for <player name>',
+      description: 'Call a base for another player'
     }
   ],
   process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
+    let ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
     
-    var regex = /^(\d+)(\sfor\s(.*))?$/;
-    var arr = regex.exec(suffix);
+    let regex = /^(\d+)(\sfor\s(.*))?$/;
+    let arr = regex.exec(suffix);
     if (!arr) {
-      msg.channel.sendMessage("Invalid format for /call");
+      msg.channel.sendMessage('Invalid format for /call');
       return;
     }
     
-    var baseNumber = parseInt(arr[1]);
-    var playerName = utils.getAuthorName(msg);
+    let baseNumber = parseInt(arr[1]);
+    let playerName = utils.getAuthorName(msg);
     if (arr[3]) {
       playerName = utils.getPlayerName(msg, arr[3]);
     }
     
-    getWarStatus_(ccId, msg, function(warStatus) {
-      var size = parseInt(warStatus.general.size);
-      if (baseNumber > size) {
-        msg.channel.sendMessage("Invalid base number. War size is " + size + ".");
-        return;
-      }
-      
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      if (warTimeRemaining < 0) {
-        msg.channel.sendMessage(getWarTimeRemainingMessage_(ccId, warTimeRemaining));
-        return;
-      }
-      
-      request.post(CC_API, {
-        form: {
-          "REQUEST": "APPEND_CALL",
-          "warcode": ccId,
-          "posy": baseNumber - 1,
-          "value": playerName
-        }
-      }, function(error, response, body) {
-        if (error) {
-          logger.warn("Unable to call base " + error);
-          msg.channel.sendMessage("Unable to call base " + error);
-        } else {
-          getWarStatus_(ccId, msg, function(warStatus) {
-            var message = "";
-            
-            var activeCallsOnBase = getActiveCallsOnBase_(baseNumber, warStatus);
-            if (activeCallsOnBase.length > 1) {
-              message += "**WARNING: THERE ARE OTHER ACTIVE CALLS ON THIS BASE!**\n\n";
-            }
-
-            message += "Called base " + baseNumber + " for " + playerName;
-            
-            // Print out existing note on this base
-            var note = getNote_(baseNumber, warStatus);
-            if (note) {
-              message += "\n\nNote: " + note;
-            }
-            
-            // Print out any active calls on this base
-            if (activeCallsOnBase.length > 0) {
-              message += "\n\n__Active Calls on #" + baseNumber + "__\n";
-              for (var i = 0; i < activeCallsOnBase.length; i++) {
-                var activeCallOnBase = activeCallsOnBase[i];
-                message += formatActiveCall_(
-                    activeCallOnBase.playername, activeCallOnBase.timeRemaining) + "\n";
-              }
-            }            
-            
-            msg.channel.sendMessage(message);
-          });
-        }
-      });
-    });
+    clashcallerapi.call(ccId, playerName, baseNumber)
+        .then(() => {
+          clashcallerapi.getWarStatus(ccId)
+              .then((warStatus) => {
+                let message = '';
+                
+                let activeCallsOnBase = clashcallerapi.getActiveCallsOnBase(baseNumber, warStatus);
+                if (activeCallsOnBase.length > 1) {
+                  message += '**WARNING: THERE ARE OTHER ACTIVE CALLS ON THIS BASE!**\n\n';
+                }
+    
+                message += `Called base ${baseNumber} for ${playerName}`;
+                
+                // Print out existing note on this base
+                let note = clashcallerapi.getNote(baseNumber, warStatus);
+                if (note) {
+                  message += `\n\nNote: ${note}`;
+                }
+                
+                // Print out any active calls on this base
+                if (activeCallsOnBase.length > 0) {
+                  message += `\n\n__Active Calls on #${baseNumber}__\n`;
+                  for (let i = 0; i < activeCallsOnBase.length; i++) {
+                    let activeCallOnBase = activeCallsOnBase[i];
+                    message += clashcallerapi.formatActiveCall(
+                        activeCallOnBase.playername, activeCallOnBase.timeRemaining) + '\n';
+                  }
+                }            
+                
+                msg.channel.sendMessage(message);
+              });
+        })
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 
