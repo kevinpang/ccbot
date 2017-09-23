@@ -51,7 +51,7 @@ exports.call = function(ccId, playerName, baseNumber) {
           throw `Invalid base number. War size is ${size}.`;
         }
         
-        let warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+        let warTimeRemaining = exports.calculateWarTimeRemaining(warStatus);
         if (warTimeRemaining < 0) {
           throw `The war is over (${getCcUrl_(ccId)})`;
         }
@@ -148,7 +148,7 @@ let findCallPosX_ = function(warStatus, playerName, baseNumber) {
  * timers are not enabled for the war. Return value can be negative if
  * the war is over.
  */
-let calculateWarTimeRemaining_ = function(warStatus) {
+exports.calculateWarTimeRemaining = function(warStatus) {
   try {
     let checkTime = new Date(warStatus.general.checktime);
     let timerLength = warStatus.general.timerlength;
@@ -228,7 +228,7 @@ exports.getNote = function(baseNumber, warStatus) {
  * Returns active calls on the specified base for the given war.
  */
 exports.getActiveCallsOnBase = function(baseNumber, warStatus) {
-  let activeCalls = getActiveCalls_(warStatus);
+  let activeCalls = exports.getActiveCalls(warStatus);
   let activeCallsOnBase = [];
   if (activeCalls.length > 0) {
     for (let i = 0; i < activeCalls.length; i++) {
@@ -244,7 +244,7 @@ exports.getActiveCallsOnBase = function(baseNumber, warStatus) {
 /**
  * Returns active calls for the given war.
  */
-getActiveCalls_ = function(warStatus) {
+exports.getActiveCalls = function(warStatus) {
   let activeCalls = [];
   for (let i = 0; i < warStatus.calls.length; i++) {
     let call = warStatus.calls[i];

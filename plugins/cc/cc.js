@@ -137,7 +137,7 @@ exports.call = {
                   message += `\n\n__Active Calls on #${baseNumber}__\n`;
                   for (let i = 0; i < activeCallsOnBase.length; i++) {
                     let activeCallOnBase = activeCallsOnBase[i];
-                    message += clashcallerapi.formatActiveCall(
+                    message += formatActiveCall_(
                         activeCallOnBase.playername, activeCallOnBase.timeRemaining) + '\n';
                   }
                 }            
@@ -151,38 +151,40 @@ exports.call = {
 
 exports.calls = {
   help: [{
-    description: "Gets all active calls"
+    description: 'Gets all active calls'
   }],
   process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
+    let ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
   
-    getWarStatus_(ccId, msg, function(warStatus) {
-      var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
-      var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
-      if (warTimeRemaining < 0) {
-        msg.channel.sendMessage(message);
-        return;
-      }
-      
-      message += "\n\n";
-      
-      var activeCalls = getActiveCalls_(warStatus);
-      if (activeCalls.length == 0) {
-        message += "No active calls";
-      } else {
-        message += "__Active Calls__\n";
-        for (var i = 0; i < activeCalls.length; i++) {
-          var activeCall = activeCalls[i];
-          message += "#" + activeCall.baseNumber + ": ";
-          message += formatActiveCall_(activeCall.playername, activeCall.timeRemaining) + "\n";
-        }
-      }
-      
-      msg.channel.sendMessage(message);
-    });
+    clashcallerapi.getWarStatus(ccId)
+        .then((warStatus) => {
+          let warTimeRemaining = clashcallerapi.calculateWarTimeRemaining(warStatus);
+          let message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
+          if (warTimeRemaining < 0) {
+            msg.channel.sendMessage(message);
+            return;
+          }
+          
+          message += '\n\n';
+          
+          let activeCalls = clashcallerapi.getActiveCalls(warStatus);
+          if (activeCalls.length == 0) {
+            message += 'No active calls';
+          } else {
+            message += '__Active Calls__\n';
+            for (let i = 0; i < activeCalls.length; i++) {
+              let activeCall = activeCalls[i];
+              message += `#${activeCall.baseNumber}: `;
+              message += formatActiveCall_(activeCall.playername, activeCall.timeRemaining) + '\n';
+            }
+          }
+          
+          msg.channel.sendMessage(message);
+        })
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 
