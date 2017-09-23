@@ -521,101 +521,46 @@ exports.start = {
 exports.stats = {
   help: [
     {
-      description: "View your stats"
+      description: 'View your stats'
     },
     {
-      usage: "for <player name>",
-      description: "View stats for another player"
+      usage: 'for <player name>',
+      description: 'View stats for another player'
     }
   ],
   process: function(bot, msg, suffix) {
-    var config = configs.getChannelConfig(msg);
+    let config = configs.getChannelConfig(msg);
     if (!config.clantag) {
-      msg.channel.sendMessage("Use /setclantag to specify a clan tag first");
+      msg.channel.sendMessage('Use /setclantag to specify a clan tag first');
       return;
     }
     
-    var playerName = utils.getAuthorName(msg);
+    let playerName = utils.getAuthorName(msg);
     if (suffix) {
-      var regex = /^for\s(.*)?$/;
-      var arr = regex.exec(suffix);
+      let regex = /^for\s(.*)?$/;
+      let arr = regex.exec(suffix);
       if (!arr) {
-        msg.channel.sendMessage("Invalid format for /stats");
+        msg.channel.sendMessage('Invalid format for /stats');
         return;
       }
       
       playerName = utils.getPlayerName(msg, arr[1]);
     }
-    
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "SEARCH_FOR_PLAYER",
-        "clan": config.clantag,
-        "name": playerName
-      }
-    }, function(error, response, body) {
-      if (error) {
-        logger.warn("Unable to find player " + playerName +
-            " in clan " + config.clantag + ": " + error);
-        msg.channel.sendMessage("Unable to find player " + playerName +
-            " in clan " + config.clantag + ": " + error);
-      } else {
-        body = JSON.parse(body);
-        
-        if (body.attacks && body.attacks.length > 0) {
-          var wars = {};
-          var numWars = 0;
-          var stars = 0;
-          var attacks = 0;
-          var threeStars = 0;
-          var twoStars = 0;
-          var oneStars = 0;
-          var zeroStars = 0;
-          
-          for (var i = 0; i < body.attacks.length; i++) {
-            var attack = body.attacks[i];
-            attacks++;
-            if (!wars[attack.ID]) {
-              wars[attack.ID] = true;
-              numWars++;
-            }
-            var numStars = parseInt(attack.STAR);
-            if (numStars > 1) {
-              numStars -= 2;
-              
-              stars += numStars;
-              if (numStars == 0) {
-                zeroStars++;
-              } else if (numStars == 1) {
-                oneStars++;
-              } else if (numStars == 2) {
-                twoStars++;
-              } else if (numStars == 3) {
-                threeStars++;
-              }
-            }
-          }
-          
-          var message = "__Stats for " + playerName + "__\n";
-          message += "Wars participated: " + numWars + "\n";
-          message += "Total stars: " + stars + "\n";
-          message += "Total attacks: " + attacks + "\n";
-          message += "Average stars: " + Number(stars / attacks).toFixed(2) + "\n\n";
-          message += "3 stars: " + threeStars + " (" + Number(threeStars / attacks * 100).toFixed(2) + "%)\n";
-          message += "2 stars: " + twoStars + " (" + Number(twoStars / attacks * 100).toFixed(2) + "%)\n";
-          message += "1 stars: " + oneStars + " (" + Number(oneStars / attacks * 100).toFixed(2) + "%)\n";
-          message += "0 stars: " + zeroStars + " (" + Number(zeroStars / attacks * 100).toFixed(2) + "%)\n";
-          
+
+    clashCallerService.getPlayerStats(playerName, config.clantag)
+        .then((stats) => {
+          let message = `__Stats for ${playerName}__\n` +
+              `Wars participated: ${stats.numWars}\n` +
+              `Total stars: ${stats.stars}\n` +
+              `Total attacks: ${stats.attacks}\n` +
+              `Average stars: ${Number(stats.stars / stats.attacks).toFixed(2)}\n\n` +
+              `3 stars: ${stats.threeStars} (${Number(stats.threeStars / stats.attacks * 100).toFixed(2)}%)\n` +
+              `2 stars: ${stats.twoStars} (${Number(stats.twoStars / stats.attacks * 100).toFixed(2)}%)\n` +
+              `1 stars: ${stats.oneStars} (${Number(stats.oneStars / stats.attacks * 100).toFixed(2)}%)\n` +
+              `0 stars: ${stats.zeroStars} (${Number(stats.zeroStars / stats.attacks * 100).toFixed(2)}%)\n`;
           msg.channel.sendMessage(message);
-        } else {
-          msg.channel.sendMessage("No attacks found for player " + 
-              playerName + " in clan " + config.clantag + ".\n\n" +
-              "Please verify that:\n" +
-              "1. Archiving is enabled (use \"/setarchive on\" to enable it for future wars created from ccbot\n" +
-              "2. Your name on this channel matches the name you've been using in previous Clash Caller wars");
-        }
-      }
-    });
+        })
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 

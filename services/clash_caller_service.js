@@ -31,13 +31,12 @@ exports.startWar = function(config, warSize, enemyClanName) {
       if (error) {
         logger.warn(`Error creating war: ${error}`);
         reject(`Error creating war: ${error}`);
-        return;
+      } else {
+        resolve({
+          'ccId': body.substring(4), // Remove the 'war/' from the start.
+          'prevCcId': config.cc_id
+        });
       }
-
-      resolve({
-        'ccId': body.substring(4), // Remove the 'war/' from the start.
-        'prevCcId': config.cc_id
-      });
     });
   });
 };
@@ -56,21 +55,19 @@ exports.getWarStatus = function (ccId) {
       if (error) {
         logger.warn(`Error retrieving data from Clash Caller for ${ccId}: ${error}`);
         reject(`Error retrieving data from Clash Caller: ${error}`);
-        return;
       } else {
         // CC API returns <success> when it can't find the war ID.
         if (body == '<success>') {
           reject(`Cannot find war: ${ccId}. Please make sure war still exists on ` +
               `Clash Caller: ${exports.getCcUrl(ccId)}`);
-          return;
-        }
-
-        try {
-          logger.debug(`GET_UPDATE response for war ${ccId}: ${body}`);
-          resolve(JSON.parse(body));
-        } catch (e) {
-          logger.warn(`Error parsing war status ${body}: ${e}`);
-          reject(`Error getting war status for war ID ${ccId}: e`);
+        } else {
+          try {
+            logger.debug(`GET_UPDATE response for war ${ccId}: ${body}`);
+            resolve(JSON.parse(body));
+          } catch (e) {
+            logger.warn(`Error parsing war status ${body}: ${e}`);
+            reject(`Error getting war status for war ID ${ccId}: e`);
+          }
         }
       }
     });
@@ -105,9 +102,9 @@ exports.call = function(ccId, playerName, baseNumber) {
             if (error) {
               logger.warn(`Unable to call base ${baseNumber} for ${playerName} in war ${ccId}: ${error}`);
               reject(`Unable to call base: ${error}`);
-              return;
+            } else {
+              resolve();
             }
-            resolve();
           });
         });
       });
@@ -138,9 +135,9 @@ exports.logAttack = function(ccId, playerName, baseNumber, stars) {
               if (error) {
                 logger.warn(`Unable to record stars: ${error}`);
                 reject(`Unable to record stars: ${error}`);
-                return;
+              } else {
+                resolve();
               }
-              resolve();
             });
           });
         }
@@ -185,9 +182,81 @@ exports.addNote = function(ccId, baseNumber, note) {
       if (error) {
         logger.warn(`Error updating note: ${error}`);
         reject(`Error updating note: ${error}`);
-        return;
+      } else {
+        resolve();
       }
-      resolve();
+    });
+  });
+};
+
+/**
+ * Returns stats from Clash Caller for the specified player in the specified clan.
+ * 
+ * Requires that the clan tag be set on previous wars and that archiving be enabled.
+ */
+exports.getPlayerStats = function(playerName, clanTag) {
+  return new Promise((resolve, reject) => {
+    request.post(CC_API, {
+      form: {
+        'REQUEST': 'SEARCH_FOR_PLAYER',
+        'clan': clanTag,
+        'name': playerName
+      }
+    }, function(error, response, body) {
+      if (error) {
+        logger.warn(`Unable to find player ${playerName} in clan ${clanTag}: ${error}`);
+        reject(`Unable to find player ${playerName} in clan ${clanTag}: ${error}`);
+      } else {
+        try {
+          body = JSON.parse(body);
+          if (!body.attacks || body.attacks.length == 0) {
+            reject(`No attacks found for player ${playerName} in clan ${clanTag}.\n\n` +
+                'Please verify that:\n' +
+                '1. Archiving is enabled (use \'/setarchive on\' to enable it for future wars created from ccbot\n' +
+                '2. Your name on this channel matches the name youve been using in previous Clash Caller wars')
+          } else {
+            let stats = {
+              'wars': {},
+              'numWars': 0,
+              'stars': 0,
+              'attacks': 0,
+              'threeStars': 0,
+              'twoStars': 0,
+              'oneStars': 0,
+              'zeroStars': 0
+            };
+            
+            for (let i = 0; i < body.attacks.length; i++) {
+              let attack = body.attacks[i];
+              stats.attacks++;
+              if (!stats.wars[attack.ID]) {
+                stats.wars[attack.ID] = true;
+                stats.numWars++;
+              }
+              let numStars = parseInt(attack.STAR);
+              if (numStars > 1) {
+                numStars -= 2;
+                
+                stats.stars += numStars;
+                if (numStars == 0) {
+                  stats.zeroStars++;
+                } else if (numStars == 1) {
+                  stats.oneStars++;
+                } else if (numStars == 2) {
+                  stats.twoStars++;
+                } else if (numStars == 3) {
+                  stats.threeStars++;
+                }
+              }
+            }
+            
+            resolve(stats);
+          }
+        } catch(e) {
+          logger.warn(`Error retrieving stats from Clash Caller ${body}: ${e}`);
+          reject(`Error retrieving stats from Clash Caller: ${e}`);
+        }
+      }
     });
   });
 };
