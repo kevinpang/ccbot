@@ -268,9 +268,7 @@ exports.getPlayerStats = function(playerName, clanTag) {
  * minutes - total minutes until start or end
  */
 exports.updateWarTime = function(ccId, start, minutes) {
-  logger.warn('updateWarTime 1');
   return new Promise((resolve, reject) => {
-    logger.warn('updateWarTime 2');
     request.post(CC_API, {
       form: {
         'REQUEST': 'UPDATE_WAR_TIME',
@@ -279,13 +277,10 @@ exports.updateWarTime = function(ccId, start, minutes) {
         'minutes': minutes
       }
     }, function(error, response, body) {
-      logger.warn('updateWarTime 3');
       if (error) {
-        logger.warn('updateWarTime 4');
         logger.warn(`Unable to update war time ${error}`);
         reject(`Unable to update war time ${error}`);
       } else {
-        logger.warn('updateWarTime 5');
         resolve();
       }
     });
