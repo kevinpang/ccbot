@@ -1,8 +1,8 @@
 const clashApi = require('clash-of-clans-api');
-const logger = require('./logger.js');
+const logger = require('../logger.js');
 
 try {
-  var auth = require("./auth.json");
+  var auth = require("../auth.json");
 } catch (e) {
   logger.error("Please create an auth.json file like auth.json.example " + e);
   process.exit();

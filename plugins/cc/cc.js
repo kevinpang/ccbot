@@ -1,5 +1,5 @@
-const clashapi = require('../../clashapi.js');
-const clashcallerapi = require('../../clashcallerapi.js');
+const clashapi = require('../../services/clashapi.js');
+const clashcallerapi = require('../../services/clashcallerapi.js');
 var decode = require('decode-html');
 var logger = require('../../logger.js');
 var request = require('request');

@@ -1,5 +1,5 @@
 let decode = require('decode-html');
-let logger = require('./logger.js');
+let logger = require('../logger.js');
 let request = require('request');
 
 const CC_API = 'http://clashcaller.com/api.php';
