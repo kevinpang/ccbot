@@ -8,7 +8,7 @@ try {
   process.exit();
 }
 
-let clashApiClient = clashApi({
+let client = clashApi({
   token: auth.clashApiToken || 'test'
 });
 
@@ -19,7 +19,7 @@ exports.getCurrentWar = function(clanTag) {
   }
   logger.debug(`Fetching current war for ${clanTag}`);
 
-  return clashApiClient.clanCurrentWarByTag(clanTag).
+  return client.clanCurrentWarByTag(clanTag).
       then(currentWar => {
         logger.debug(`Current war for ${clanTag}: ${JSON.stringify(currentWar)}`);
         return currentWar;

@@ -163,21 +163,6 @@ exports.getCcUrl = function(ccId) {
 };
 
 /**
- * Returns the X position of a user's call or null if call is not found.
- */
-let findCallPosX_ = function(warStatus, playerName, baseNumber) {
-  for (let i = 0; i < warStatus.calls.length; i++) {
-    let call = warStatus.calls[i];
-    if (call.posy == baseNumber - 1
-        && call.playername.toLowerCase() == playerName.toLowerCase()) {
-      return call.posx;
-    }
-  }
-
-  throw `Unable to find call on base ${baseNumber} for ${playerName}`;
-};
-
-/**
  * Returns the time remaining (in milliseconds) for the war, or null if
  * timers are not enabled for the war. Return value can be negative if
  * the war is over.
@@ -373,22 +358,18 @@ exports.getCurrentStars = function(warStatus) {
 };
 
 /**
- * Formats time remaining (in ms) in XXhYYm.
+ * Returns the X position of a user's call or null if call is not found.
  */
-let formatTimeRemaining_ = function(timeRemaining) {
-  if (timeRemaining == null) {
-    return '';
+let findCallPosX_ = function(warStatus, playerName, baseNumber) {
+  for (let i = 0; i < warStatus.calls.length; i++) {
+    let call = warStatus.calls[i];
+    if (call.posy == baseNumber - 1
+        && call.playername.toLowerCase() == playerName.toLowerCase()) {
+      return call.posx;
+    }
   }
-  
-  timeRemaining /= 60000;
-  let minutes = Math.floor(timeRemaining % 60);
-  timeRemaining /= 60
-  if (timeRemaining > 24) {
-    logger.warn(`Received time remaining >24h ${timeRemaining}`);
-    return '??h??m';
-  }
-  let hours = Math.floor(timeRemaining);
-  return (hours > 0 ? hours + 'h' : '') + minutes + 'm';
+
+  throw `Unable to find call on base ${baseNumber} for ${playerName}`;
 };
 
 /**

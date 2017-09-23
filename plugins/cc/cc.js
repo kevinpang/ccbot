@@ -1,10 +1,10 @@
-const clashapi = require('../../services/clashapi.js');
-const clashcallerapi = require('../../services/clashcallerapi.js');
-var decode = require('decode-html');
-var logger = require('../../logger.js');
-var request = require('request');
-var configs = require('../../configs.js');
-var utils = require('../../utils.js');
+const clashCallerService = require('../../services/clash_caller_service.js');
+const clashService = require('../../services/clash_service.js');
+const decode = require('decode-html');
+const logger = require('../../logger.js');
+const request = require('request');
+const configs = require('../../configs.js');
+const utils = require('../../utils.js');
 
 var CC_API = "http://clashcaller.com/api.php";
 var CC_WAR_URL = "http://www.clashcaller.com/war/";
@@ -78,7 +78,7 @@ exports.cc = {
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
     if (ccId) {
-      msg.channel.sendMessage("Current war: " + clashcallerapi.getCcUrl(ccId));
+      msg.channel.sendMessage("Current war: " + clashCallerService.getCcUrl(ccId));
     }
   }
 };
@@ -113,13 +113,13 @@ exports.call = {
       playerName = utils.getPlayerName(msg, arr[3]);
     }
     
-    clashcallerapi.call(ccId, playerName, baseNumber)
+    clashCallerService.call(ccId, playerName, baseNumber)
         .then(() => {
-          clashcallerapi.getWarStatus(ccId)
+          clashCallerService.getWarStatus(ccId)
               .then((warStatus) => {
                 let message = '';
                 
-                let activeCallsOnBase = clashcallerapi.getActiveCallsOnBase(baseNumber, warStatus);
+                let activeCallsOnBase = clashCallerService.getActiveCallsOnBase(baseNumber, warStatus);
                 if (activeCallsOnBase.length > 1) {
                   message += '**WARNING: THERE ARE OTHER ACTIVE CALLS ON THIS BASE!**\n\n';
                 }
@@ -127,7 +127,7 @@ exports.call = {
                 message += `Called base ${baseNumber} for ${playerName}`;
                 
                 // Print out existing note on this base
-                let note = clashcallerapi.getNote(baseNumber, warStatus);
+                let note = clashCallerService.getNote(baseNumber, warStatus);
                 if (note) {
                   message += `\n\nNote: ${note}`;
                 }
@@ -159,9 +159,9 @@ exports.calls = {
       return;
     }
   
-    clashcallerapi.getWarStatus(ccId)
+    clashCallerService.getWarStatus(ccId)
         .then((warStatus) => {
-          let warTimeRemaining = clashcallerapi.calculateWarTimeRemaining(warStatus);
+          let warTimeRemaining = clashCallerService.calculateWarTimeRemaining(warStatus);
           let message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
           if (warTimeRemaining < 0) {
             msg.channel.sendMessage(message);
@@ -170,7 +170,7 @@ exports.calls = {
           
           message += '\n\n';
           
-          let activeCalls = clashcallerapi.getActiveCalls(warStatus);
+          let activeCalls = clashCallerService.getActiveCalls(warStatus);
           if (activeCalls.length == 0) {
             message += 'No active calls';
           } else {
@@ -201,7 +201,7 @@ exports.config = {
     var config = configs.getChannelConfig(msg);
     message += "__Channel Config__\n" +
         "Current war ID: " + config.cc_id + 
-        (config.cc_id ? (" (" + clashcallerapi.getCcUrl(config.cc_id) + ")") : "")+ "\n" +
+        (config.cc_id ? (" (" + clashCallerService.getCcUrl(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
@@ -305,7 +305,7 @@ exports["delete"] = {
       playerName = utils.getPlayerName(msg, arr[3]);
     }
   
-    clashcallerapi.deleteCall(ccId, playerName, baseNumber)
+    clashCallerService.deleteCall(ccId, playerName, baseNumber)
         .then(() => {msg.channel.sendMessage(`Deleted call on ${baseNumber} for ${playerName}`)})
         .catch((error) => {msg.channel.sendMessage(error)});
   }
@@ -357,7 +357,7 @@ exports.note = {
     var baseNumber = parseInt(arr[1]);
     var note = arr[2];
     
-    clashcallerapi.addNote(ccId, baseNumber, note)
+    clashCallerService.addNote(ccId, baseNumber, note)
         .then(() => {msg.channel.sendMessage(`Updated note on base #${baseNumber}`)})
         .catch(error => {msg.channel.sendMessage(error)});
   }
@@ -373,7 +373,7 @@ exports.open = {
       return;
     }
     
-    clashcallerapi.getWarStatus(ccId)
+    clashCallerService.getWarStatus(ccId)
         .then(warStatus => sendStatus_(ccId, warStatus, true, msg))
         .catch(error => {msg.channel.sendMessage(error)});
   }
@@ -434,7 +434,7 @@ exports.setcc = {
     if (prevCcId) {
       message += "Previous war id: " + prevCcId + "\n";
     }
-    message += "Current war ID set to " + suffix + " (" + clashcallerapi.getCcUrl(suffix) + ")";
+    message += "Current war ID set to " + suffix + " (" + clashCallerService.getCcUrl(suffix) + ")";
     msg.channel.sendMessage(message);  
   }
 };
@@ -535,7 +535,7 @@ exports.start = {
           message += "Previous war id: " + prevCcId + "\n";
         }
         
-        message += "New war created: " + clashcallerapi.getCcUrl(ccId);
+        message += "New war created: " + clashCallerService.getCcUrl(ccId);
         msg.channel.sendMessage(message);  
       }
     });
@@ -653,7 +653,7 @@ exports.status = {
       return;
     }
     
-    clashcallerapi.getWarStatus(ccId)
+    clashCallerService.getWarStatus(ccId)
         .then(warStatus => sendStatus_(ccId, warStatus, false, msg))
         .catch(error => {msg.channel.sendMessage(error)});
   }
@@ -751,15 +751,15 @@ var convertCallTimer_ = function(callTimer) {
 var getWarTimeRemainingMessage_ = function(ccId, warTimeRemaining) {
   var oneDay = 24 * 60 * 60 * 1000;
   if (warTimeRemaining == null) {
-    return "Current war: " + clashcallerapi.getCcUrl(ccId);
+    return "Current war: " + clashCallerService.getCcUrl(ccId);
   } else if (warTimeRemaining < 0) {
-    return "The war is over (" + clashcallerapi.getCcUrl(ccId) + ")";
+    return "The war is over (" + clashCallerService.getCcUrl(ccId) + ")";
   } else if (warTimeRemaining > oneDay) {
     return "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay) +
-        " (" + clashcallerapi.getCcUrl(ccId) + ")";
+        " (" + clashCallerService.getCcUrl(ccId) + ")";
   } else {
     return "War ends in " + formatTimeRemaining_(warTimeRemaining) +
-        " (" + clashcallerapi.getCcUrl(ccId) + ")";;
+        " (" + clashCallerService.getCcUrl(ccId) + ")";;
   }
 };
 
@@ -786,7 +786,7 @@ var formatTimeRemaining_ = function(timeRemaining) {
  * Logs an attack.
  */
 var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
-  clashcallerapi.logAttack(ccId, playerName, baseNumber, stars)
+  clashCallerService.logAttack(ccId, playerName, baseNumber, stars)
       .then(() => {
         let message = `Recorded ${stars} star${(stars == 1 ? '' : 's')} for ${playerName} on base ${baseNumber}`;
         let config = configs.getChannelConfig(msg);
@@ -802,7 +802,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
  * Sends war status.
  */
 var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
-  var warTimeRemaining = clashcallerapi.calculateWarTimeRemaining(warStatus);
+  var warTimeRemaining = clashCallerService.calculateWarTimeRemaining(warStatus);
   var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
   if (onlyShowOpenBases) {
     message += "\n\n__Open Bases__\n";
@@ -811,12 +811,12 @@ var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
   }
   message += "```\n";
 
-  var currentStars = clashcallerapi.getCurrentStars(warStatus);
+  var currentStars = clashCallerService.getCurrentStars(warStatus);
   for (var i = 0; i < currentStars.length; i++) {
     var baseNumber = i + 1;
     var stars = currentStars[i];
-    var calls = clashcallerapi.getCallsOnBase(baseNumber, warStatus);
-    var note = clashcallerapi.getNote(baseNumber, warStatus);
+    var calls = clashCallerService.getCallsOnBase(baseNumber, warStatus);
+    var note = clashCallerService.getNote(baseNumber, warStatus);
 
     if (onlyShowOpenBases) {
       if (stars == 3) {
@@ -856,7 +856,7 @@ var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
  * Sends current war statistics retrieved from Clash of Clans API.
  */
 let sendWarSummary_ = function(clanTag, channel) {
-  clashapi.getCurrentWar(clanTag).then(currentWar => {
+  clashService.getCurrentWar(clanTag).then(currentWar => {
     if (!currentWar) {
       logger.warning(`currentWar == null for ${clanTag}`);
       return;
