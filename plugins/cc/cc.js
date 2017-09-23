@@ -78,7 +78,7 @@ exports.cc = {
   process: function(bot, msg) {
     var ccId = getCcId_(msg);
     if (ccId) {
-      msg.channel.sendMessage("Current war: " + getCcUrl_(ccId));
+      msg.channel.sendMessage("Current war: " + clashcallerapi.getCcUrl(ccId));
     }
   }
 };
@@ -201,7 +201,7 @@ exports.config = {
     var config = configs.getChannelConfig(msg);
     message += "__Channel Config__\n" +
         "Current war ID: " + config.cc_id + 
-        (config.cc_id ? (" (" + getCcUrl_(config.cc_id) + ")") : "")+ "\n" +
+        (config.cc_id ? (" (" + clashcallerapi.getCcUrl(config.cc_id) + ")") : "")+ "\n" +
         "Clan name: " + config.clanname + "\n" +
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
@@ -434,7 +434,7 @@ exports.setcc = {
     if (prevCcId) {
       message += "Previous war id: " + prevCcId + "\n";
     }
-    message += "Current war ID set to " + suffix + " (" + getCcUrl_(suffix) + ")";
+    message += "Current war ID set to " + suffix + " (" + clashcallerapi.getCcUrl(suffix) + ")";
     msg.channel.sendMessage(message);  
   }
 };
@@ -535,7 +535,7 @@ exports.start = {
           message += "Previous war id: " + prevCcId + "\n";
         }
         
-        message += "New war created: " + getCcUrl_(ccId);
+        message += "New war created: " + clashcallerapi.getCcUrl(ccId);
         msg.channel.sendMessage(message);  
       }
     });
@@ -716,22 +716,6 @@ exports.wartimer = {
 };
 
 /**
- * Returns the X position of a user's call or null if call is not found.
- */
-var findCallPosX_ = function(warStatus, msg, playerName, baseNumber) {
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    if (call.posy == baseNumber - 1
-        && call.playername.toLowerCase() == playerName.toLowerCase()) {
-      return call.posx;
-    }
-  }
-  msg.channel.sendMessage("Unable to find call on base " + baseNumber
-      + " for " + playerName);
-  return null;
-};
-
-/**
  * Gets the current war's war ID or null if not found.
  */
 var getCcId_ = function(msg) {
@@ -741,45 +725,6 @@ var getCcId_ = function(msg) {
     return null;
   }
   return config.cc_id;
-};
-
-/**
- * Returns the Clash Caller url for the specified war ID.
- */
-var getCcUrl_ = function(ccId) {
-  return "<" + CC_WAR_URL + ccId + ">";
-};
-
-/**
- * Gets the war status from Clash Caller for the specified war.
- */
-var getWarStatus_ = function(ccId, msg, callback) {
-  request.post(CC_API, {
-    form: {
-      "REQUEST": "GET_UPDATE",
-      "warcode": ccId
-    }
-  }, function(error, response, body) {
-    if (error) {
-      logger.warn("Error retrieving data from Clash Caller: " + error);
-      msg.channel.sendMessage("Error retrieving data from Clash Caller: "
-          + error);
-    } else {
-      // CC API returns <success> when it can't find the war ID.
-      if (body == '<success>') {
-        msg.channel.sendMessage("Cannot find war: " + ccId + ". Please make sure war still exists " + getCcUrl_(ccId));
-        return;
-      }
-
-      try {
-        logger.debug("GET_UPDATE response for war " + ccId + ": " + body);
-        callback(JSON.parse(body));  
-      } catch (e) {
-        logger.warn("Error in getWarStatus_ callback. " + e + ". War status: " + body);
-        msg.channel.sendMessage("Error getting war status for war ID: " + ccId);
-      }
-    }
-  });
 };
 
 /**
@@ -806,80 +751,15 @@ var convertCallTimer_ = function(callTimer) {
 var getWarTimeRemainingMessage_ = function(ccId, warTimeRemaining) {
   var oneDay = 24 * 60 * 60 * 1000;
   if (warTimeRemaining == null) {
-    return "Current war: " + getCcUrl_(ccId);
+    return "Current war: " + clashcallerapi.getCcUrl(ccId);
   } else if (warTimeRemaining < 0) {
-    return "The war is over (" + getCcUrl_(ccId) + ")";
+    return "The war is over (" + clashcallerapi.getCcUrl(ccId) + ")";
   } else if (warTimeRemaining > oneDay) {
     return "War starts in " + formatTimeRemaining_(warTimeRemaining - oneDay) +
-        " (" + getCcUrl_(ccId) + ")";
+        " (" + clashcallerapi.getCcUrl(ccId) + ")";
   } else {
     return "War ends in " + formatTimeRemaining_(warTimeRemaining) +
-        " (" + getCcUrl_(ccId) + ")";;
-  }
-};
-
-/**
- * Returns the time remaining (in milliseconds) for the war, or null if
- * timers are not enabled for the war. Return value can be negative if
- * the war is over.
- */
-var calculateWarTimeRemaining_ = function(warStatus) {
-  try {
-    var checkTime = new Date(warStatus.general.checktime);
-    var timerLength = warStatus.general.timerlength;
-    var endTime = new Date(warStatus.general.starttime).addHours(24);
-    
-    if (timerLength == "0") {
-      // Timers not enabled for this war
-      return null;
-    } else {
-      return endTime - checkTime;
-    }
-  } catch (e) {
-    logger.warn("Unable to calculate war time remaining: " + JSON.stringify(warStatus));
-  }
-};
-
-/**
- * Returns the time remaining (in milliseconds) for a specific call, or null if
- * timers are not enabled for the war, war has not started yet, or war is over.
- * Return value can be negative if call has expired.
- */
-var calculateCallTimeRemaining_ = function(call, warStatus) {
-  try {
-    var callTime = new Date(call.calltime);
-    var checkTime = new Date(warStatus.general.checktime);
-    var startTime = new Date(warStatus.general.starttime);
-    var timerLength = warStatus.general.timerlength;
-    var endTime = new Date(warStatus.general.starttime).addHours(24);
-    
-    if (callTime < startTime) {
-      callTime = startTime;
-    }
-    
-    if (timerLength == "0") {
-      // Timers not enabled for this war
-      return null;
-    } else if (checkTime < startTime) {
-      // War has not started
-      return null;
-    } else if (checkTime > endTime) {
-      // War is over
-      return null;
-    } else if (timerLength == "-2" || timerLength == "-4") {
-      // Flex timer
-      var divisor = parseInt(timerLength.substring(1));
-      var callEndTime = callTime.addMilliseconds((endTime - callTime) / divisor);
-      return callEndTime - checkTime;
-    } else {
-      // Fixed timer
-      var callEndTime = callTime.addHours(parseInt(timerLength));
-      return callEndTime - checkTime;
-    }
-  } catch (e) {
-    logger.warn("Error calculating call time remaining. Call: " + call
-        + ". War status: " + JSON.stringify(warStatus));
-    throw e;
+        " (" + clashcallerapi.getCcUrl(ccId) + ")";;
   }
 };
 
@@ -963,7 +843,7 @@ var getCallsOnBase_ = function(baseNumber, warStatus) {
 
     if (stars == 1) {
       // Un-starred call.
-      callOnBase.timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      callOnBase.timeRemaining = clashcallerapi.calculateCallTimeRemaining(call, warStatus);
       callOnBase.attacked = false;
     } else {
       // Attacked base.
@@ -991,7 +871,7 @@ var getActiveCalls_ = function(warStatus) {
     
     if (call.stars == "1") {
       // Has an un-starred call.
-      var timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      var timeRemaining = clashcallerapi.calculateCallTimeRemaining(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
         // Has an active call.
@@ -1052,7 +932,7 @@ var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
  * Sends war status.
  */
 var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
-  var warTimeRemaining = calculateWarTimeRemaining_(warStatus);
+  var warTimeRemaining = clashcallerapi.calculateWarTimeRemaining(warStatus);
   var message = getWarTimeRemainingMessage_(ccId, warTimeRemaining);
   if (onlyShowOpenBases) {
     message += "\n\n__Open Bases__\n";
@@ -1403,20 +1283,4 @@ var formatActiveCall_ = function(playername, timeRemaining) {
     message += " (" + formatTimeRemaining_(timeRemaining) + ")";
   }
   return message;
-};
-
-/**
- * Monkey-patched method for adding hours to a Date object.
- */
-Date.prototype.addHours = function(h) {
-  this.addMilliseconds(h*60*60*1000);
-  return this;   
-};
-
-/**
- * Monkey-patched method for adding milliseconds to a Date object.
- */
-Date.prototype.addMilliseconds = function(ms) {
-  this.setTime(this.getTime() + (ms));
-  return this;
 };

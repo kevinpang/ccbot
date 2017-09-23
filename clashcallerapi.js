@@ -24,7 +24,7 @@ exports.getWarStatus = function (ccId) {
         // CC API returns <success> when it can't find the war ID.
         if (body == '<success>') {
           reject(`Cannot find war: ${ccId}. Please make sure war still exists on ` +
-              `Clash Caller: ${getCcUrl_(ccId)}`);
+              `Clash Caller: ${exports.getCcUrl(ccId)}`);
           return;
         }
 
@@ -32,7 +32,7 @@ exports.getWarStatus = function (ccId) {
           logger.debug(`GET_UPDATE response for war ${ccId}: ${body}`);
           resolve(JSON.parse(body));
         } catch (e) {
-          logger.warn(`Error in getWarStatus_ callback: ${e}. War status: ${body}`);
+          logger.warn(`Error parsing war status ${body}: ${e}`);
           reject(`Error getting war status for war ID ${ccId}: e`);
         }
       }
@@ -53,7 +53,7 @@ exports.call = function(ccId, playerName, baseNumber) {
         
         let warTimeRemaining = exports.calculateWarTimeRemaining(warStatus);
         if (warTimeRemaining < 0) {
-          throw `The war is over (${getCcUrl_(ccId)})`;
+          throw `The war is over (${exports.getCcUrl(ccId)})`;
         }
         
         return new Promise((resolve, reject) => {
@@ -158,7 +158,7 @@ exports.addNote = function(ccId, baseNumber, note) {
 /**
  * Returns the Clash Caller url for the specified war ID.
  */
-let getCcUrl_ = function(ccId) {
+exports.getCcUrl = function(ccId) {
   return `<${CC_WAR_URL + ccId}>`;
 };
 
@@ -205,7 +205,7 @@ exports.calculateWarTimeRemaining = function(warStatus) {
  * timers are not enabled for the war, war has not started yet, or war is over.
  * Return value can be negative if call has expired.
  */
-let calculateCallTimeRemaining_ = function(call, warStatus) {
+exports.calculateCallTimeRemaining = function(call, warStatus) {
   try {
     let callTime = new Date(call.calltime);
     let checkTime = new Date(warStatus.general.checktime);
@@ -285,7 +285,7 @@ exports.getActiveCalls = function(warStatus) {
     
     if (call.stars == '1') {
       // Has an un-starred call.
-      let timeRemaining = calculateCallTimeRemaining_(call, warStatus);
+      let timeRemaining = exports.calculateCallTimeRemaining(call, warStatus);
       
       if (timeRemaining == null || timeRemaining > 0) {
         // Has an active call.
@@ -326,4 +326,20 @@ let formatTimeRemaining_ = function(timeRemaining) {
   }
   let hours = Math.floor(timeRemaining);
   return (hours > 0 ? hours + 'h' : '') + minutes + 'm';
+};
+
+/**
+ * Monkey-patched method for adding hours to a Date object.
+ */
+Date.prototype.addHours = function(h) {
+  this.addMilliseconds(h*60*60*1000);
+  return this;   
+};
+
+/**
+ * Monkey-patched method for adding milliseconds to a Date object.
+ */
+Date.prototype.addMilliseconds = function(ms) {
+  this.setTime(this.getTime() + (ms));
+  return this;
 };
