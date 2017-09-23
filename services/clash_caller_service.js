@@ -6,6 +6,43 @@ const CC_API = 'http://clashcaller.com/api.php';
 const CC_WAR_URL = 'http://www.clashcaller.com/war/';
 
 /**
+ * Starts a new war on Clash Caller and returns a promise containing the new war ID
+ * and previous war ID (if one existed).
+ */
+exports.startWar = function(config, warSize, enemyClanName) {
+  let validWarSizes = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+  if (!validWarSizes.includes(warSize)) {
+    return Promise.reject(
+        `War size must be set to one of the following values: ${validWarSizes.join(', ')}`);
+  }
+
+  return new Promise((resolve, reject) => {
+    request.post(CC_API, {
+      form: {
+        'REQUEST': 'CREATE_WAR',
+        'cname': config.clanname ? config.clanname : 'Unknown',
+        'ename': enemyClanName,
+        'size': warSize,
+        'timer': convertCallTimer_(config.call_timer),
+        'searchable': config.disableArchive ? 0 : 1,
+        'clanid': config.clantag ? config.clantag : ''
+      }
+    }, function(error, response, body) {
+      if (error) {
+        logger.warn(`Error creating war: ${error}`);
+        reject(`Error creating war: ${error}`);
+        return;
+      }
+
+      resolve({
+        'ccId': body.substring(4), // Remove the 'war/' from the start.
+        'prevCcId': config.cc_id
+      });
+    });
+  });
+};
+
+/**
  * Returns a promise containing the war status for the specified war ID.
  */
 exports.getWarStatus = function (ccId) {
@@ -370,6 +407,24 @@ let findCallPosX_ = function(warStatus, playerName, baseNumber) {
   }
 
   throw `Unable to find call on base ${baseNumber} for ${playerName}`;
+};
+
+/**
+ * Converts the call_timer stored in the config to a format the Clash Caller
+ * API is expecting when starting a war.
+ */
+let convertCallTimer_ = function(callTimer) {
+  if (!callTimer) {
+    return 0;
+  }
+  
+  if (callTimer == '1/2') {
+    return -2;
+  } else if (callTimer == '1/4') {
+    return -4;
+  } else {
+    return parseInt(callTimer);
+  }
 };
 
 /**

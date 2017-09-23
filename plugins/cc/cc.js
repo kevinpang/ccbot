@@ -486,59 +486,35 @@ exports.setcommandprefix = {
 
 exports.start = {
   help: [{
-    usage: "<war size> <enemy clan name>",
-    description: "Starts a war on Clash Caller"
+    usage: '<war size> <enemy clan name>',
+    description: 'Starts a war on Clash Caller'
   }],
   process: function(bot, msg, suffix) {
-    var regex = /(\d+)\s(.*)$/;
-    var arr = regex.exec(suffix);
+    let regex = /(\d+)\s(.*)$/;
+    let arr = regex.exec(suffix);
     if (!arr) {
-      msg.channel.sendMessage("Invalid format for /start");
+      msg.channel.sendMessage('Invalid format for /start');
       return;
     }
 
-    var warSize = parseInt(arr[1]);
-    var enemyClanName = arr[2];
+    let config = configs.getChannelConfig(msg);
+    let warSize = parseInt(arr[1]);
+    let enemyClanName = arr[2];
     
-    var validWarSizes = [10, 15, 20, 25, 30, 35, 40, 45, 50];
-    if (!validWarSizes.includes(warSize)) {
-      msg.channel
-        .sendMessage("War size must be set to one of the following values: " +
-            validWarSizes.join(", "));
-      return;
-    }
-
-    var config = configs.getChannelConfig(msg);
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "CREATE_WAR",
-        "cname": config.clanname ? config.clanname : "Unknown",
-        "ename": enemyClanName,
-        "size": warSize,
-        "timer": convertCallTimer_(config.call_timer),
-        "searchable": config.disableArchive ? 0 : 1,
-        "clanid": config.clantag ? config.clantag : ""
-      }
-    }, function(error, response, body) {
-      if (error) {
-        logger.warn("Error creating war " + error);
-        msg.channel.sendMessage("Error creating war: " + error);
-      } else {
-        // Remove the "war/" from the start.
-        var ccId = body.substring(4);
-        var prevCcId = config.cc_id;
-        config.cc_id = ccId;
-        configs.saveChannelConfig(msg.channel.id, config);
-        
-        var message = "";
-        if (prevCcId) {
-          message += "Previous war id: " + prevCcId + "\n";
-        }
-        
-        message += "New war created: " + clashCallerService.getCcUrl(ccId);
-        msg.channel.sendMessage(message);  
-      }
-    });
+    clashCallerService.startWar(config, warSize, enemyClanName)
+        .then((result) => {
+          config.cc_id = result.ccId;
+          configs.saveChannelConfig(msg.channel.id, config);
+          
+          let message = '';
+          if (result.prevCcId) {
+            message += `Previous war id: ${result.prevCcId}`;
+          }
+          
+          message += `New war created: ${clashCallerService.getCcUrl(result.ccId)}`;
+          msg.channel.sendMessage(message);
+        })
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 
@@ -725,24 +701,6 @@ var getCcId_ = function(msg) {
     return null;
   }
   return config.cc_id;
-};
-
-/**
- * Converts the call_timer stored in the config to a format the Clash Caller
- * API is expecting when starting a war.
- */
-var convertCallTimer_ = function(callTimer) {
-  if (!callTimer) {
-    return 0;
-  }
-  
-  if (callTimer == "1/2") {
-    return -2;
-  } else if (callTimer == "1/4") {
-    return -4;
-  } else {
-    return parseInt(callTimer);
-  }
 };
 
 /**
