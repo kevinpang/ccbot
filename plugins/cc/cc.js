@@ -452,7 +452,7 @@ exports.setclanname = {
 exports.setclantag = {
   help: [{
     usage: "<clan tag>",
-    description: "Sets the clan tag for new wars. Required if you want war statistics returned from /summary command."
+    description: "Sets the clan tag for new wars. Required for /stats and /summary to work."
   }],
   process: function(bot, msg, suffix) {
     var config = configs.getChannelConfig(msg);
@@ -522,7 +522,7 @@ exports.stats = {
     },
     {
       usage: 'for <player name>',
-      description: 'View stats for another player'
+      description: 'View player stats. Requires clan tag to be set via /setclantag command.'
     }
   ],
   process: function(bot, msg, suffix) {
