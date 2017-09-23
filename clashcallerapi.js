@@ -77,7 +77,7 @@ exports.call = function(ccId, playerName, baseNumber) {
 };
 
 /**
- * Returns a promise for deleting the specified call
+ * Returns a promise for deleting the specified call.
  */
 exports.deleteCall = function(ccId, playerName, baseNumber) {
   return exports.getWarStatus(ccId)
@@ -96,6 +96,29 @@ exports.deleteCall = function(ccId, playerName, baseNumber) {
           }
         })
       });
+};
+
+/**
+ * Adds a note to the specified base.
+ */
+exports.addNote = function(ccId, baseNumber, note) {
+  return new Promise((resolve, reject) => {
+    request.post(CC_API, {
+      form: {
+        'REQUEST': 'UPDATE_TARGET_NOTE',
+        'warcode': ccId,
+        'posy': baseNumber - 1,
+        'value': note
+      }
+    }, function(error, response, body) {
+      if (error) {
+        logger.warn(`Error updating note: ${error}`);
+        reject(`Error updating note: ${error}`);
+        return;
+      }
+      resolve();
+    });
+  });
 };
 
 /**

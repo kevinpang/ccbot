@@ -355,21 +355,8 @@ exports.note = {
     var baseNumber = parseInt(arr[1]);
     var note = arr[2];
     
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "UPDATE_TARGET_NOTE",
-        "warcode": ccId,
-        "posy": baseNumber - 1,
-        "value": note
-      }
-    }, function(error, response, body) {
-      if (error) {
-        logger.warn("Error updating note " + error);
-        msg.channel.sendMessage("Error updating note " + error);
-      } else {
-        msg.channel.sendMessage("Updated note on base #" + baseNumber);  
-      }
-    });
+    clashcallerapi.addNote(ccId, baseNumber, note)
+        .then(() => {msg.channel.sendMessage(`Updated note on base #${baseNumber}`)});
   }
 };
 
