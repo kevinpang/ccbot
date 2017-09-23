@@ -356,7 +356,8 @@ exports.note = {
     var note = arr[2];
     
     clashcallerapi.addNote(ccId, baseNumber, note)
-        .then(() => {msg.channel.sendMessage(`Updated note on base #${baseNumber}`)});
+        .then(() => {msg.channel.sendMessage(`Updated note on base #${baseNumber}`)})
+        .catch(error => {msg.channel.sendMessage(error)});
   }
 };
 
@@ -370,9 +371,9 @@ exports.open = {
       return;
     }
     
-    getWarStatus_(ccId, msg, function(warStatus) {
-      sendStatus_(ccId, warStatus, true, msg);
-    });
+    clashcallerapi.getWarStatus(ccId)
+        .then(warStatus => sendStatus_(ccId, warStatus, true, msg))
+        .catch(error => {msg.channel.sendMessage(error)});
   }
 }
 
