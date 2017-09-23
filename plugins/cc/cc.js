@@ -783,136 +783,6 @@ var formatTimeRemaining_ = function(timeRemaining) {
 };
 
 /**
- * Returns the current star status of every enemy base.
- */
-var getCurrentStars_ = function(warStatus) {
-  var currentStars = [];
-  for (var i = 0; i < parseInt(warStatus.general.size); i++) {
-    currentStars[i] = null;
-  }
-  
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    var stars = parseInt(call.stars);
-    if (stars > 1) {
-      // Base has been attacked.
-      stars = stars - 2;
-      if (currentStars[call.posy] == null ||
-          currentStars[call.posy] < stars) {
-        currentStars[call.posy] = stars;
-      }
-    }
-  }
-  
-  return currentStars;
-};
-
-/**
- * Returns the note on the specified base number, or null if no note exists.
- */
-var getNote_ = function(baseNumber, warStatus) {
-  for (var i = 0; i < warStatus.targets.length; i++) {
-    var target = warStatus.targets[i];
-    if (parseInt(target.position) == baseNumber - 1) {
-      if (target.note != null && target.note != "") {
-        // Hack since cc escapes apostrophes as &#039; instead of &#39
-        return decode(target.note).replace('&#039;', '\'');
-      }
-    }
-  }
-  return null;
-};
-
-/**
- * Returns all calls (expired/active/attacks) on the specified
- * base for the given war.
- */
-var getCallsOnBase_ = function(baseNumber, warStatus) {
-  var callsOnBase = [];
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    if (baseNumber != parseInt(call.posy) + 1) {
-      continue;
-    }
-    
-    var stars = parseInt(call.stars);
-    var callOnBase = {
-      "playername": call.playername,
-      "posx": call.posx,
-    };
-
-    if (stars == 1) {
-      // Un-starred call.
-      callOnBase.timeRemaining = clashcallerapi.calculateCallTimeRemaining(call, warStatus);
-      callOnBase.attacked = false;
-    } else {
-      // Attacked base.
-      callOnBase.stars = stars - 2;
-      callOnBase.attacked = true;
-    }
-    
-    callsOnBase.push(callOnBase);
-  }
-
-  callsOnBase.sort(function(a, b) {
-    return a.posx - b.posx;
-  });
-  
-  return callsOnBase;
-};
-
-/**
- * Returns active calls for the given war.
- */
-var getActiveCalls_ = function(warStatus) {
-  var activeCalls = [];
-  for (var i = 0; i < warStatus.calls.length; i++) {
-    var call = warStatus.calls[i];
-    
-    if (call.stars == "1") {
-      // Has an un-starred call.
-      var timeRemaining = clashcallerapi.calculateCallTimeRemaining(call, warStatus);
-      
-      if (timeRemaining == null || timeRemaining > 0) {
-        // Has an active call.
-        activeCalls.push({
-          "baseNumber": parseInt(call.posy) + 1,
-          "playername": call.playername,
-          "timeRemaining": timeRemaining
-        });  
-      }
-    }
-  }
-
-  activeCalls.sort(function(a, b) {
-    if (a.baseNumber == b.baseNumber) {
-      return a.timeRemaining - b.timeRemaining;
-    }
-    
-    return a.baseNumber - b.baseNumber;
-  }); 
-  
-  return activeCalls;
-};
-
-/**
- * Returns active calls on the specified base for the given war.
- */
-var getActiveCallsOnBase_ = function(baseNumber, warStatus) {
-  var activeCalls = getActiveCalls_(warStatus);
-  var activeCallsOnBase = [];
-  if (activeCalls.length > 0) {
-    for (var i = 0; i < activeCalls.length; i++) {
-      var activeCall = activeCalls[i];
-      if (activeCall.baseNumber == baseNumber) {
-        activeCallsOnBase.push(activeCall);
-      }
-    }
-  }
-  return activeCallsOnBase;
-};
-
-/**
  * Logs an attack.
  */
 var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
@@ -941,12 +811,12 @@ var sendStatus_ = function(ccId, warStatus, onlyShowOpenBases, msg) {
   }
   message += "```\n";
 
-  var currentStars = getCurrentStars_(warStatus);
+  var currentStars = clashcallerapi.getCurrentStars(warStatus);
   for (var i = 0; i < currentStars.length; i++) {
     var baseNumber = i + 1;
     var stars = currentStars[i];
-    var calls = getCallsOnBase_(baseNumber, warStatus);
-    var note = getNote_(baseNumber, warStatus);
+    var calls = clashcallerapi.getCallsOnBase(baseNumber, warStatus);
+    var note = clashcallerapi.getNote(baseNumber, warStatus);
 
     if (onlyShowOpenBases) {
       if (stars == 3) {

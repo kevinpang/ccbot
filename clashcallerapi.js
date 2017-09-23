@@ -310,6 +310,69 @@ exports.getActiveCalls = function(warStatus) {
 };
 
 /**
+ * Returns all calls (expired/active/attacks) on the specified
+ * base for the given war.
+ */
+exports.getCallsOnBase = function(baseNumber, warStatus) {
+  let callsOnBase = [];
+  for (let i = 0; i < warStatus.calls.length; i++) {
+    let call = warStatus.calls[i];
+    if (baseNumber != parseInt(call.posy) + 1) {
+      continue;
+    }
+    
+    let stars = parseInt(call.stars);
+    let callOnBase = {
+      'playername': call.playername,
+      'posx': call.posx,
+    };
+
+    if (stars == 1) {
+      // Un-starred call.
+      callOnBase.timeRemaining = exports.calculateCallTimeRemaining(call, warStatus);
+      callOnBase.attacked = false;
+    } else {
+      // Attacked base.
+      callOnBase.stars = stars - 2;
+      callOnBase.attacked = true;
+    }
+    
+    callsOnBase.push(callOnBase);
+  }
+
+  callsOnBase.sort(function(a, b) {
+    return a.posx - b.posx;
+  });
+  
+  return callsOnBase;
+};
+
+/**
+ * Returns the current star status of every enemy base.
+ */
+exports.getCurrentStars = function(warStatus) {
+  let currentStars = [];
+  for (let i = 0; i < parseInt(warStatus.general.size); i++) {
+    currentStars[i] = null;
+  }
+  
+  for (let i = 0; i < warStatus.calls.length; i++) {
+    let call = warStatus.calls[i];
+    let stars = parseInt(call.stars);
+    if (stars > 1) {
+      // Base has been attacked.
+      stars = stars - 2;
+      if (currentStars[call.posy] == null ||
+          currentStars[call.posy] < stars) {
+        currentStars[call.posy] = stars;
+      }
+    }
+  }
+  
+  return currentStars;
+};
+
+/**
  * Formats time remaining (in ms) in XXhYYm.
  */
 let formatTimeRemaining_ = function(timeRemaining) {
