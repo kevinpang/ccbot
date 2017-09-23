@@ -505,7 +505,7 @@ exports.start = {
           
           let message = '';
           if (result.prevCcId) {
-            message += `Previous war id: ${result.prevCcId}`;
+            message += `Previous war id: ${result.prevCcId}\n`;
           }
           
           message += `New war created: ${clashCallerService.getCcUrl(result.ccId)}`;
