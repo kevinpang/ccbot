@@ -22,7 +22,13 @@ WRITE access on the default channel since you can't disable READ on that one).
 Also note that the war data is unique per channel. This means that you can have multiple channels in different wars on the
 same server, which is useful for clans who have feeders or sister clans all in the same server.
 
-# Usage
+# Setup
+* /setclantag <clan tab>
+  * Sets the clan tag for new wars. Required for /stats and /summary to work.
+* /setcalltimer <# hours>
+  * Sets the call timer for new wars (use 1/2 or 1/4 for flex timers)
+
+# Normal usage
 * /start <war size> <enemy clan name>
   * Starts a new war  
 * /call <enemy base #>
@@ -34,7 +40,7 @@ same server, which is useful for clans who have feeders or sister clans all in t
 * /calls
   * Shows all active calls
 
-There are lots of other features including member stats and configuration options. Type "/help" to get a full list of available commands.
+There are lots of other features including member stats, war summaries, and configuration options. Type "/help" to get a full list of available commands.
 
 # Running locally
 Create an auth.json and configs.json file (see auth.json.example and configs.json.example for what these should look
