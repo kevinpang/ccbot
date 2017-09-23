@@ -262,6 +262,37 @@ exports.getPlayerStats = function(playerName, clanTag) {
 };
 
 /**
+ * Updates the war timer for the specified war.
+ * 
+ * start - boolean indicating whether to update start or end timer
+ * minutes - total minutes until start or end
+ */
+exports.updateWarTime = function(ccId, start, minutes) {
+  logger.warn('updateWarTime 1');
+  return new Promise((resolve, reject) => {
+    logger.warn('updateWarTime 2');
+    request.post(CC_API, {
+      form: {
+        'REQUEST': 'UPDATE_WAR_TIME',
+        'warcode': ccId,
+        'start': start ? 's' : 'e',
+        'minutes': minutes
+      }
+    }, function(error, response, body) {
+      logger.warn('updateWarTime 3');
+      if (error) {
+        logger.warn('updateWarTime 4');
+        logger.warn(`Unable to update war time ${error}`);
+        reject(`Unable to update war time ${error}`);
+      } else {
+        logger.warn('updateWarTime 5');
+        resolve();
+      }
+    });
+  });
+};
+
+/**
  * Returns the Clash Caller url for the specified war ID.
  */
 exports.getCcUrl = function(ccId) {

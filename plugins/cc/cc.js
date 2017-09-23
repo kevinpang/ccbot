@@ -6,9 +6,6 @@ const request = require('request');
 const configs = require('../../configs.js');
 const utils = require('../../utils.js');
 
-var CC_API = "http://clashcaller.com/api.php";
-var CC_WAR_URL = "http://www.clashcaller.com/war/";
-
 exports.commands = [
     "about",
     "attacked",
@@ -597,42 +594,32 @@ exports.summary = {
 
 exports.wartimer = {
   help: [{
-    usage: "<start|end> <##h##m>",
-    description: "Updates the current war's start or end time"
+    usage: '<start|end> <##h##m>',
+    description: 'Updates the current war\'s start or end time'
   }],
   process: function(bot, msg, suffix) {
-    var ccId = getCcId_(msg);
+    let ccId = getCcId_(msg);
     if (!ccId) {
       return;
     }
   
-    var regex = /^(start|end)\s([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
-    var arr = regex.exec(suffix);
+    let regex = /^(start|end)\s([0-9]|0[0-9]|1[0-9]|2[0-3])h([0-9]|[0-5][0-9])m$/;
+    let arr = regex.exec(suffix);
     if (!arr) {
-      msg.channel.sendMessage("Invalid format for /wartimer");
+      msg.channel.sendMessage('Invalid format for /wartimer');
       return;
     }
     
-    var start = arr[1] == "start" ? "s" : "e";
-    var hours = parseInt(arr[2]);
-    var minutes = parseInt(arr[3]);
-    var totalMinutes = hours * 60 + minutes;
-    
-    request.post(CC_API, {
-      form: {
-        "REQUEST": "UPDATE_WAR_TIME",
-        "warcode": ccId,
-        "start": start,
-        "minutes": totalMinutes
-      }
-    }, function(error, response, body) {
-      if (error) {
-        logger.warn("Unable to update war " + arr[1] + " time " + error);
-        msg.channel.sendMessage("Unable to update war " + arr[1] + " time " + error);
-      } else {
-        msg.channel.sendMessage("War " + arr[1] + " time updated to " + suffix);
-      }
-    });
+    let start = arr[1] == 'start';
+    let hours = parseInt(arr[2]);
+    let minutes = parseInt(arr[3]);
+    let totalMinutes = hours * 60 + minutes;
+
+    clashCallerService.updateWarTime(ccId, start, totalMinutes)
+        .then(() => {
+          msg.channel.sendMessage(`War ${arr[1]} time updated to ${suffix}`);  
+        })
+        .catch((error) => {msg.channel.sendMessage(error)});
   }
 };
 
