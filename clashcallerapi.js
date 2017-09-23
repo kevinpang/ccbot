@@ -77,6 +77,40 @@ exports.call = function(ccId, playerName, baseNumber) {
 };
 
 /**
+ * Logs an attack.
+ */
+exports.logAttack = function(ccId, playerName, baseNumber, stars) {
+  if (stars < 0 || stars > 3) {
+    return Promise.reject('Number of stars must be between 0-3');
+  }
+
+  return exports.getWarStatus(ccId)
+      .then((warStatus) => {
+        let posx = findCallPosX_(warStatus, playerName, baseNumber);
+        if (posx) {
+          return new Promise((resolve, reject) => {
+            request.post(CC_API, {
+              form: {
+                'REQUEST': 'UPDATE_STARS',
+                'warcode': ccId,
+                'posx': posx,
+                'posy': baseNumber - 1,
+                'value': stars + 2
+              }
+            }, function(error, response, body) {
+              if (error) {
+                logger.warn(`Unable to record stars: ${error}`);
+                reject(`Unable to record stars: ${error}`);
+                return;
+              }
+              resolve();
+            });
+          });
+        }
+      });
+};
+
+/**
  * Returns a promise for deleting the specified call.
  */
 exports.deleteCall = function(ccId, playerName, baseNumber) {
@@ -273,17 +307,6 @@ exports.getActiveCalls = function(warStatus) {
   }); 
   
   return activeCalls;
-};
-
-/**
- * Formats an active call on a base.
- */
-exports.formatActiveCall = function(playername, timeRemaining) {
-  let message = playername;
-  if (timeRemaining) {
-    message += ` (${formatTimeRemaining_(timeRemaining)})`;
-  }
-  return message;
 };
 
 /**

@@ -1036,39 +1036,16 @@ var getActiveCallsOnBase_ = function(baseNumber, warStatus) {
  * Logs an attack.
  */
 var logAttack_ = function(msg, ccId, playerName, baseNumber, stars) {
-  if (stars < 0 || stars > 3) {
-    msg.channel.sendMessage("Number of stars must be between 0-3");
-    return;
-  }
-
-  getWarStatus_(ccId, msg, function(warStatus) {
-    var posx = findCallPosX_(warStatus, msg, playerName, baseNumber);
-    if (posx) {
-      request.post(CC_API, {
-        form: {
-          "REQUEST": "UPDATE_STARS",
-          "warcode": ccId,
-          "posx": posx,
-          "posy": baseNumber - 1,
-          "value": stars + 2
+  clashcallerapi.logAttack(ccId, playerName, baseNumber, stars)
+      .then(() => {
+        let message = `Recorded ${stars} star${(stars == 1 ? '' : 's')} for ${playerName} on base ${baseNumber}`;
+        let config = configs.getChannelConfig(msg);
+        if (stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
+          message += `\n${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}`;
         }
-      }, function(error, response, body) {
-        if (error) {
-          logger.warn("Unable to record stars " + error);
-          msg.channel.sendMessage("Unable to record stars " + error);
-        } else {
-          var message = "Recorded " + stars + " star" + 
-              (stars == 1 ? "" : "s") + " for " + playerName + 
-              " on base " + baseNumber;
-          var config = configs.getChannelConfig(msg);
-          if (stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
-            message += "\n" + config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)];
-          }
-          msg.channel.sendMessage(message);
-        }
-      });
-    }
-  });
+        msg.channel.sendMessage(message);
+      })
+      .catch((error) => {msg.channel.sendMessage(error)});
 };
 
 /**
