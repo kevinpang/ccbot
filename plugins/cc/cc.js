@@ -797,6 +797,7 @@ let sendWarSummary_ = function(clanTag, channel) {
 
     channel.sendMessage(message);
   }).catch(err => {
+    logger.warn(`Unable to fetch current war data for ${clanTag}: ${err}`);
     channel.sendMessage(`Unable to retrieve current war from Clash of Clans API for clan tag ${clanTag}. ` +
         `Please make sure your clan tag is correct and that your clan's war log is public.`);
   });
