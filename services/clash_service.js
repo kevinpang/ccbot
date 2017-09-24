@@ -29,9 +29,5 @@ exports.getCurrentWar = function(clanTag) {
         var obj = JSON.parse(fs.readFileSync('./sample_data/clash_of_clans_api_ended_war.json', 'utf8'));
         return obj;
         */
-      }).
-      catch(err => {
-        logger.debug(`Unable to fetch current war data from clash API for ${clanTag}`);
-        throw err;
       });
 };

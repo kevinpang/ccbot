@@ -1,6 +1,7 @@
-var configs = require('./configs.js');
-var logger = require('./logger.js');
-var utils = require('./utils.js');
+const configs = require('./configs.js');
+const logger = require('./logger.js');
+const warDataPoller = require('./war_data_poller.js');
+const utils = require('./utils.js');
 
 // Initialize serverConfigs if not defined.
 var cfgs = configs.get();
@@ -28,7 +29,7 @@ try {
 
 var commands = {};
 
-var bot = new Discord.Client();
+global.bot = new Discord.Client();
 
 bot.on("ready", function () {
   var guilds = bot.guilds.array();
@@ -40,6 +41,10 @@ bot.on("ready", function () {
   
 	require("./plugins.js").init();
 	bot.user.setGame("Clash of Clans | " + bot.guilds.array().length +" Servers"); 
+
+	// Start polling Clash of Clans API for data
+	warDataPoller.poll();
+	warDataPoller.startPolling();
 });
 
 bot.on("disconnected", function () {
