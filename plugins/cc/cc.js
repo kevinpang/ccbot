@@ -788,9 +788,7 @@ let sendWarSummary_ = function(clanTag, channel) {
         `${formatThvTh_(enemyStatistics.num11v10ThreeStars, enemyStatistics.num11v10Attempts)}\n`;
     message += `10v9  ***: ${formatThvTh_(clanStatistics.num10v9ThreeStars, clanStatistics.num10v9Attempts)} - ` +
         `${formatThvTh_(enemyStatistics.num10v9ThreeStars, enemyStatistics.num10v9Attempts)}\n`;
-    message += `10v11  **: ${formatThvTh_(clanStatistics.num10v11TwoStars, clanStatistics.num10v11Attempts)} - ` +
         `${formatThvTh_(enemyStatistics.num10v11TwoStars, enemyStatistics.num10v11Attempts)}\n`;
-    message += `9v10   **: ${formatThvTh_(clanStatistics.num9v10TwoStars, clanStatistics.num9v10Attempts)} - ` +
         `${formatThvTh_(enemyStatistics.num9v10TwoStars, enemyStatistics.num9v10Attempts)}`;
 
     message += '```';
