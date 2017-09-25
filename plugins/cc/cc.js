@@ -778,8 +778,8 @@ let sendWarSummary_ = function(clanTag, channel) {
         `${enemyStatistics.numTh11s}/${enemyStatistics.numTh10s}/${enemyStatistics.numTh9s}\n`;
     message += `Attacks left: ${clanStatistics.numTh11AttacksLeft}/${clanStatistics.numTh10AttacksLeft}/${clanStatistics.numTh9AttacksLeft} - ` +
         `${enemyStatistics.numTh11AttacksLeft}/${enemyStatistics.numTh10AttacksLeft}/${enemyStatistics.numTh9AttacksLeft}\n\n`;
-    message += `11v11 ***: ${formatThvTh_(clanStatistics.num11v11ThreeStars, clanStatistics.num11v11Attempts)} - ` +
-        `${formatThvTh_(enemyStatistics.num11v11ThreeStars, enemyStatistics.num11v11Attempts)}\n`;
+    message += `11v11 ?**: ${formatThvTh_(clanStatistics.num11v11TwoStars, clanStatistics.num11v11Attempts)} - ` +
+        `${formatThvTh_(enemyStatistics.num11v11TwoStars, enemyStatistics.num11v11Attempts)}\n`;
     message += `10v10 ***: ${formatThvTh_(clanStatistics.num10v10ThreeStars, clanStatistics.num10v10Attempts)} - ` +
         `${formatThvTh_(enemyStatistics.num10v10ThreeStars, enemyStatistics.num10v10Attempts)}\n`;
     message += `9v9   ***: ${formatThvTh_(clanStatistics.num9v9ThreeStars, clanStatistics.num9v9Attempts)} - ` +
@@ -821,6 +821,7 @@ let getCurrentWarStatisticsForClan_ = function(clan, playerTagToThLevelMap) {
     'numTh10AttacksLeft': 0,
     'numTh9AttacksLeft': 0,
     'num11v11ThreeStars': 0,
+    'num11v11TwoStars': 0,
     'num11v11Attempts': 0,
     'num10v10ThreeStars': 0,
     'num10v10Attempts': 0,
@@ -916,8 +917,11 @@ let getCurrentWarStatisticsForClan_ = function(clan, playerTagToThLevelMap) {
                 break;
               case 11:
                 statistics.num11v11Attempts++;
-                if (attack.stars == 3) {
-                  statistics.num11v11ThreeStars++;
+                if (attack.stars >= 2) {
+                  statistics.num11v11TwoStars++;
+                  if (attack.stars == 3) {
+                    statistics.num11v11ThreeStars++;
+                  }
                 }
                 break;
             }
