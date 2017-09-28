@@ -19,6 +19,7 @@ exports.commands = [
     "note",
     "open",
     "setarchive",
+    "setautolog",
     "setcalltimer",
     "setcc",
     "setclanname",
@@ -203,6 +204,7 @@ exports.config = {
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
+        "Automatic logging: " + (config.disableAutolog || config.disableAutolog == undefined ? "off" : "on") + "\n" +
         "Congrats messages: ";
     if (config.congratsMessages && config.congratsMessages.length > 0) {
       message += "\n";
@@ -393,6 +395,24 @@ exports.setarchive = {
     msg.channel.sendMessage("Archiving set to " + suffix);
   }
 };
+
+exports.setautolog = {
+  help: [{
+    usage: '<on|off>',
+    description: 'Sets automatic logging of attacks on/off. Requires in-game war log to be public and clan tag to be set via /setclantag command.'
+  }],
+  process: function(bot, msg, suffix) {
+    if (suffix != 'on' && suffix != 'off') {
+      msg.channel.sendMessage("Please specify whether automatic logging should be on or off");
+      return;
+    }
+    
+    var config = configs.getChannelConfig(msg);
+    config.disableAutolog = suffix == 'off';
+    configs.saveChannelConfig(msg.channel.id, config);
+    msg.channel.sendMessage("Automatic logging set to " + suffix);
+  }
+}
 
 exports.setcalltimer = {
   help: [{
