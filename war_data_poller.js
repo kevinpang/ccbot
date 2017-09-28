@@ -71,7 +71,7 @@ exports.poll = function() {
                       } else if (!defender) {
                         logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
                       } else {
-                        let ccCallPosX = clashCallerService.findCallPosX(ccWarStatus, attacker.name, defender.mapPosition);
+                        let ccCallPosX = clashCallerService.findCallPosX(warStatus, attacker.name, defender.mapPosition);
                         if (ccCallPosX) {
                           // TODO: automatically log attack to clash caller if it hasn't already been logged
                           logger.info(`${attackerName} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + call found!`);
