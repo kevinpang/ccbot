@@ -31,3 +31,59 @@ exports.getCurrentWar = function(clanTag) {
         */
       });
 };
+
+// Returns attacks since the specified attack.
+exports.getNewAttacks = function(warData, oldWarData) {
+  lastAttack = getLastAttack_(oldWarData);
+  let newAttacks = [];
+  
+  for (let i = 0; i < warData.clan.members.length; i++) {
+    let member = warData.clan.members[i];
+    if (member.attacks) {
+      for (let j = 0; j < member.attacks.length; j++) {
+        let attack = member.attacks[j];
+        if (!lastAttack || lastAttack.order < attack.order) {
+          newAttacks.push(attack);
+        }
+      }
+    }
+  }
+
+  return newAttacks;
+};
+
+// Returns member of war (of either clan) that matches the specified player tag.
+exports.getMember = function(warData, playerTag) {
+  for (let i = 0; i < warData.clan.members.length; i++) {
+    let member = warData.clan.members[i];
+    if (member.tag == playerTag) {
+      return member;
+    }
+  }
+
+  for (let i = 0; i < warData.opponent.members.length; i++) {
+    let member = warData.opponent.members[i];
+    if (member.tag == playerTag) {
+      return member;
+    }
+  }
+};
+
+// Returns the last attack in the specified war data.
+let getLastAttack_ = function(warData) {
+  let lastAttack = null;
+
+  for (let i = 0; i < warData.clan.members.length; i++) {
+    let member = warData.clan.members[i];
+    if (member.attacks) {
+      for (let j = 0; j < member.attacks.length; j++) {
+        let attack = member.attacks[j];
+        if (lastAttack == null || lastAttack.order < attack.order) {
+          lastAttack = attack;
+        }
+      }
+    }
+  }
+
+  return lastAttack;
+};

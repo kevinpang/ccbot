@@ -120,7 +120,7 @@ exports.logAttack = function(ccId, playerName, baseNumber, stars) {
 
   return exports.getWarStatus(ccId)
       .then((warStatus) => {
-        let posx = findCallPosX_(warStatus, playerName, baseNumber);
+        let posx = exports.findCallPosX(warStatus, playerName, baseNumber);
         if (posx) {
           return new Promise((resolve, reject) => {
             request.post(CC_API, {
@@ -150,7 +150,7 @@ exports.logAttack = function(ccId, playerName, baseNumber, stars) {
 exports.deleteCall = function(ccId, playerName, baseNumber) {
   return exports.getWarStatus(ccId)
       .then(warStatus => {
-        let posx = findCallPosX_(warStatus, playerName, baseNumber);
+        let posx = exports.findCallPosX(warStatus, playerName, baseNumber);
         request.post(CC_API, {
           form: {
             'REQUEST': 'DELETE_CALL',
@@ -492,7 +492,7 @@ exports.getCurrentStars = function(warStatus) {
 /**
  * Returns the X position of a user's call or null if call is not found.
  */
-let findCallPosX_ = function(warStatus, playerName, baseNumber) {
+exports.findCallPosX = function(warStatus, playerName, baseNumber) {
   for (let i = 0; i < warStatus.calls.length; i++) {
     let call = warStatus.calls[i];
     if (call.posy == baseNumber - 1

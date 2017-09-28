@@ -1,3 +1,4 @@
+const clashCallerService = require('./services/clash_caller_service.js');
 const clashService = require('./services/clash_service.js');
 const configs = require('./configs.js');
 const logger = require('./logger.js');
@@ -30,7 +31,8 @@ exports.poll = function() {
     }
 
     let clanTag = cfgs[channelId].clantag;
-    if (!clanTag) {
+    let ccId = cfgs[channelId].cc_id;
+    if (!clanTag || !ccId) {
       continue;
     }
 
@@ -52,8 +54,35 @@ exports.poll = function() {
               // TODO: send war end summary message.
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
-              // New war attack(s) detected.
-              // TODO: implement auto-logging.
+              // New war attacks detected. Attempt to auto-log them in Clash Caller.
+              clashCallerService.getWarStatus(ccId)
+                  .then((warStatus) => {
+                    let newAttacks = clashService.getNewAttacks(warData, oldWarData);
+                    
+                    for (let i = 0; i < newAttacks.length; i++) {
+                      let newAttack = newAttacks[i];
+                      logger.info(`Found new attack ${JSON.stringify(newAttack)}`);
+                      
+                      let attacker = clashService.getMember(warData, newAttack.attackerTag);
+                      let defender = clashService.getMember(warData, newAttack.defenderTag);
+            
+                      if (!attacker) {
+                        logger.warning(`Unable to find attacker ${JSON.stringify(attacker)} in ${JSON.stringify(warData)}`);
+                      } else if (!defender) {
+                        logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
+                      } else {
+                        let ccCallPosX = clashCallerService.findCallPosX(ccWarStatus, attacker.name, defender.mapPosition);
+                        if (ccCallPosX) {
+                          // TODO: automatically log attack to clash caller if it hasn't already been logged
+                          logger.info(`${attackerName} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + call found!`);
+                        } else {
+                          // TODO: send a message to the channel indicating an attack happened but no matching call found
+                          logger.info(`${attackerName} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + no call found`);
+                        }
+                      }
+                    }
+                  })
+                  .catch((error) => {logger.warn(`Unable to fetch clash caller war data for auto-logging: ${error}`)});
             }
           }      
         })
