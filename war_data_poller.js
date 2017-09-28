@@ -74,10 +74,10 @@ exports.poll = function() {
                         let ccCallPosX = clashCallerService.findCallPosX(warStatus, attacker.name, defender.mapPosition);
                         if (ccCallPosX) {
                           // TODO: automatically log attack to clash caller if it hasn't already been logged
-                          logger.info(`${attackerName} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + call found!`);
+                          logger.info(`${attacker.name} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + call found!`);
                         } else {
                           // TODO: send a message to the channel indicating an attack happened but no matching call found
-                          logger.info(`${attackerName} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + no call found`);
+                          logger.info(`${attacker.name} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + no call found`);
                         }
                       }
                     }
