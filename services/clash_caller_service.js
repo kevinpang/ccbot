@@ -493,16 +493,20 @@ exports.getCurrentStars = function(warStatus) {
  * Returns the X position of a user's call or null if call is not found.
  */
 exports.findCallPosX = function(warStatus, playerName, baseNumber) {
+  return exports.findCall(warStatus, playerName, baseNumber).posx;
+};
+
+exports.findCall = function(warStatus, playerName, baseNumber) {
   for (let i = 0; i < warStatus.calls.length; i++) {
     let call = warStatus.calls[i];
     if (call.posy == baseNumber - 1
         && call.playername.toLowerCase() == playerName.toLowerCase()) {
-      return call.posx;
+      return call;
     }
   }
 
   throw `Unable to find call on base ${baseNumber} for ${playerName}`;
-};
+}
 
 /**
  * Converts the call_timer stored in the config to a format the Clash Caller

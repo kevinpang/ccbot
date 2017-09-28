@@ -30,9 +30,11 @@ exports.poll = function() {
       continue;
     }
 
-    let clanTag = cfgs[channelId].clantag;
-    let ccId = cfgs[channelId].cc_id;
-    if (!clanTag || !ccId) {
+    let config = cfgs[channelId];
+    let clanTag = config.clantag;
+    let ccId = config.cc_id;
+    let disableAutolog = config.disableAutolog || config.disableAutolog == undefined;
+    if (!clanTag || !ccId || disableAutolog) {
       continue;
     }
 
@@ -54,35 +56,9 @@ exports.poll = function() {
               // TODO: send war end summary message.
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
-              // New war attacks detected. Attempt to auto-log them in Clash Caller.
-              clashCallerService.getWarStatus(ccId)
-                  .then((warStatus) => {
-                    let newAttacks = clashService.getNewAttacks(warData, oldWarData);
-                    
-                    for (let i = 0; i < newAttacks.length; i++) {
-                      let newAttack = newAttacks[i];
-                      logger.info(`Found new attack ${JSON.stringify(newAttack)}`);
-                      
-                      let attacker = clashService.getMember(warData, newAttack.attackerTag);
-                      let defender = clashService.getMember(warData, newAttack.defenderTag);
-            
-                      if (!attacker) {
-                        logger.warning(`Unable to find attacker ${JSON.stringify(attacker)} in ${JSON.stringify(warData)}`);
-                      } else if (!defender) {
-                        logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
-                      } else {
-                        let ccCallPosX = clashCallerService.findCallPosX(warStatus, attacker.name, defender.mapPosition);
-                        if (ccCallPosX) {
-                          // TODO: automatically log attack to clash caller if it hasn't already been logged
-                          logger.info(`${attacker.name} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + call found!`);
-                        } else {
-                          // TODO: send a message to the channel indicating an attack happened but no matching call found
-                          logger.info(`${attacker.name} attacked #${enemyBaseNumber} for ${newAttack.stars} star(s) + no call found`);
-                        }
-                      }
-                    }
-                  })
-                  .catch((error) => {logger.warn(`Unable to fetch clash caller war data for auto-logging: ${error}`)});
+              if (!disableAutolog) {
+                autoLogAttack_(warData, oldWarData, ccId, channel, config);  
+              }
             }
           }      
         })
@@ -91,4 +67,56 @@ exports.poll = function() {
               `war log set to public or has a misconfigured clan tag. Error: ${error}`);
         });
   }
+};
+
+let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
+  // New war attacks detected. Attempt to auto-log them in Clash Caller.
+  clashCallerService.getWarStatus(ccId)
+      .then((warStatus) => {
+        let newAttacks = clashService.getNewAttacks(warData, oldWarData);
+        
+        for (let i = 0; i < newAttacks.length; i++) {
+          let newAttack = newAttacks[i];
+          logger.info(`Found new attack ${JSON.stringify(newAttack)}`);
+          
+          let attacker = clashService.getMember(warData, newAttack.attackerTag);
+          let defender = clashService.getMember(warData, newAttack.defenderTag);
+
+          if (!attacker) {
+            logger.warning(`Unable to find attacker ${JSON.stringify(attacker)} in ${JSON.stringify(warData)}`);
+          } else if (!defender) {
+            logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
+          } else {
+            let message = `${attacker.name} attacked #${defender.mapPosition} for ${newAttack.stars} star(s) ('/setautolog off' to disable this feature)\n`;
+
+            try {
+              let ccCall = clashCallerService.findCall(warStatus, attacker.name, defender.mapPosition);
+
+              // If base doesn't have stars already recorded on it, go ahead and record the attack.
+              if (ccCall.stars == '1') {
+                clashCallerService.logAttack(ccId, attacker.name, defender.mapPosition, newAttack.stars)
+                    .then(() => {
+                      logger.info(`Successfully autologged attack to Clash Caller`);
+                      message += `Attack automatically logged to Clash Caller\n`;
+                      if (newAttack.stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
+                        message += `${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}`;
+                      }
+                      channel.sendMessage(message);
+                    })
+                    .catch((error) => {
+                      logger.warn(`Error autologging attack to Clash Caller: ${error}`);
+                      message += `Error automatically logging this attack to Clash Caller: ${error}`;
+                      channel.sendMessage(message);
+                    });
+              }
+            } catch (e) {
+              logger.info(`Error autologging attack to Clash Caller because call not found on Clash Caller.`);
+              message += `Could not find matching call on Clash Caller. Please make sure call exists and the name in Clash Caller ` +
+                  `matches the player's in-game name`;
+              channel.sendMessage(message);
+            }
+          }
+        }
+      })
+      .catch((error) => {logger.warn(`Unable to fetch clash caller war data for auto-logging: ${error}`)});
 };
