@@ -92,10 +92,13 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
             let message = `${attacker.name} attacked #${defender.mapPosition} for ${newAttack.stars} star(s) ('/setautolog off' to disable this feature)\n`;
 
             try {
+              logger.info(`Searching for call by ${attacker.name} on ${defender.mapPosition} in ${ccId}`);
               let ccCall = clashCallerService.findCall(warStatus, attacker.name, defender.mapPosition);
+              logger.info(`Found call by ${attacker.name} on ${defender.mapPosition} in ${ccId}`);
 
               // If base doesn't have stars already recorded on it, go ahead and record the attack.
               if (ccCall.stars == '1') {
+                logger.info(`Attempting to autolog attack by ${attacker.name} on ${defender.mapPosition} in ${ccId}`);
                 clashCallerService.logAttack(ccId, attacker.name, defender.mapPosition, newAttack.stars)
                     .then(() => {
                       logger.info(`Successfully autologged attack to Clash Caller`);
@@ -111,6 +114,8 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
                       message += `Error automatically logging this attack to Clash Caller: ${error}`;
                       channel.sendMessage(message);
                     });
+              } else {
+                logger.info(`Skipping auto-logging of ${attacker.name} on ${defender.mapPosition} since attack has already been logged.`);
               }
             } catch (e) {
               logger.info(`Error autologging attack to Clash Caller because call not found on Clash Caller.`);
