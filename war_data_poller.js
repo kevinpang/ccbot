@@ -89,7 +89,7 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
           } else if (!defender) {
             logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
           } else {
-            let message = `${attacker.name} attacked #${defender.mapPosition} for ${newAttack.stars} star(s) ('/setautolog off' to disable this feature)\n`;
+            let message = `${attacker.name} attacked #${defender.mapPosition} for ${newAttack.stars} star(s).\n`;
 
             try {
               logger.info(`Searching for call by ${attacker.name} on ${defender.mapPosition} in ${ccId}`);
