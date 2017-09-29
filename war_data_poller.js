@@ -106,7 +106,7 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
                       if (newAttack.stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
                         message += `${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}`;
                       }
-                      log.info(`Trying to send autologged message: ` + message);
+                      logger.info(`Trying to send autologged message: ` + message);
                       channel.sendMessage(message);
                     })
                     .catch((error) => {
