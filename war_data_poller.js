@@ -119,8 +119,8 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
               }
             } catch (e) {
               logger.info(`Error autologging attack to Clash Caller because call not found on Clash Caller.`);
-              message += `Could not find matching call on Clash Caller. Please make sure call exists and the name in Clash Caller ` +
-                  `matches the player's in-game name`;
+              message += `Attempted to automatically log to Clash Caller but could not find matching call. ` +
+                  `Please make sure the call exists and the name in Clash Caller matches the player's in-game name exactly.`;
               channel.sendMessage(message);
             }
           }
