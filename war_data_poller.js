@@ -49,11 +49,13 @@ exports.poll = function() {
               // New war detected.
               // TODO: implement auto-start.
             } else if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
-              // War start detected.
-              // TODO: send war start message.
+              let message = `War against ${warData.opponent.name} has started! War summary (available via /summary command):\n\n`
+              message += clashService.getWarSummaryMessage(warData);
+              channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
-              // War end detected.
-              // TODO: send war end summary message.
+              let message = `War against ${warData.opponent.name} has ended! War summary (available via /summary command):\n\n`;
+              message += clashService.getWarSummaryMessage(warData);
+              channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
               if (!disableAutolog) {
