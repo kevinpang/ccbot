@@ -58,9 +58,7 @@ exports.poll = function() {
               channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
-              if (!disableAutolog) {
-                autoLogAttack_(warData, oldWarData, ccId, channel, config);  
-              }
+              autoLogAttack_(warData, oldWarData, ccId, channel, config);  
             }
           }      
         })
