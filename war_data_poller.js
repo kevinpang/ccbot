@@ -51,10 +51,12 @@ exports.poll = function() {
             } else if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
               let message = `War against ${warData.opponent.name} has started! War summary (available via /summary command):\n\n`
               message += clashService.getWarSummaryMessage(warData);
+              log.info(`Trying to send war start message: ` + message);
               channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
               let message = `War against ${warData.opponent.name} has ended! War summary (available via /summary command):\n\n`;
               message += clashService.getWarSummaryMessage(warData);
+              log.info(`Trying to send war end message: ` + message);
               channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
@@ -101,6 +103,7 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
                       if (newAttack.stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
                         message += `${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}`;
                       }
+                      log.info(`Trying to send autologged message: ` + message);
                       channel.sendMessage(message);
                     })
                     .catch((error) => {
