@@ -47,10 +47,13 @@ exports.poll = function() {
           if (oldWarData) {
             let channel = global.bot.channels.get(channelId);
             if (oldWarData.preparationStartTime != warData.preparationStartTime && warData.state == 'preparation') {
+              logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
+
               let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
 
               if (disableAutostart) {
                 message += `Skipping automatic creation of Clash Caller war because it is currently disabled. Type '/setautostart on' to enable.`;
+                logger.info(`Trying to send war search completed message: ${message}`);
                 channel.sendMessage(message);
               } else {
                 clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
@@ -65,6 +68,7 @@ exports.poll = function() {
                       message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}.\nWar summary:\n`;
                       message += clashService.getWarSummaryMessage(warData);
 
+                      logger.info(`Trying to send war search completed message: ${message}`);
                       channel.sendMessage(message);
 
                       // Update start time on war.
