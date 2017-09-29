@@ -401,8 +401,7 @@ exports.setarchive = {
 exports.setautolog = {
   help: [{
     usage: '<on|off>',
-    description: 'Sets automatic logging of attacks on/off (also automatically sends war start/war end messages). ' +
-        'Requires in-game war log to be public and clan tag to be set via /setclantag command.'
+    description: 'Sets automatic logging of attacks on/off. Requires in-game war log to be public and clan tag to be set via /setclantag command.'
   }],
   process: function(bot, msg, suffix) {
     if (suffix != 'on' && suffix != 'off') {
