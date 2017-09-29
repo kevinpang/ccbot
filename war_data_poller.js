@@ -63,6 +63,27 @@ exports.poll = function() {
                       message += clashService.getWarSummaryMessage(warData);
 
                       msg.channel.sendMessage(message);
+
+                      // Update start time on war.
+                      try {
+                        let startTime = warData.startTime;
+                        let year = startTime.substring(0, 4);
+                        let month = startTime.substring(4, 6);
+                        let day = startTime.substring(6, 8);
+                        let hour = startTime.substring(9, 11);
+                        let minute = startTime.substring(11, 13);
+                        let second = startTime.substring(13, 15);
+                        let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
+                        let now = new Date();
+                        let timeDiff = startDate - now;
+                        let minutesDiff = timeDiff / 1000 / 60;
+
+                        clashCallerService.updateWarTime(result.ccId, true, minutesDiff)
+                            .then(() => {logger.info(`Set start time for ${result.ccId} (${warData.startTime}) to ${minutesDiff} from now`)})
+                            .catch((error) => {logger.warn(`Unable to set set start time for ${result.ccId}: ${error}`)});
+                      } catch (e) {
+                        logger.warn(`Unable to compute start time: ` + warData.startTime);
+                      }
                     })
                     .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
               }
