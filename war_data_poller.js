@@ -90,6 +90,9 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
             logger.warning(`Unable to find defender ${JSON.stringify(defender)} in ${JSON.stringify(warData)}`);
           } else {
             let message = `${attacker.name} attacked #${defender.mapPosition} for ${newAttack.stars} star(s).\n`;
+            if (newAttack.stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
+              message += `${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}\n`;
+            }
 
             try {
               logger.info(`Searching for call by ${attacker.name} on ${defender.mapPosition} in ${ccId}`);
@@ -103,9 +106,6 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
                     .then(() => {
                       logger.info(`Successfully autologged attack to Clash Caller`);
                       message += `Attack automatically logged to Clash Caller\n`;
-                      if (newAttack.stars == 3 && config.congratsMessages && config.congratsMessages.length > 0) {
-                        message += `${config.congratsMessages[Math.floor(Math.random() * config.congratsMessages.length)]}`;
-                      }
                       logger.info(`Trying to send autologged message: ` + message);
                       channel.sendMessage(message);
                     })
