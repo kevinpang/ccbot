@@ -55,12 +55,13 @@ exports.poll = function() {
                     config.cc_id = result.ccId;
                     configs.saveChannelConfig(channel.id, config);
                     
+                    message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}`;
+                    
                     if (result.prevCcId) {
-                      message += `Previous war id: ${result.prevCcId}\n`;
+                      message += ` (previous war id: ${result.prevCcId})`;
                     }
                     
-                    message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}.\nWar summary:\n`;
-                    message += clashService.getWarSummaryMessage(warData);
+                    message += `\n\nWar Summary:\n${clashService.getWarSummaryMessage(warData)}`;
 
                     logger.info(`Trying to send war search completed message: ${message}`);
                     channel.sendMessage(message);
@@ -91,7 +92,7 @@ exports.poll = function() {
           } else {
             if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
               if (!disableAutolog) {
-                let message = `War against ${warData.opponent.name} has started!\nWar summary:\n`
+                let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
                 message += clashService.getWarSummaryMessage(warData);
                 logger.info(`Trying to send war start message: ` + message);
                 channel.sendMessage(message);
@@ -103,7 +104,7 @@ exports.poll = function() {
               }
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
               if (!disableAutolog) {
-                let message = `War against ${warData.opponent.name} has ended!\nWar summary:\n`;
+                let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
                 message += clashService.getWarSummaryMessage(warData);
                 logger.info(`Trying to send war end message: ` + message);
                 channel.sendMessage(message);
