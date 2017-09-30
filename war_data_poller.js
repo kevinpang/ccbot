@@ -34,8 +34,7 @@ exports.poll = function() {
     let clanTag = config.clantag;
     let ccId = config.cc_id;
     let disableAutolog = config.disableAutolog || config.disableAutolog == undefined;
-    let disableAutostart = config.disableAutostart || config.disableAutostart == undefined;
-    if (!clanTag || !ccId || (disableAutolog && disableAutostart)) {
+    if (!clanTag || !ccId || disableAutolog) {
       continue;
     }
 
@@ -91,24 +90,18 @@ exports.poll = function() {
             }
           } else {
             if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
-              if (!disableAutolog) {
-                let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
-                message += clashService.getWarSummaryMessage(warData);
-                logger.info(`Trying to send war start message: ` + message);
-                channel.sendMessage(message);
-              }
+              let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
+              message += clashService.getWarSummaryMessage(warData);
+              logger.info(`Trying to send war start message: ` + message);
+              channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
-                oldWarData.clan.attacks < warData.clan.attacks) {
-              if (!disableAutolog) {
-                autoLogAttack_(warData, oldWarData, ccId, channel, config);  
-              }
+              oldWarData.clan.attacks < warData.clan.attacks) {
+              autoLogAttack_(warData, oldWarData, ccId, channel, config);  
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
-              if (!disableAutolog) {
-                let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
-                message += clashService.getWarSummaryMessage(warData);
-                logger.info(`Trying to send war end message: ` + message);
-                channel.sendMessage(message);
-              }
+              let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
+              message += clashService.getWarSummaryMessage(warData);
+              logger.info(`Trying to send war end message: ` + message);
+              channel.sendMessage(message);
             }
           }      
         })
