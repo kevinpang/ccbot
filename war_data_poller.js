@@ -46,7 +46,7 @@ exports.poll = function() {
 
           if (!oldWarData) {
             if (warData.state == 'preparation') {
-              logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
+              logger.info(`Detected war search completed for ${clanTag}`);
               let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
 
               clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
@@ -62,7 +62,7 @@ exports.poll = function() {
                     
                     message += `\n\nWar Summary:\n${clashService.getWarSummaryMessage(warData)}`;
 
-                    logger.info(`Trying to send war search completed message: ${message}`);
+                    logger.info(`Sending war search completed message: ${message}`);
                     channel.sendMessage(message);
 
                     // Update start time on war.
@@ -90,17 +90,20 @@ exports.poll = function() {
             }
           } else {
             if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
+              logger.info(`Detected war start for for ${clanTag}`);
               let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
               message += clashService.getWarSummaryMessage(warData);
-              logger.info(`Trying to send war start message: ` + message);
+              logger.info(`Sending war start message: ` + message);
               channel.sendMessage(message);
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
-              oldWarData.clan.attacks < warData.clan.attacks) {
+                oldWarData.clan.attacks < warData.clan.attacks) {
+              logger.info(`Detected new attack(s) for ${clanTag}`);
               autoLogAttack_(warData, oldWarData, ccId, channel, config);  
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
+              logger.info(`Detected war end for ${clanTag}`);
               let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
               message += clashService.getWarSummaryMessage(warData);
-              logger.info(`Trying to send war end message: ` + message);
+              logger.info(`Sending war end message: ` + message);
               channel.sendMessage(message);
             }
           }      
@@ -147,7 +150,7 @@ let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
                     .then(() => {
                       logger.info(`Successfully autologged attack to Clash Caller`);
                       message += `Attack automatically logged to Clash Caller\n`;
-                      logger.info(`Trying to send autologged message: ` + message);
+                      logger.info(`Sending autologged message: ` + message);
                       channel.sendMessage(message);
                     })
                     .catch((error) => {
