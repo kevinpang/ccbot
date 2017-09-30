@@ -35,7 +35,7 @@ exports.poll = function() {
     let ccId = config.cc_id;
     let disableAutolog = config.disableAutolog || config.disableAutolog == undefined;
     let disableAutostart = config.disableAutostart || config.disableAutostart == undefined;
-    if (!clanTag || !ccId) {
+    if (!clanTag || !ccId || (disableAutolog && disableAutostart)) {
       continue;
     }
 
@@ -46,16 +46,11 @@ exports.poll = function() {
 
           if (oldWarData) {
             let channel = global.bot.channels.get(channelId);
-            if (oldWarData.preparationStartTime != warData.preparationStartTime && warData.state == 'preparation') {
-              logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
+            if (oldWarData.state == 'warEnded' && warData.state == 'preparation') {
+              if (!disableAutostart) {
+                logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
+                let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
 
-              let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
-
-              if (disableAutostart) {
-                message += `Skipping automatic creation of Clash Caller war because it is currently disabled. Type '/setautostart on' to enable.`;
-                logger.info(`Trying to send war search completed message: ${message}`);
-                channel.sendMessage(message);
-              } else {
                 clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
                     .then((result) => {
                       config.cc_id = result.ccId;
@@ -93,17 +88,21 @@ exports.poll = function() {
                       }
                     })
                     .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
-              }
+                }
             } else if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
-              let message = `War against ${warData.opponent.name} has started!\nWar summary:\n`
-              message += clashService.getWarSummaryMessage(warData);
-              log.info(`Trying to send war start message: ` + message);
-              channel.sendMessage(message);
+              if (!disableAutolog) {
+                let message = `War against ${warData.opponent.name} has started!\nWar summary:\n`
+                message += clashService.getWarSummaryMessage(warData);
+                log.info(`Trying to send war start message: ` + message);
+                channel.sendMessage(message);
+              }
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
-              let message = `War against ${warData.opponent.name} has ended!\nWar summary:\n`;
-              message += clashService.getWarSummaryMessage(warData);
-              log.info(`Trying to send war end message: ` + message);
-              channel.sendMessage(message);
+              if (!disableAutolog) {
+                let message = `War against ${warData.opponent.name} has ended!\nWar summary:\n`;
+                message += clashService.getWarSummaryMessage(warData);
+                log.info(`Trying to send war end message: ` + message);
+                channel.sendMessage(message);
+              }
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
                 oldWarData.clan.attacks < warData.clan.attacks) {
               if (!disableAutolog) {
