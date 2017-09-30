@@ -93,14 +93,14 @@ exports.poll = function() {
               if (!disableAutolog) {
                 let message = `War against ${warData.opponent.name} has started!\nWar summary:\n`
                 message += clashService.getWarSummaryMessage(warData);
-                log.info(`Trying to send war start message: ` + message);
+                logger.info(`Trying to send war start message: ` + message);
                 channel.sendMessage(message);
               }
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
               if (!disableAutolog) {
                 let message = `War against ${warData.opponent.name} has ended!\nWar summary:\n`;
                 message += clashService.getWarSummaryMessage(warData);
-                log.info(`Trying to send war end message: ` + message);
+                logger.info(`Trying to send war end message: ` + message);
                 channel.sendMessage(message);
               }
             } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
