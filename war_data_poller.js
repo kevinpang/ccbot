@@ -43,58 +43,63 @@ exports.poll = function() {
         .then((warData) => {
           let oldWarData = warDataDao.getWarData(clanTag, warData.preparationStartTime);
           warDataDao.saveWarData(clanTag, warData);
+          let channel = global.bot.channels.get(channelId);
 
-          if (oldWarData) {
-            let channel = global.bot.channels.get(channelId);
-            if ((oldWarData.state == 'warEnded' || oldWarData.state == 'notInWar') && warData.state == 'preparation') {
-              if (!disableAutostart) {
-                logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
-                let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
+          if (!oldWarData) {
+            if (warData.state == 'preparation' && !disableAutostart) {
+              logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
+              let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
 
-                clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
-                    .then((result) => {
-                      config.cc_id = result.ccId;
-                      configs.saveChannelConfig(channel.id, config);
-                      
-                      if (result.prevCcId) {
-                        message += `Previous war id: ${result.prevCcId}\n`;
-                      }
-                      
-                      message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}.\nWar summary:\n`;
-                      message += clashService.getWarSummaryMessage(warData);
+              clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
+                  .then((result) => {
+                    config.cc_id = result.ccId;
+                    configs.saveChannelConfig(channel.id, config);
+                    
+                    if (result.prevCcId) {
+                      message += `Previous war id: ${result.prevCcId}\n`;
+                    }
+                    
+                    message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}.\nWar summary:\n`;
+                    message += clashService.getWarSummaryMessage(warData);
 
-                      logger.info(`Trying to send war search completed message: ${message}`);
-                      channel.sendMessage(message);
+                    logger.info(`Trying to send war search completed message: ${message}`);
+                    channel.sendMessage(message);
 
-                      // Update start time on war.
-                      try {
-                        let startTime = warData.startTime;
-                        let year = startTime.substring(0, 4);
-                        let month = startTime.substring(4, 6);
-                        let day = startTime.substring(6, 8);
-                        let hour = startTime.substring(9, 11);
-                        let minute = startTime.substring(11, 13);
-                        let second = startTime.substring(13, 15);
-                        let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
-                        let now = new Date();
-                        let timeDiff = startDate - now;
-                        let minutesDiff = timeDiff / 1000 / 60;
+                    // Update start time on war.
+                    try {
+                      let startTime = warData.startTime;
+                      let year = startTime.substring(0, 4);
+                      let month = startTime.substring(4, 6);
+                      let day = startTime.substring(6, 8);
+                      let hour = startTime.substring(9, 11);
+                      let minute = startTime.substring(11, 13);
+                      let second = startTime.substring(13, 15);
+                      let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
+                      let now = new Date();
+                      let timeDiff = startDate - now;
+                      let minutesDiff = timeDiff / 1000 / 60;
 
-                        clashCallerService.updateWarTime(result.ccId, true, minutesDiff)
-                            .then(() => {logger.info(`Set start time for ${result.ccId} (${warData.startTime}) to ${minutesDiff} from now`)})
-                            .catch((error) => {logger.warn(`Unable to set set start time for ${result.ccId}: ${error}`)});
-                      } catch (e) {
-                        logger.warn(`Unable to compute start time: ` + warData.startTime);
-                      }
-                    })
-                    .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
-                }
-            } else if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
+                      clashCallerService.updateWarTime(result.ccId, true, minutesDiff)
+                          .then(() => {logger.info(`Set start time for ${result.ccId} (${warData.startTime}) to ${minutesDiff} from now`)})
+                          .catch((error) => {logger.warn(`Unable to set set start time for ${result.ccId}: ${error}`)});
+                    } catch (e) {
+                      logger.warn(`Unable to compute start time: ` + warData.startTime);
+                    }
+                  })
+                  .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
+            }
+          } else {
+            if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
               if (!disableAutolog) {
                 let message = `War against ${warData.opponent.name} has started!\nWar summary:\n`
                 message += clashService.getWarSummaryMessage(warData);
                 logger.info(`Trying to send war start message: ` + message);
                 channel.sendMessage(message);
+              }
+            } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
+                oldWarData.clan.attacks < warData.clan.attacks) {
+              if (!disableAutolog) {
+                autoLogAttack_(warData, oldWarData, ccId, channel, config);  
               }
             } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
               if (!disableAutolog) {
@@ -102,11 +107,6 @@ exports.poll = function() {
                 message += clashService.getWarSummaryMessage(warData);
                 logger.info(`Trying to send war end message: ` + message);
                 channel.sendMessage(message);
-              }
-            } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
-                oldWarData.clan.attacks < warData.clan.attacks) {
-              if (!disableAutolog) {
-                autoLogAttack_(warData, oldWarData, ccId, channel, config);  
               }
             }
           }      
