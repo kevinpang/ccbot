@@ -27,10 +27,8 @@ same server, which is useful for clans who have feeders or sister clans all in t
   * Sets the clan tag for new wars. Required for /stats and /summary to work.
 * /setcalltimer <# hours>
   * Sets the call timer for new wars (use 1/2 or 1/4 for flex timers)
-* /setautolog on
-  * ccbot will automatically log attacks and send you war start and war end messages (requires your war log be public)
-* /setautostart on
-  * ccbot will automatically start Clash Caller wars for you
+* /setautosync on
+  * ccbot will automatically sync with data from Clash of Clans. This will enable automatic logging of attacks and starting of Clash Caller wars (requires your war log be public)
 
 # Normal usage
 * /start <war size> <enemy clan name>

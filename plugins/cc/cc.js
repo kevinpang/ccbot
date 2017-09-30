@@ -19,8 +19,7 @@ exports.commands = [
     "note",
     "open",
     "setarchive",
-    "setautolog",
-    "setautostart",
+    "setautosync",
     "setcalltimer",
     "setcc",
     "setclanname",
@@ -205,8 +204,7 @@ exports.config = {
         "Call timer: " + config.call_timer + "\n" +
         "Clan tag: " + config.clantag + "\n" +
         "Archive: " + (config.disableArchive ? "off" : "on") + "\n" +
-        "Automatic logging: " + (config.disableAutolog || config.disableAutolog == undefined ? "off" : "on") + "\n" +
-        "Automatic starting of Clash Caller wars: " + (config.disableAutostart || config.disableAutostart == undefined ? "off" : "on") + "\n" +
+        "Automatic syncing: " + (config.disableAutolog || config.disableAutolog == undefined ? "off" : "on") + "\n" +
         "Congrats messages: ";
     if (config.congratsMessages && config.congratsMessages.length > 0) {
       message += "\n";
@@ -398,39 +396,22 @@ exports.setarchive = {
   }
 };
 
-exports.setautolog = {
+exports.setautosync = {
   help: [{
     usage: '<on|off>',
-    description: 'Sets automatic logging of attacks on/off. Requires in-game war log to be public and clan tag to be set via /setclantag command.'
+    description: 'Sets automatic syncing with Clash of Clans data on/off. Enabling this will enable automatic attack logging and Clash Caller ' +
+        'war starting. Requires in-game war log to be public and clan tag to be set via /setclantag command.'
   }],
   process: function(bot, msg, suffix) {
     if (suffix != 'on' && suffix != 'off') {
-      msg.channel.sendMessage("Please specify whether automatic logging should be on or off");
+      msg.channel.sendMessage("Please specify whether automatic syncing should be on or off");
       return;
     }
     
     var config = configs.getChannelConfig(msg);
     config.disableAutolog = suffix == 'off';
     configs.saveChannelConfig(msg.channel.id, config);
-    msg.channel.sendMessage("Automatic logging set to " + suffix);
-  }
-}
-
-exports.setautostart = {
-  help: [{
-    usage: '<on|off>',
-    description: 'Sets automatic starting of Clash Caller wars on/off. Requires in-game war log to be public and clan tag to be set via /setclantag command.'
-  }],
-  process: function(bot, msg, suffix) {
-    if (suffix != 'on' && suffix != 'off') {
-      msg.channel.sendMessage("Please specify whether automatic starting of Clash Caller wars should be on or off");
-      return;
-    }
-    
-    var config = configs.getChannelConfig(msg);
-    config.disableAutostart = suffix == 'off';
-    configs.saveChannelConfig(msg.channel.id, config);
-    msg.channel.sendMessage("Automatic starting of Clash Caller wars set to " + suffix);
+    msg.channel.sendMessage("Automatic syncing set to " + suffix);
   }
 }
 

@@ -46,7 +46,7 @@ exports.poll = function() {
           let channel = global.bot.channels.get(channelId);
 
           if (!oldWarData) {
-            if (warData.state == 'preparation' && !disableAutostart) {
+            if (warData.state == 'preparation') {
               logger.info(`War search completed for ${clanTag}. Attempting to send war search completed message`);
               let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
 
