@@ -24,6 +24,12 @@ exports.startPolling = function() {
 exports.poll = function() {
   logger.info('War data poll tick');
 
+  // Since multiple channels may have the same clan tag set, we will locally cache the old war data
+  // to ensure diffs are accurately computed for each channel.
+  //
+  //  Map of clan tag to previously stored war data for the clan.
+  let oldWarDatas = {};
+
   let cfgs = configs.get();
   for (let channelId in cfgs) {
     if (!cfgs.hasOwnProperty(channelId)) {
@@ -40,79 +46,88 @@ exports.poll = function() {
 
     clashService.getCurrentWar(clanTag)
         .then((warData) => {
-          let oldWarData = warDataDao.getWarData(clanTag, warData.preparationStartTime);
+          let oldWarData = oldWarDatas[clanTag];
+          if (oldWarData == undefined) {
+            oldWarData = warDataDao.getWarData(clanTag, warData.preparationStartTime);
+            oldWarDatas[clanTag] = oldWarData || null;
+          }
+
           warDataDao.saveWarData(clanTag, warData);
-          let channel = global.bot.channels.get(channelId);
-
-          if (!oldWarData) {
-            if (warData.state == 'preparation') {
-              logger.info(`Detected war search completed for ${clanTag}`);
-              let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
-
-              clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
-                  .then((result) => {
-                    config.cc_id = result.ccId;
-                    configs.saveChannelConfig(channel.id, config);
-                    
-                    message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}`;
-                    
-                    if (result.prevCcId) {
-                      message += ` (previous war id: ${result.prevCcId})`;
-                    }
-                    
-                    message += `\n\nWar Summary:\n${clashService.getWarSummaryMessage(warData)}`;
-
-                    logger.info(`Sending war search completed message: ${message}`);
-                    channel.sendMessage(message);
-
-                    // Update start time on war.
-                    try {
-                      let startTime = warData.startTime;
-                      let year = startTime.substring(0, 4);
-                      let month = startTime.substring(4, 6);
-                      let day = startTime.substring(6, 8);
-                      let hour = startTime.substring(9, 11);
-                      let minute = startTime.substring(11, 13);
-                      let second = startTime.substring(13, 15);
-                      let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
-                      let now = new Date();
-                      let timeDiff = startDate - now;
-                      let minutesDiff = timeDiff / 1000 / 60;
-
-                      clashCallerService.updateWarTime(result.ccId, true, minutesDiff)
-                          .then(() => {logger.info(`Set start time for ${result.ccId} (${warData.startTime}) to ${minutesDiff} from now`)})
-                          .catch((error) => {logger.warn(`Unable to set set start time for ${result.ccId}: ${error}`)});
-                    } catch (e) {
-                      logger.warn(`Unable to compute start time: ` + warData.startTime);
-                    }
-                  })
-                  .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
-            }
-          } else {
-            if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
-              logger.info(`Detected war start for for ${clanTag}`);
-              let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
-              message += clashService.getWarSummaryMessage(warData);
-              logger.info(`Sending war start message: ` + message);
-              channel.sendMessage(message);
-            } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
-                oldWarData.clan.attacks < warData.clan.attacks) {
-              logger.info(`Detected new attack(s) for ${clanTag}`);
-              autoLogAttack_(warData, oldWarData, ccId, channel, config);  
-            } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
-              logger.info(`Detected war end for ${clanTag}`);
-              let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
-              message += clashService.getWarSummaryMessage(warData);
-              logger.info(`Sending war end message: ` + message);
-              channel.sendMessage(message);
-            }
-          }      
+          processNewWarData_(oldWarData, warData, channelId, config, clanTag, ccId);
         })
         .catch((error) => {
           logger.debug(`Polling war data for ${clanTag} failed. Expected 404 error if clan doesn\'t have their ` +
               `war log set to public or has a misconfigured clan tag. Error: ${error}`);
         });
   }
+};
+
+let processNewWarData_ = function(oldWarData, warData, channelId, config, clanTag, ccId) {
+  let channel = global.bot.channels.get(channelId);
+  
+  if (!oldWarData) {
+    if (warData.state == 'preparation') {
+      logger.info(`Detected war search completed for ${clanTag}`);
+      let message = `War search completed, preparation day against ${warData.opponent.name} has begun!\n`;
+
+      clashCallerService.startWar(config, warData.teamSize, warData.opponent.name)
+          .then((result) => {
+            config.cc_id = result.ccId;
+            configs.saveChannelConfig(channel.id, config);
+            
+            message += `New war automatically started on Clash Caller: ${clashCallerService.getCcUrl(result.ccId)}`;
+            
+            if (result.prevCcId) {
+              message += ` (previous war id: ${result.prevCcId})`;
+            }
+            
+            message += `\n\nWar Summary:\n${clashService.getWarSummaryMessage(warData)}`;
+
+            logger.info(`Sending war search completed message: ${message}`);
+            channel.sendMessage(message);
+
+            // Update start time on war.
+            try {
+              let startTime = warData.startTime;
+              let year = startTime.substring(0, 4);
+              let month = startTime.substring(4, 6);
+              let day = startTime.substring(6, 8);
+              let hour = startTime.substring(9, 11);
+              let minute = startTime.substring(11, 13);
+              let second = startTime.substring(13, 15);
+              let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
+              let now = new Date();
+              let timeDiff = startDate - now;
+              let minutesDiff = timeDiff / 1000 / 60;
+
+              clashCallerService.updateWarTime(result.ccId, true, minutesDiff)
+                  .then(() => {logger.info(`Set start time for ${result.ccId} (${warData.startTime}) to ${minutesDiff} from now`)})
+                  .catch((error) => {logger.warn(`Unable to set set start time for ${result.ccId}: ${error}`)});
+            } catch (e) {
+              logger.warn(`Unable to compute start time: ` + warData.startTime);
+            }
+          })
+          .catch((error) => {`Error automatically starting war on Clash Caller: ${error}`});
+    }
+  } else {
+    if (oldWarData.state == 'preparation' && warData.state == 'inWar') {
+      logger.info(`Detected war start for for ${clanTag}`);
+      let message = `War against ${warData.opponent.name} has started!\n\nWar summary:\n`
+      message += clashService.getWarSummaryMessage(warData);
+      logger.info(`Sending war start message: ` + message);
+      channel.sendMessage(message);
+    } else if (oldWarData.state == 'inWar' && warData.state == 'inWar' &&
+        oldWarData.clan.attacks < warData.clan.attacks) {
+      logger.info(`Detected new attack(s) for ${clanTag}`);
+      autoLogAttack_(warData, oldWarData, ccId, channel, config);  
+    } else if (oldWarData.state == 'inWar' && warData.state == 'warEnded') {
+      logger.info(`Detected war end for ${clanTag}`);
+      let message = `War against ${warData.opponent.name} has ended!\n\nWar summary:\n`;
+      message += clashService.getWarSummaryMessage(warData);
+      logger.info(`Sending war end message: ` + message);
+      channel.sendMessage(message);
+    }
+  }      
 };
 
 let autoLogAttack_ = function(warData, oldWarData, ccId, channel, config) {
