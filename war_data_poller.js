@@ -24,12 +24,6 @@ exports.startPolling = function() {
 exports.poll = function() {
   logger.info('War data poll tick');
 
-  // Since multiple channels may have the same clan tag set, we will locally cache the old war data
-  // to ensure diffs are accurately computed for each channel.
-  //
-  //  Map of clan tag to previously stored war data for the clan.
-  let oldWarDatas = {};
-
   let cfgs = configs.get();
   for (let channelId in cfgs) {
     if (!cfgs.hasOwnProperty(channelId)) {
@@ -46,17 +40,12 @@ exports.poll = function() {
 
     clashService.getCurrentWar(clanTag)
         .then((warData) => {
-          let oldWarData = oldWarDatas[clanTag];
-          if (oldWarData == undefined) {
-            oldWarData = warDataDao.getWarData(clanTag, warData.preparationStartTime);
-            oldWarDatas[clanTag] = oldWarData || null;
-          }
-
-          warDataDao.saveWarData(clanTag, warData);
+          let oldWarData = warDataDao.getWarData(clanTag, channelId, warData.preparationStartTime);
+          warDataDao.saveWarData(clanTag, channelId, warData);
           processNewWarData_(oldWarData, warData, channelId, config, clanTag, ccId);
         })
         .catch((error) => {
-          logger.debug(`Polling war data for ${clanTag} failed. Expected 404 error if clan doesn\'t have their ` +
+          logger.debug(`Polling war data for ${clanTag}/${channelId} failed. Expected 404 error if clan doesn\'t have their ` +
               `war log set to public or has a misconfigured clan tag. Error: ${error}`);
         });
   }

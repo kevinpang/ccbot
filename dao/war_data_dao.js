@@ -8,17 +8,17 @@ storage.initSync({
 /**
  * Get latest stored war data from Clash of Clans API for the specified clan.
  */
-exports.getWarData = function(clanTag, preparationStartTime) {
-  return storage.getItemSync(getKey(clanTag, preparationStartTime));
+exports.getWarData = function(clanTag, channelId, preparationStartTime) {
+  return storage.getItemSync(getKey(clanTag, channelId, preparationStartTime));
 };
 
 /**
  * Saves Clash of Clans API war data for the specified clan.
  */
-exports.saveWarData = function(clanTag, warData) {
-  storage.setItemSync(getKey(clanTag, warData.preparationStartTime), warData);
+exports.saveWarData = function(clanTag, channelId, warData) {
+  storage.setItemSync(getKey(clanTag, channelId, warData.preparationStartTime), warData);
 };
 
-let getKey = function(clanTag, preparationStartTime) {
-  return `${clanTag}-${preparationStartTime}`;
+let getKey = function(clanTag, channelId, preparationStartTime) {
+  return `${clanTag}-${channelId}-${preparationStartTime}`;
 }
