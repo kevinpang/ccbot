@@ -152,8 +152,8 @@ let getWarTimeMessage_ = (warData) => {
       return `War starts in ${getTimeDiffMessage_(startDate)}`;
       break;
     case 'inWar':
-      let endDate = exports.parseClashTime(warData.endTime);f
-      return `War ends in ${getTimeDiffMessage_(startDate)}`;
+      let endDate = exports.parseClashTime(warData.endTime);
+      return `War ends in ${getTimeDiffMessage_(endDate)}`;
     default:
       return null;
   }
