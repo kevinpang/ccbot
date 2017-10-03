@@ -90,8 +90,13 @@ exports.getWarSummaryMessage = function(warData) {
   let enemyStatistics = getStatisticsForClan_(warData.opponent, playerTagToThLevelMap);
 
   // Format current war statistics
+  if (warData.state == 'notInWar') {
+    return 'Currently not in a war';
+  }
+
   let message = '```\n';
   message += `${clanName} (${clanTag}) vs ${enemyName} (${enemyClanTag})\n`;
+  message += `Status: ${getWarTimeMessage_(warData) || 'Unknown'}\n`;
   message += `Stars: ${numStars} - ${numEnemyStars}\n`;
   message += `Percentage: ${percentage}% - ${enemyPercentage}%\n\n`;
   message += `Attacks: ${numAttacks}/${warSize * 2} - ${numEnemyAttacks}/${warSize * 2}\n`;
@@ -118,6 +123,54 @@ exports.getWarSummaryMessage = function(warData) {
 
   return message;
 };
+
+/**
+ * Parses time returned by Clash of Clans API into Date object.
+ * 
+ * @param {string} time the time returned by Clash of Clans API (e.g. "20170921T021623.000Z").
+ */
+exports.parseClashTime = (time) => {
+  let year = time.substring(0, 4);
+  let month = time.substring(4, 6);
+  let day = time.substring(6, 8);
+  let hour = time.substring(9, 11);
+  let minute = time.substring(11, 13);
+  let second = time.substring(13, 15);
+  return new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
+};
+
+/**
+ * Returns war time message (e.g. "War starts in 2h35m", "War ends in "5h38m", "War has ended""),
+ * or null if currently not in a war.
+ */
+let getWarTimeMessage_ = (warData) => {
+  switch (warData.state) {
+    case 'warEnded':
+      return 'War has ended.';
+    case 'preparation':
+      let startDate = exports.parseClashTime(warData.startTime);
+      return `War starts in ${getTimeDiffMessage_(startDate)}`;
+      break;
+    case 'inWar':
+      let endDate = exports.parseClashTime(warData.endTime);f
+      return `War ends in ${getTimeDiffMessage_(startDate)}`;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Returns a formatted message expressing how much time it will be until a certain point in time
+ * (e.g. "1h35m").
+ * 
+ * @param {Date} target The target date to measure the time between.
+ */
+let getTimeDiffMessage_ = (target) => {
+  let now = new Date();
+  let timeDiff = target - now;
+  let minutesDiff = timeDiff / 1000 / 60;
+  return `${Math.floor(minutesDiff / 60)}h${Math.floor(minutesDiff % 60)}m`;
+}
 
 let formatThvTh_ = function(numSuccess, numAttempts) {
   return `${numSuccess}/${numAttempts}` + (numAttempts > 0 ? ` (${Math.floor(numSuccess/numAttempts*100)}%)` : '');

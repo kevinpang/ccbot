@@ -77,14 +77,7 @@ let processNewWarData_ = function(oldWarData, warData, channelId, config, clanTa
 
             // Update start time on war.
             try {
-              let startTime = warData.startTime;
-              let year = startTime.substring(0, 4);
-              let month = startTime.substring(4, 6);
-              let day = startTime.substring(6, 8);
-              let hour = startTime.substring(9, 11);
-              let minute = startTime.substring(11, 13);
-              let second = startTime.substring(13, 15);
-              let startDate = new Date(`${year}-${month}-${day} ${hour}:${minute}:${second} +0000`);
+              let startDate = clashService.parseClashTime(warData.startTime);
               let now = new Date();
               let timeDiff = startDate - now;
               let minutesDiff = timeDiff / 1000 / 60;
