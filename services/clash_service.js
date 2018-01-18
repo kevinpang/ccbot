@@ -104,8 +104,8 @@ exports.getWarSummaryMessage = function(warData) {
       `${enemyStatistics.numTh11s}/${enemyStatistics.numTh10s}/${enemyStatistics.numTh9s}\n`;
   message += `Attacks left: ${clanStatistics.numTh11AttacksLeft}/${clanStatistics.numTh10AttacksLeft}/${clanStatistics.numTh9AttacksLeft} - ` +
       `${enemyStatistics.numTh11AttacksLeft}/${enemyStatistics.numTh10AttacksLeft}/${enemyStatistics.numTh9AttacksLeft}\n\n`;
-  message += `11v11 ?**: ${formatThvTh_(clanStatistics.num11v11TwoStars, clanStatistics.num11v11Attempts)} - ` +
-      `${formatThvTh_(enemyStatistics.num11v11TwoStars, enemyStatistics.num11v11Attempts)}\n`;
+  message += `11v11 ***: ${formatThvTh_(clanStatistics.num11v11ThreeStars, clanStatistics.num11v11Attempts)} - ` +
+      `${formatThvTh_(enemyStatistics.num11v11ThreeStars, enemyStatistics.num11v11Attempts)}\n`;
   message += `10v10 ***: ${formatThvTh_(clanStatistics.num10v10ThreeStars, clanStatistics.num10v10Attempts)} - ` +
       `${formatThvTh_(enemyStatistics.num10v10ThreeStars, enemyStatistics.num10v10Attempts)}\n`;
   message += `9v9   ***: ${formatThvTh_(clanStatistics.num9v9ThreeStars, clanStatistics.num9v9Attempts)} - ` +
